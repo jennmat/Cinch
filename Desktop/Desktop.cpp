@@ -3,6 +3,12 @@
 
 #include "stdafx.h"
 #include "Desktop.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+using namespace std;
+using namespace JsonBox;
+using namespace CouchDB;
 
 #define MAX_LOADSTRING 100
 
@@ -115,9 +121,19 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   CouchDB::Connection conn;
+   
+   CouchDB::Database db = conn.getDatabase("names");
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
+   
+
+   HWND grid = CinchGrid::CreateCinchGrid(hWnd, new CouchViewDelegate(db));
+
+   SetWindowPos(grid, HWND_TOP, 0, 0, 100, 100, SW_SHOW);
+  
    return TRUE;
 }
 

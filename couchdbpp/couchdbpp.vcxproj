@@ -11,13 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F4462DAB-ABB6-4C91-9EEF-384AFBACCC20}</ProjectGuid>
+    <ProjectGuid>{3050C19D-1CC3-40F0-9AD8-DFDB7CCDE53F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Desktop</RootNamespace>
+    <RootNamespace>couchdbpp</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -39,74 +39,74 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <EmbedManifest>false</EmbedManifest>
+    <LibraryPath>C:\curl;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\JsonBox\include;..\couchdbpp\curl\include;..\couchdbpp;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>curl\include;..\JsonBox\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/c %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>msimg32.lib;comctl32.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\Matt\Projects\Cinch\couchdbpp\curl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>curl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="Desktop.ico" />
-    <None Include="small.ico" />
+    <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CouchViewDelegate.h" />
-    <ClInclude Include="Desktop.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="couchdb\Attachment.hpp" />
+    <ClInclude Include="couchdb\Communication.hpp" />
+    <ClInclude Include="couchdb\Connection.hpp" />
+    <ClInclude Include="couchdb\CouchDB.hpp" />
+    <ClInclude Include="couchdb\Database.hpp" />
+    <ClInclude Include="couchdb\Document.hpp" />
+    <ClInclude Include="couchdb\Exception.hpp" />
+    <ClInclude Include="couchdb\Revision.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CouchViewDelegate.cpp" />
-    <ClCompile Include="Desktop.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="Attachment.cpp" />
+    <ClCompile Include="Communication.cpp" />
+    <ClCompile Include="Connection.cpp" />
+    <ClCompile Include="Database.cpp" />
+    <ClCompile Include="Document.cpp" />
+    <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="Revision.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="tester.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Desktop.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CinchGrid\CinchGrid\CinchGrid.vcxproj">
-      <Project>{34961205-8c12-4ef6-9c89-2392b57d6e89}</Project>
+    <ProjectReference Include="..\JsonBox\JsonBox.vcxproj">
+      <Project>{6de13cba-f3fa-492a-a143-028e69e38430}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\couchdbpp\couchdbpp.vcxproj">
-      <Project>{3050c19d-1cc3-40f0-9ad8-dfdb7ccde53f}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="Desktop.exe.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
