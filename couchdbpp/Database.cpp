@@ -48,9 +48,8 @@ const string& Database::getName() const{
    return name;
 }
 
-vector<Document> Database::listDocuments(){
-   Value var = comm.getData("/" + name + "/_all_docs");
-   Object  obj = var.getObject();
+vector<Document> Database::documentsVectorFromValue(const Value& var){
+	Object  obj = var.getObject();
 
    int numRows = obj["total_rows"].getInt();
 
@@ -75,6 +74,26 @@ vector<Document> Database::listDocuments(){
    }
 
    return docs;
+}
+
+Object Database::viewResults(const string& design, const string& view, Value& startKey, int limit=25){
+	stringstream s;
+	s << "/" << name << "/_design/";
+	s << design;
+	s << "/_view/";
+	s << view;
+	s << "?limit=";
+	s << limit;
+
+	Value var = comm.getData(s.str());
+
+	return var.getObject();
+
+}
+
+vector<Document> Database::listDocuments(){
+   Value var = comm.getData("/" + name + "/_all_docs");
+   return documentsVectorFromValue(var);
 }
 
 Document Database::getDocument(const string &id, const string &rev){

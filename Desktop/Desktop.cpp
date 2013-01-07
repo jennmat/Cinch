@@ -123,7 +123,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    CouchDB::Connection conn;
    
-   CouchDB::Database db = conn.getDatabase("names");
+   CouchDB::Database db = conn.getDatabase("addresses");
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

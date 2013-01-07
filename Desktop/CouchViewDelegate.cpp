@@ -7,14 +7,14 @@ using namespace std;
 using namespace JsonBox;
 using namespace CouchDB;
 
-std::wstring s2ws(const std::string& s)
+wstring s2ws(const string& s)
 {
     int len;
     int slength = (int)s.length() + 1;
     len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
     wchar_t* buf = new wchar_t[len];
     MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-    std::wstring r(buf);
+    wstring r(buf);
     delete[] buf;
     return r;
 }
@@ -24,20 +24,20 @@ CouchViewDelegate::CouchViewDelegate(Database& _db) : db(_db)
 	for(int i=0; i<100; i++){
 		data[i] = NULL;
 	}
-	vector<CouchDB::Document> docs = db.listDocuments();
+	Object obj = db.viewResults("friends", "by-name", Value(""), 25);
 
-   vector<CouchDB::Document>::iterator iterator;
-
+   
    int i = 0;
-   for(iterator = docs.begin(); iterator != docs.end(); iterator++ ){
-	   Value v = (*iterator).getData();
-	   Object o = v.getObject();
-	
-	   wstring w = s2ws(o["name"].getString());
+   if ( obj["total_rows"].getInt() > 0 ){
+	   Array rows = obj["rows"].getArray();
+	   for(int j=0; j<rows.size(); j++){
+		   Object o = rows[j].getObject();
+		   wstring w = s2ws(o["key"].getString());
 
-	   data[i] = new wchar_t[80];
-	   wcscpy_s(data[i], 80, w.c_str());
-	   i++;
+			data[i] = new wchar_t[80];
+			wcscpy_s(data[i], 80, w.c_str());
+			i++;
+	   }
    }
    
 }

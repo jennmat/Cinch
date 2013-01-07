@@ -23,6 +23,7 @@
 #include "JsonBox.h"
 
 using namespace JsonBox;
+using namespace std;
 
 namespace CouchDB{
 
@@ -38,13 +39,20 @@ class Database{
 
       Database& operator=(Database&);
 
-      const std::string& getName() const;
+      const string& getName() const;
 
-      std::vector<Document> listDocuments();
-      Document getDocument(const std::string&, const std::string &rev="");
-      Document createDocument(const Value&, const std::string &id="");
-      Document createDocument(Value, std::vector<Attachment>,
-                              const std::string &id="");
+      vector<Document> listDocuments();
+	  Array listViews();
+	  
+      Object viewResults(const string& design, const string& view, Value& startKey, int limit);
+      vector<Document> documentsFromStartDocId(const string& design, const string& view, Value& startKeyDocId, int limit);
+
+	  Document getDocument(const string&, const string &rev="");
+      Document createDocument(const Value&, const string &id="");
+      Document createDocument(Value, vector<Attachment>,
+                              const string &id="");
+
+	  vector<Document> documentsVectorFromValue(const Value& value);
 
    protected:
       Communication& getCommunication();
