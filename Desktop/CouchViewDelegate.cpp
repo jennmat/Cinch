@@ -21,30 +21,31 @@ wstring s2ws(const string& s)
 
 CouchViewDelegate::CouchViewDelegate(Database& _db) : db(_db)
 {
-	for(int i=0; i<100; i++){
-		data[i] = NULL;
-	}
-	Object obj = db.viewResults("friends", "by-name", Value(""), 25);
+	//Object obj = db.viewResults("properties", "by-nickname", Value(""), 25);
+	Object obj = db.listViews();
 
-   
-   int i = 0;
-   if ( obj["total_rows"].getInt() > 0 ){
+	rowCount = obj["total_rows"].getInt();
+	data = new wchar_t*[rowCount];
+	memset(data, NULL, rowCount);
+
+	int i = 0;
+	if ( obj["total_rows"].getInt() > 0 ){
 	   Array rows = obj["rows"].getArray();
-	   for(int j=0; j<rows.size(); j++){
+	   for(unsigned int j=0; j<rows.size(); j++){
 		   Object o = rows[j].getObject();
 		   wstring w = s2ws(o["key"].getString());
 
 			data[i] = new wchar_t[80];
 			wcscpy_s(data[i], 80, w.c_str());
 			i++;
-	   }
-   }
-   
+			lastRead = o;
+		}
+	}
 }
 
 int CouchViewDelegate::totalRows()
 {
-	return 100;
+	return rowCount;
 }
 
 
@@ -67,10 +68,27 @@ wchar_t* CouchViewDelegate::headerContent(int col)
 	return L"Name";
 }
 
-const wchar_t* CouchViewDelegate::cellContent(int row, int col){
-	if ( data[row] == NULL ){
-		return L"";
+const wchar_t* CouchViewDelegate::cellContent(int row, int col)
+{
+	if( data[row] != NULL ){
+		return data[row];
 	} else {
+		/* Load some more documents */
+		Object obj = db.viewResulsFromStartDocId("friends", "by-name", lastRead["key"], lastRead["id"].getString(), 25);
+		int i = row;
+		if ( obj["total_rows"].getInt() > 0 ){
+			Array rows = obj["rows"].getArray();
+			for(unsigned int j=0; j<rows.size(); j++){
+				Object o = rows[j].getObject();
+				wstring w = s2ws(o["key"].getString());
+
+				data[i] = new wchar_t[80];
+				wcscpy_s(data[i], 80, w.c_str());
+				i++;
+				lastRead = o;
+			}
+		}
+
 		return data[row];
 	}
 }

@@ -9,7 +9,9 @@ class CouchViewDelegate : public GridDelegate {
 
 private:
 	Database& db;
-	wchar_t* data[100];
+	int rowCount;
+	wchar_t** data;
+	Object lastRead;
 public:
 	CouchViewDelegate(Database&);
 	int totalRows();

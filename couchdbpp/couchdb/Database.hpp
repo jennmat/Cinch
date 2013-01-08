@@ -42,10 +42,10 @@ class Database{
       const string& getName() const;
 
       vector<Document> listDocuments();
-	  Array listViews();
+	  Object listViews();
 	  
       Object viewResults(const string& design, const string& view, Value& startKey, int limit);
-      vector<Document> documentsFromStartDocId(const string& design, const string& view, Value& startKeyDocId, int limit);
+      Object viewResulsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit);
 
 	  Document getDocument(const string&, const string &rev="");
       Document createDocument(const Value&, const string &id="");

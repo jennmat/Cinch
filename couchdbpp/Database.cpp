@@ -76,6 +76,17 @@ vector<Document> Database::documentsVectorFromValue(const Value& var){
    return docs;
 }
 
+
+Object Database::listViews(){
+	stringstream s;
+	s << "/" << name << "/_all_docs";
+	s << "?startkey=\"_design/\"&endkey=\"_design0\"&include_docs=true";
+
+	Value var = comm.getData(s.str());
+	return var.getObject();
+
+}
+
 Object Database::viewResults(const string& design, const string& view, Value& startKey, int limit=25){
 	stringstream s;
 	s << "/" << name << "/_design/";
@@ -88,6 +99,30 @@ Object Database::viewResults(const string& design, const string& view, Value& st
 	Value var = comm.getData(s.str());
 
 	return var.getObject();
+
+}
+
+Object Database::viewResulsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit)
+{
+	stringstream s;
+	s << "/" << name << "/_design/";
+	s << design;
+	s << "/_view/";
+	s << view;
+	s << "?startkey=";
+	stringstream key;
+	key << "\"" << startKey.getString() << "\"";
+	char* escapedKey = curl_easy_escape(comm.curl, key.str().c_str(), 0);
+	s << escapedKey;
+	s << "&startkey_docid=";
+	s << startKeyDocId;
+	s << "&limit=";
+	s << limit;
+
+	Value var = comm.getData(s.str());
+
+	return var.getObject();
+
 
 }
 
