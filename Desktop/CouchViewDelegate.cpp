@@ -21,8 +21,8 @@ wstring s2ws(const string& s)
 
 CouchViewDelegate::CouchViewDelegate(Database& _db) : db(_db)
 {
-	//Object obj = db.viewResults("properties", "by-nickname", Value(""), 25);
-	Object obj = db.listViews();
+	Object obj = db.viewResults("properties", "by-nickname", Value(""), 25);
+	//Object obj = db.listViews();
 
 	rowCount = obj["total_rows"].getInt();
 	data = new wchar_t*[rowCount];

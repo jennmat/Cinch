@@ -128,8 +128,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   
-
    HWND grid = CinchGrid::CreateCinchGrid(hWnd, new CouchViewDelegate(db));
 
    SetWindowPos(grid, HWND_TOP, 0, 0, 100, 100, SW_SHOW);
