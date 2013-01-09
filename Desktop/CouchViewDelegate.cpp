@@ -10,15 +10,20 @@ using namespace CouchDB;
 
 CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 {
-	
+	rowCount = 0;
 }
 
-void CouchViewDelegate::setView(const wstring& _view)
+void CouchViewDelegate::setView(const wstring& design, const wstring& _view)
 {
 	view = _view;
 	Database db = conn.getDatabase("property");
+	
+	string s = ws2s(design);
+	int ix = s.find("/");
+	s = s.substr(ix);
 
-	Object obj = db.viewResults("properties", ws2s(view), Value(""), 25);
+
+	Object obj = db.viewResults(s, ws2s(view), Value(""), 25);
 	
 	rowCount = obj["total_rows"].getInt();
 	data = new wchar_t*[rowCount];

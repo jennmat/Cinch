@@ -33,9 +33,6 @@
     <ClInclude Include="couchdb\Connection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="couchdb\CouchDB.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="couchdb\Database.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -46,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="couchdb\Revision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CouchDB.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

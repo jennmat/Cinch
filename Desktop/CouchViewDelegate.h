@@ -44,5 +44,5 @@ public:
 	HFONT getFont();
 	HFONT getEditFont();
 
-	void setView(const wstring&);
+	void setView(const wstring&, const wstring&);
 };

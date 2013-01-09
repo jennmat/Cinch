@@ -214,7 +214,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    UpdateWindow(hWnd);
 
    delegate = new CouchViewDelegate(conn);
-   delegate->setView(s2ws(string("by-nickname")));
+   //delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
 
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
 
@@ -295,7 +295,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if( item != TreeView_GetRoot(tree) ){
 				TreeView_GetItem(tree, &tvitem);
 				wstring s(text);
-				delegate->setView(s);
+
+				HTREEITEM parent = TreeView_GetParent(tree, item);
+				tvitem.hItem = parent;
+				TreeView_GetItem(tree, &tvitem);
+				wstring design(text);
+
+				delegate->setView(design, s);
 
 				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 				gridcontrol->reloadData();
