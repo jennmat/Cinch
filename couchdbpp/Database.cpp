@@ -80,8 +80,8 @@ vector<Document> Database::documentsVectorFromValue(const Value& var){
 Object Database::listViews(){
 	stringstream s;
 	s << "/" << name << "/_all_docs";
-	s << "?startkey=\"_design/\"&endkey=\"_design0\"&include_docs=true";
-
+	s << "?startkey=%22_design%2f%22&endkey=%22_design0%22&include_docs=true";
+	
 	Value var = comm.getData(s.str());
 	return var.getObject();
 
@@ -99,7 +99,6 @@ Object Database::viewResults(const string& design, const string& view, Value& st
 	Value var = comm.getData(s.str());
 
 	return var.getObject();
-
 }
 
 Object Database::viewResulsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit)

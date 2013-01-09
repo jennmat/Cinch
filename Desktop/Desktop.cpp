@@ -12,6 +12,9 @@ using namespace CouchDB;
 
 #define MAX_LOADSTRING 100
 
+#define TREE_WIDTH 200
+#define LIST_WIDTH 200
+
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
@@ -97,6 +100,79 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
+
+// Adds items to a tree-view control. 
+// Returns the handle to the newly added item. 
+// hwndTV - handle to the tree-view control. 
+// lpszItem - text of the item to add. 
+// nLevel - level at which to add the item. 
+//
+// g_nClosed, and g_nDocument - global indexes of the images.
+
+HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
+{ 
+    TVITEM tvi; 
+    TVINSERTSTRUCT tvins; 
+    static HTREEITEM hPrev = (HTREEITEM)TVI_FIRST; 
+    static HTREEITEM hPrevRootItem = NULL; 
+    static HTREEITEM hPrevLev2Item = NULL; 
+    HTREEITEM hti; 
+
+    tvi.mask = TVIF_TEXT | TVIF_IMAGE 
+               | TVIF_SELECTEDIMAGE | TVIF_PARAM; 
+
+    // Set the text of the item. 
+    tvi.pszText = lpszItem; 
+    tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+
+    // Assume the item is not a parent item, so give it a 
+    // document image. 
+    //tvi.iImage = g_nDocument; 
+    //tvi.iSelectedImage = g_nDocument; 
+
+    // Save the heading level in the item's application-defined 
+    // data area. 
+    tvi.lParam = (LPARAM)nLevel; 
+    tvins.item = tvi; 
+    tvins.hInsertAfter = hPrev; 
+
+    // Set the parent item based on the specified level. 
+    if (nLevel == 1) 
+        tvins.hParent = TVI_ROOT; 
+    else if (nLevel == 2) 
+        tvins.hParent = hPrevRootItem; 
+    else 
+        tvins.hParent = hPrevLev2Item; 
+
+    // Add the item to the tree-view control. 
+    hPrev = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 
+        0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
+
+    if (hPrev == NULL)
+        return NULL;
+
+    // Save the handle to the item. 
+    if (nLevel == 1) 
+        hPrevRootItem = hPrev; 
+    else if (nLevel == 2) 
+        hPrevLev2Item = hPrev; 
+
+    // The new item is a child item. Give the parent item a 
+    // closed folder bitmap to indicate it now has child items. 
+    if (nLevel > 1)
+    { 
+        hti = TreeView_GetParent(hwndTV, hPrev); 
+        tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE; 
+        tvi.hItem = hti; 
+        //tvi.iImage = g_nClosed; 
+        //tvi.iSelectedImage = g_nClosed; 
+        TreeView_SetItem(hwndTV, &tvi); 
+    } 
+
+    return hPrev; 
+} 
+
+
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
 //
@@ -121,6 +197,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   
+   RECT client;
+   GetClientRect(hWnd, &client);
+
+   InitCommonControls();
+
+   HWND tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+	   0, 0, TREE_WIDTH, client.bottom,
+	   hWnd, NULL, hInst, NULL);
+
    CouchDB::Connection conn;
    
    CouchDB::Database db = conn.getDatabase("property");
@@ -130,8 +216,42 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    HWND grid = CinchGrid::CreateCinchGrid(hWnd, new CouchViewDelegate(db));
 
-   SetWindowPos(grid, HWND_TOP, 0, 0, 100, 100, SW_SHOW);
+   SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
   
+   Object views = db.listViews();
+
+   if ( views["total_rows"].getInt() > 0 ){
+	   Array rows = views["rows"].getArray();
+	   for(unsigned int i=0; i<rows.size(); i++){
+		   Object row = rows[i].getObject();
+		
+		   wstring name = s2ws(row["id"].getString());
+		   LPWSTR str = new wchar_t[80];
+		   wcscpy_s(str, 80, name.c_str());
+
+		   AddItemToTree(tree, str, 1);
+	
+		   Object doc = row["doc"].getObject();
+		   Object views = doc["views"].getObject();
+		   Object::const_iterator it = views.begin();
+		   for(it=views.begin(); it != views.end(); it++){
+				pair<string, Value> p = *it;
+				wstring name = s2ws(p.first);
+				LPWSTR str = new wchar_t[80];
+				wcscpy_s(str, 80, name.c_str());
+
+				AddItemToTree(tree, str, 2);
+		
+		   }
+		   //for(unsigned int j = 0; j<views.size(); j++){
+			 //  Object view = views[j].getObject();
+			  // int a = 1;
+			//}
+
+	   }
+   }
+
+   ShowWindow(tree, SW_SHOW);
    return TRUE;
 }
 

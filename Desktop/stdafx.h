@@ -20,5 +20,6 @@
 #include "CinchGrid.h"
 #include "CouchViewDelegate.h"
 #include "CouchDB.hpp"
+#include "util.h"
 
 // TODO: reference additional headers your program requires here
