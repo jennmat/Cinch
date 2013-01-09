@@ -203,21 +203,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    InitCommonControls();
 
-   HWND tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+   tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
 	   0, 0, TREE_WIDTH, client.bottom,
-	   hWnd, NULL, hInst, NULL);
+	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
-   CouchDB::Connection conn;
-   
-   CouchDB::Database db = conn.getDatabase("property");
+  
+
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   HWND grid = CinchGrid::CreateCinchGrid(hWnd, new CouchViewDelegate(db));
+   delegate = new CouchViewDelegate(conn);
+   delegate->setView(s2ws(string("by-nickname")));
+
+   grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
 
    SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
-  
+
+   Database db = conn.getDatabase("property");
    Object views = db.listViews();
 
    if ( views["total_rows"].getInt() > 0 ){
@@ -273,7 +276,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_NOTIFY:
+		{
+
+		LPNMHDR pnmhdr = (LPNMHDR)lParam;
+		if  (pnmhdr->idFrom == IDC_VIEW_TREE && pnmhdr->code == TVN_SELCHANGED ){
+			
+			HTREEITEM item = ((LPNM_TREEVIEW)pnmhdr)->itemNew.hItem;
+
+			TVITEM tvitem;
+
+			tvitem.hItem = item;
+			tvitem.mask = TVIF_TEXT;
+			tvitem.cchTextMax = 80;
+			wchar_t text[80];
+			memset(text, 0, 80);
+			tvitem.pszText = text;
+			if( item != TreeView_GetRoot(tree) ){
+				TreeView_GetItem(tree, &tvitem);
+				wstring s(text);
+				delegate->setView(s);
+
+				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+				gridcontrol->reloadData();
+
+			}
+
+		}
+		break;
+		}
 	case WM_COMMAND:
+		
+
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:

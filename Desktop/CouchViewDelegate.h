@@ -8,12 +8,13 @@ using namespace CouchDB;
 class CouchViewDelegate : public GridDelegate {
 
 private:
-	Database& db;
+	Connection& conn;
 	int rowCount;
 	wchar_t** data;
+	wstring view;
 	Object lastRead;
 public:
-	CouchViewDelegate(Database&);
+	CouchViewDelegate(Connection&);
 	int totalRows();
 	int totalColumns();
 
@@ -42,4 +43,6 @@ public:
 
 	HFONT getFont();
 	HFONT getEditFont();
+
+	void setView(const wstring&);
 };

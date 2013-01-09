@@ -8,11 +8,18 @@ using namespace JsonBox;
 using namespace CouchDB;
 
 
-CouchViewDelegate::CouchViewDelegate(Database& _db) : db(_db)
+CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 {
-	Object obj = db.viewResults("properties", "by-nickname", Value(""), 25);
-	//Object obj = db.listViews();
+	
+}
 
+void CouchViewDelegate::setView(const wstring& _view)
+{
+	view = _view;
+	Database db = conn.getDatabase("property");
+
+	Object obj = db.viewResults("properties", ws2s(view), Value(""), 25);
+	
 	rowCount = obj["total_rows"].getInt();
 	data = new wchar_t*[rowCount];
 	memset(data, NULL, rowCount);
@@ -62,7 +69,7 @@ const wchar_t* CouchViewDelegate::cellContent(int row, int col)
 	if( data[row] != NULL ){
 		return data[row];
 	} else {
-		/* Load some more documents */
+		/* Load some more documents 
 		Object obj = db.viewResulsFromStartDocId("friends", "by-name", lastRead["key"], lastRead["id"].getString(), 25);
 		int i = row;
 		if ( obj["total_rows"].getInt() > 0 ){
@@ -78,7 +85,8 @@ const wchar_t* CouchViewDelegate::cellContent(int row, int col)
 			}
 		}
 
-		return data[row];
+		return data[row];*/
+		return TEXT("");
 	}
 }
 
