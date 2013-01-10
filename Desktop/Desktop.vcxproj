@@ -112,6 +112,9 @@
     <ProjectReference Include="..\curl\lib\libcurl.vcxproj">
       <Project>{87ee9da4-de1e-4448-8324-183c98dca588}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Projects\JsonBox\JsonBox.vcxproj">
+      <Project>{27eba2b9-38b9-4a45-b78d-ade07725fba3}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="Desktop.exe.manifest" />
