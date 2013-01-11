@@ -4,3 +4,6 @@
 [submodule "JsonBox"]
 	path = JsonBox
 	url = https://github.com/anhero/JsonBox.git
+[submodule "CinchDesigner"]
+	path = CinchDesigner
+	url = https://github.com/jennmat/CinchDesigner.git
