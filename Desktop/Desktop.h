@@ -5,4 +5,6 @@
 CouchViewDelegate* delegate;
 HWND grid;
 HWND tree;
+HWND designer;
+
 CouchDB::Connection conn;

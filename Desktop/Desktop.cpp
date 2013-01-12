@@ -217,8 +217,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
 
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
+   designer = CinchDesigner::CreateCinchDesigner(hWnd);
 
    SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
+   SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right, client.bottom, SW_SHOW);
 
    Database db = conn.getDatabase("property");
    Object views = db.listViews();
