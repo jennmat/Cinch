@@ -258,6 +258,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+void SizeWindows(HWND hWnd)
+{
+	RECT client;
+	GetClientRect(hWnd, &client);
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, 0);
+	SetWindowPos(tree, HWND_TOP, 0, 0, TREE_WIDTH, client.bottom, 0);
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -328,6 +336,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
+		break;
+	case WM_SIZE:
+		SizeWindows(hWnd);
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
