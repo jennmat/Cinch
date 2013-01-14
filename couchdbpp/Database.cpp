@@ -142,7 +142,7 @@ Document Database::getDocument(const string &id, const string &rev){
 	   throw Exception("Document " + id + " (v" + rev + ") not found: " + obj["error"].getString());
 
    Document doc(comm, name,
-				obj["id"].getString(),
+				obj["_id"].getString(),
                 "", // no key returned here
 				obj["_rev"].getString()
                );

@@ -1,24 +1,19 @@
-
-#include <stdafx.h>
 #include "CinchGrid.h"
-#include "CouchDB.hpp"
 
-using namespace CouchDB;
+#define MAX_ROWS 4000
+#define TOTAL_COLS 3
 
-class CouchViewDelegate : public GridDelegate {
 
+class BlankDelegate: public GridDelegate {
 private:
-	Connection& conn;
 	int rowCount;
-	wchar_t** data;
-	wstring view;
-	Object lastRead;
-	Object viewResults;
+	wchar_t* data[MAX_ROWS][TOTAL_COLS];
+
 public:
-	CouchViewDelegate(Connection&);
+	BlankDelegate();
 	int totalRows();
 	int totalColumns();
-	string getDocumentIdForRow(int);
+
 	int columnWidth(int column);
 	int rowHeight();
 
@@ -33,17 +28,16 @@ public:
 	bool drawVerticalGridlines();
 
 	bool allowEditing(int);
-	bool allowHeaderTitleEditing(int);
+	bool allowHeaderTitleEditing(int col);
 	void setupEditorForCell(HWND editor, int row, int col);
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
 	void editingFinished(HWND editor, int row, int col);
 
 	bool allowNewRows();
 	bool allowNewColumns();
+	
 	void prepareNewRow(int row);
 
 	HFONT getFont();
 	HFONT getEditFont();
-
-	void setView(const wstring&, const wstring&);
 };
