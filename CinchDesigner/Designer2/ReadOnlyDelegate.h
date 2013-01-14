@@ -1,24 +1,13 @@
-
-#include <stdafx.h>
 #include "CinchGrid.h"
-#include "CouchDB.hpp"
 
-using namespace CouchDB;
 
-class CouchViewDelegate : public GridDelegate {
 
-private:
-	Connection& conn;
-	int rowCount;
-	wchar_t** data;
-	wstring view;
-	Object lastRead;
-	Object viewResults;
+class ReadOnlyDelegate: public GridDelegate {
 public:
-	CouchViewDelegate(Connection&);
+	ReadOnlyDelegate();
 	int totalRows();
 	int totalColumns();
-	string getDocumentIdForRow(int);
+
 	int columnWidth(int column);
 	int rowHeight();
 
@@ -33,17 +22,13 @@ public:
 	bool drawVerticalGridlines();
 
 	bool allowEditing(int);
-	bool allowHeaderTitleEditing(int);
 	void setupEditorForCell(HWND editor, int row, int col);
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
 	void editingFinished(HWND editor, int row, int col);
 
 	bool allowNewRows();
-	bool allowNewColumns();
 	void prepareNewRow(int row);
 
 	HFONT getFont();
 	HFONT getEditFont();
-
-	void setView(const wstring&, const wstring&);
 };

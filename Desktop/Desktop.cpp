@@ -219,6 +219,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
 
+   CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
+   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("Date Purchased")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Purchase Amount")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Last Appraised Value")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Mortgage Payment")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Minimum Rent")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Maximum Rent")));
+   d->getForm()->addField(FormField::createRadioGroup(designer, hInst, TEXT("Is Occupied")));
+   d->getForm()->addDetail(TEXT("Notes"));
+   d->getForm()->addDetail(TEXT("Tenants"));
+   d->getForm()->addDetail(TEXT("Inspections"));
+   d->getForm()->getDetail()->CreateTextareaForPage(0);
+   d->getForm()->getDetail()->CreateTableForPage(1);
+   d->getForm()->getDetail()->CreateTableForPage(2);
+
+
    SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
    SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right, client.bottom, SW_SHOW);
 
@@ -258,6 +276,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(tree, SW_SHOW);
    return TRUE;
+}
+
+void SizeWindows(HWND hWnd)
+{
+	RECT client;
+	GetClientRect(hWnd, &client);
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, LIST_WIDTH, client.bottom, 0);
+	SetWindowPos(tree, HWND_TOP, 0, 0, TREE_WIDTH, client.bottom, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
+
 }
 
 //
@@ -313,6 +341,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 		}
+	case CINCHGRID_ROW_SELECTED:
+		{
+		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+		int row = gridcontrol->GetActiveRow();
+		string str = delegate->getDocumentIdForRow(row);
+		Database db = conn.getDatabase("property");
+		Document d = db.getDocument(str);
+		Value v = d.getData();
+		designercontrol->getForm()->LoadDocument(d);
+		break;
+		}
 	case WM_COMMAND:
 		
 
@@ -327,9 +367,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case IDM_EDIT_FIELDS:
+			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
+		break;
+	case WM_SIZE:
+		SizeWindows(hWnd);
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);

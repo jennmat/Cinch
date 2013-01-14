@@ -23,15 +23,15 @@ void CouchViewDelegate::setView(const wstring& design, const wstring& _view)
 	s = s.substr(ix);
 
 
-	Object obj = db.viewResults(s, ws2s(view), Value(""), 25);
+	viewResults = db.viewResults(s, ws2s(view), Value(""), 25);
 	
-	rowCount = obj["total_rows"].getInt();
+	rowCount = viewResults["total_rows"].getInt();
 	data = new wchar_t*[rowCount];
 	memset(data, NULL, rowCount);
 
 	int i = 0;
-	if ( obj["total_rows"].getInt() > 0 ){
-	   Array rows = obj["rows"].getArray();
+	if ( viewResults["total_rows"].getInt() > 0 ){
+	   Array rows = viewResults["rows"].getArray();
 	   for(unsigned int j=0; j<rows.size(); j++){
 		   Object o = rows[j].getObject();
 		   wstring w = s2ws(o["key"].getString());
@@ -56,7 +56,7 @@ int CouchViewDelegate::totalColumns(){
 
 
 int CouchViewDelegate::columnWidth(int col){
-	return 250;
+	return 200;
 }
 
 
@@ -154,7 +154,14 @@ HFONT CouchViewDelegate::getEditFont(){
 }
 
 
+string CouchViewDelegate::getDocumentIdForRow(int row){
 
+	if (viewResults["total_rows"].getInt() > 0 ){
+	   Array rows = viewResults["rows"].getArray();
+	   Object o = rows[row].getObject();
+	   return o["id"].getString();
+	}
 
-
+	return "";
+}
 
