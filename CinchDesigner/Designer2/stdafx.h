@@ -26,6 +26,7 @@
 #include "Form.h"
 #include "ReadOnlyDelegate.h"
 #include "BlankDelegate.h"
+#include "ArrayOfObjectsDelegate.h"
 #include "util.h"
 
 #include "CinchGrid.h"

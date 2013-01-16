@@ -66,6 +66,10 @@ void Detail::CreateTextareaForPage(int i){
 	ShowPage(i);
 }
 
+HWND Detail::GetDetailPage(int i){
+	return detailPages[i];
+}
+
 void Detail::load(Object obj)
 {
 	Array tabs = obj["tabs"].getArray();

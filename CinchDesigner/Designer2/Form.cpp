@@ -157,4 +157,17 @@ void Form::LoadDocument(Document& doc){
 	string nickname = obj["nickname"].getString();
 	const wchar_t* nicknamew = s2ws(nickname).c_str();
 
+	for(int i=0; i<detail.getDetailPageCount(); i++){
+		if ( i == 2 ){
+			HWND inspectionsDetail = detail.GetDetailPage(i);
+			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(inspectionsDetail, GWL_USERDATA);
+			Array a = obj["inspections"].getArray();
+
+			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(obj["inspections"].getArray());
+			gridcontrol->setDelegate(d);
+
+			gridcontrol->reloadData();
+			
+		}
+	}
 }
