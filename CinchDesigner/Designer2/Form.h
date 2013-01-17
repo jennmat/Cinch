@@ -14,7 +14,7 @@ private:
 public:
 	Form();
 	void LoadDocument(Document& doc);
-	void addField(FormField field);
+	void addField(FormField* field);
 	void addDetail(LPWSTR title);
 	void removeAllDetailPages();
 	Detail* getDetail();

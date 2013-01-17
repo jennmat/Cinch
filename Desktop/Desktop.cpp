@@ -54,7 +54,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg) && !IsDialogMessage(designer, &msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -222,7 +222,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
-   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("Date Purchased")));
+   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Purchase Amount")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Last Appraised Value")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Mortgage Payment")));
@@ -353,9 +353,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		designercontrol->getForm()->LoadDocument(d);
 		break;
 		}
+	case WM_KILLFOCUS:
+		OutputDebugStringW(TEXT("Lost focus in desktop"));
+		break;
 	case WM_COMMAND:
-		
-
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:

@@ -151,6 +151,15 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 
 	switch (message)
 	{
+	case WM_KEYUP:
+		OutputDebugStringW(TEXT("Key pressed"));
+		break;
+	case WM_KILLFOCUS:
+		OutputDebugStringW(TEXT("lost focus\n"));
+		break;
+	case WM_SETFOCUS:
+		OutputDebugStringW(TEXT("set focus\n"));
+		break;
 	case WM_NCCREATE:
 		{
 		CREATESTRUCT* c = (CREATESTRUCT*)lParam;
@@ -258,7 +267,6 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		{
 		return (INT_PTR)TRUE;
 		}
-
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDOK)
 		{
@@ -267,7 +275,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			for(int i=0; i<count; i++){
 				wchar_t szFieldName[80];
 				ListBox_GetText(fields, i, szFieldName);
-				FormField field;
+				FormField* field;
 
 				switch(newFieldTypes[i]){
 					case 0:

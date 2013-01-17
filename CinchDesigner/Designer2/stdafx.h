@@ -18,6 +18,8 @@
 #include <tchar.h>
 
 #include "Resource.h"
+#include "JsonBox.h"
+#include "util.h"
 
 // TODO: reference additional headers your program requires here
 #include "FormField.h"

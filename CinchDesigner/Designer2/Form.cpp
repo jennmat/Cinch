@@ -10,7 +10,7 @@ Form::Form(){
 
 }
 
-void Form::addField(FormField field){
+void Form::addField(FormField* field){
 	layout.addField(field);
 }
 
@@ -85,10 +85,10 @@ void Form::open(HWND parent, wchar_t* filename)
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object field = fields[i].getObject();
 		string label = field["label"].getString();
-		wstring wlabel = s2ws(label);
+		wstring wlabel = Designer::s2ws(label);
 		string type = field["type"].getString();
 		
-		FormField formField;
+		FormField* formField;
 
 		if ( type.compare("DatePicker") == 0 ){
 			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wlabel.c_str());
@@ -113,16 +113,16 @@ void Form::save(wchar_t* filename){
 	
 	Array fields;
 	for(int i=0; i<layout.getFieldCount(); i++){
-		FormField fld = layout.getField(i);
+		FormField* fld = layout.getField(i);
 		Object f;
 		char label[80];
 		wchar_t wlab[80];
-		GetWindowText(fld.getLabel(), wlab, 80);
+		GetWindowText(fld->getLabel(), wlab, 80);
 		size_t t;
 		wcstombs_s(&t, label, wlab, 80);
 
 		f["label"] = Value(label);
-		f["type"] = Value(fld.getControlType());
+		f["type"] = Value(fld->getControlType());
 		fields.push_back(f);
 	}
 
@@ -143,18 +143,10 @@ void Form::LoadDocument(Document& doc){
 	Value v = doc.getData();
 	Object obj = v.getObject();
 	for(int i=0; i<layout.getFieldCount(); i++){
-		FormField field = layout.getField(i);
-		const wchar_t* name = field.getName();
-		string n = ws2s(name);
-		if ( obj[n.c_str()].isString() ){
-			string val = obj[n.c_str()].getString();
-			wstring valw = s2ws(val);
-			LPCWSTR r = valw.c_str();
-			SetWindowText(field.getControl(), r); 
-		}
-
+		FormField* field = layout.getField(i);
+		field->loadValue(obj);
 	}
 	string nickname = obj["nickname"].getString();
-	const wchar_t* nicknamew = s2ws(nickname).c_str();
+	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
 
 }

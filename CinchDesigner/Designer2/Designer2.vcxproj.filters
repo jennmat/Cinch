@@ -39,9 +39,6 @@
     <ClInclude Include="FormLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Form.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Detail.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,6 +52,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Form.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

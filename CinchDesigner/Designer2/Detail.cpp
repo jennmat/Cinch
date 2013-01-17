@@ -5,6 +5,7 @@
 
 using namespace JsonBox;
 using namespace std;
+using namespace Designer;
 
 TCHAR detailClassName[] = _T("CinchDetail");
 

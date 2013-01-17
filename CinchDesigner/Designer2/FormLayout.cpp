@@ -8,7 +8,7 @@ FormLayout::FormLayout()
 	i = 0;
 }
 
-void FormLayout::addField(FormField field)
+void FormLayout::addField(FormField* field)
 {
 	fields[i] = field;
 	i++;
@@ -35,13 +35,13 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 
 	int j;
 	for(j=0; j<i; j++){
-		FormField field = this->fields[j];
+		FormField* field = this->fields[j];
 		
 		RECT control;
-		GetWindowRect(field.getControl(), &control);
+		GetWindowRect(field->getControl(), &control);
 
 		RECT label;
-		GetWindowRect(field.getLabel(), &label);
+		GetWindowRect(field->getLabel(), &label);
 
 		int width = (control.right - control.left) + (label.right - label.left) + MARGIN;
 		int height = (control.bottom - control.top) + ROW_MARGIN;
@@ -76,10 +76,10 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 	bool secondColumnBeingFilled = false;
 
 	for(j=0; j<i; j++){
-		FormField field = this->fields[j];
+		FormField* field = this->fields[j];
 	
 		RECT rect;
-		GetWindowRect(field.getControl(), &rect);
+		GetWindowRect(field->getControl(), &rect);
 
 		if ( secondColumnBeingFilled == false && allowSecondColumn &&  y + LAYOUT_MARGIN + (rect.bottom - rect.top) > finalHeight ){
 			//Move to second column
@@ -89,13 +89,13 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 		}
 
 		
-		SetWindowPos(field.getLabel(), HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
-		SetWindowPos(field.getControl(), previousControl, LABEL_WIDTH+MARGIN+x, y, 0, 0, SWP_NOSIZE); 
+		SetWindowPos(field->getLabel(), HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
+		SetWindowPos(field->getControl(), previousControl, LABEL_WIDTH+MARGIN+x, y, 0, 0, SWP_NOSIZE); 
 
-		previousControl = field.getControl();
+		previousControl = field->getControl();
 		
-		ShowWindow(field.getLabel(), SW_SHOW);
-		ShowWindow(field.getControl(), SW_SHOW);
+		ShowWindow(field->getLabel(), SW_SHOW);
+		ShowWindow(field->getControl(), SW_SHOW);
 
 		y += rect.bottom - rect.top + ROW_MARGIN;
 		
@@ -112,6 +112,6 @@ int FormLayout::getFieldCount(){
 	return i;
 }
 
-FormField FormLayout::getField(int index){
+FormField* FormLayout::getField(int index){
 	return fields[index];
 }

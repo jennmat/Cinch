@@ -3,6 +3,7 @@
 
 using namespace std;
 
+namespace Designer {
 
 std::wstring s2ws(const std::string& s)
 {
@@ -27,4 +28,18 @@ std::string ws2s(const std::wstring& s)
     std::string r(buf);
     delete[] buf;
     return r;
+}
+
+
+void UnixTimeToFileTime(time_t t, LPFILETIME pft)
+{
+     // Note that LONGLONG is a 64-bit value
+     LONGLONG ll;
+
+     ll = Int32x32To64(t, 10000000) + 116444736000000000;
+     pft->dwLowDateTime = (DWORD)ll;
+     pft->dwHighDateTime = ll >> 32;
+}
+
+
 }
