@@ -10,7 +10,11 @@ private:
 	HWND control;
 	char* controlType;
 	const wchar_t* name;
+	
+
 public:
+	int controlChildId;
+
 	void setLabel(HWND label);
 	void setControl(HWND control);
 	char* getControlType();
@@ -24,4 +28,6 @@ public:
 	static FormField createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t * label);
+
+	
 };

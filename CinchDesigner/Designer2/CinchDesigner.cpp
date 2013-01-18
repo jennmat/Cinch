@@ -182,25 +182,29 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_EDIT_TABS:
-			DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_TABS), hWnd, EditTabs);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		case IDM_EDIT_FIELDS:
-			DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_FIELDS), hWnd, EditFields);
-			break;
-		case IDM_SAVE_FORM:
-			_this->SaveForm();
-			break;
-		case IDM_OPEN_FORM:
-			_this->ChooseForm();
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+		if ( wmEvent == EN_KILLFOCUS ){
+			_this->getForm()->SaveDocument(wmId);
+		} else {
+			switch (wmId)
+			{
+			case IDM_EDIT_TABS:
+				DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_TABS), hWnd, EditTabs);
+				break;
+			case IDM_EXIT:
+				DestroyWindow(hWnd);
+				break;
+			case IDM_EDIT_FIELDS:
+				DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_FIELDS), hWnd, EditFields);
+				break;
+			case IDM_SAVE_FORM:
+				_this->SaveForm();
+				break;
+			case IDM_OPEN_FORM:
+				_this->ChooseForm();
+				break;
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
+			}
 		}
 		break;
 	case WM_PAINT:

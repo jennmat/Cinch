@@ -139,9 +139,11 @@ void Form::save(wchar_t* filename){
 }
 
 
-void Form::LoadDocument(Document& doc){
-	Value v = doc.getData();
-	Object obj = v.getObject();
+void Form::LoadDocument(Database *_db, Document* doc){
+	id = doc->getID();
+	db = _db;
+	value = doc->getData();
+	Object obj = value.getObject();
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField field = layout.getField(i);
 		const wchar_t* name = field.getName();
@@ -168,6 +170,26 @@ void Form::LoadDocument(Document& doc){
 
 			gridcontrol->reloadData();
 			
+		}
+	}
+}
+
+void Form::SaveDocument(int changedFieldId){
+	for(int i=0; i<layout.getFieldCount(); i++){
+		FormField field = layout.getField(i);
+		if ( field.controlChildId == changedFieldId ){
+			LPWSTR str = new wchar_t[80];
+			GetWindowText(field.getControl(), str, 80);
+			OutputDebugStringW(str);
+			Object obj = value.getObject();
+			string key = ws2s(field.getName());
+			string value = ws2s(str);
+			obj[key.c_str()] = value;
+			Connection conn;
+			
+			Database db2 = conn.getDatabase("property");
+			db2.createDocument(Value(obj), id);
+
 		}
 	}
 }

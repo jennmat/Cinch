@@ -8,13 +8,13 @@ using namespace CouchDB;
 class ArrayOfObjectsDelegate: public GridDelegate {
 
 private:
-	const Array& array;
+	Array array;
 	int rowCount;
 	wstring view;
 	Object lastRead;
 	Object viewResults;
 public:
-	ArrayOfObjectsDelegate(const Array&);
+	ArrayOfObjectsDelegate(Array);
 	int totalRows();
 	int totalColumns();
 	int columnWidth(int column);

@@ -8,8 +8,9 @@ using namespace JsonBox;
 using namespace CouchDB;
 
 
-ArrayOfObjectsDelegate::ArrayOfObjectsDelegate(const Array& _array) : array(_array)
+ArrayOfObjectsDelegate::ArrayOfObjectsDelegate(Array _array)
 {
+	array = _array;
 	rowCount = array.size();
 
 }

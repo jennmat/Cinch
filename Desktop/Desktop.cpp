@@ -222,13 +222,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
-   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("Date Purchased")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Purchase Amount")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Last Appraised Value")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Mortgage Payment")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Minimum Rent")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("Maximum Rent")));
-   d->getForm()->addField(FormField::createRadioGroup(designer, hInst, TEXT("Is Occupied")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("price")));
+   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("purchaseAmount")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("lastAppraisedValue")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("mortgagePayment")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("minimumRent")));
+   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("maximumRent")));
+   d->getForm()->addField(FormField::createRadioGroup(designer, hInst, TEXT("occupied")));
    d->getForm()->addDetail(TEXT("Notes"));
    d->getForm()->addDetail(TEXT("Tenants"));
    d->getForm()->addDetail(TEXT("Inspections"));
@@ -351,7 +352,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Database db = conn.getDatabase("property");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->getForm()->LoadDocument(d);
+		designercontrol->getForm()->LoadDocument(&db, &d);
 		break;
 		}
 	case WM_COMMAND:
@@ -374,6 +375,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
+	case WM_ERASEBKGND:
+		return 1;
 	case WM_SIZE:
 		SizeWindows(hWnd);
 		break;

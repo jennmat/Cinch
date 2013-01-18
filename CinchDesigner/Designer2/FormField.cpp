@@ -30,7 +30,10 @@ char* FormField::getControlType()
 
 FormField FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label)
 {
+	static int fieldId = 12002;
 	FormField field;
+
+	field.controlChildId = fieldId++;
 
 	field.label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -42,7 +45,7 @@ FormField FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t
 	field.controlType = "Edit";
 	field.name = label;
 	field.control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field.controlChildId, hInst, NULL);
 
 	SendMessage(field.control, WM_SETFONT,(WPARAM)hFont,0);
 	
