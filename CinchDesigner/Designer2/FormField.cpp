@@ -30,7 +30,11 @@ char* FormField::getControlType()
 
 FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label)
 {
+	static int fieldId = 12002;
+
 	FormField* field = new EditField();
+
+	field->controlChildId = fieldId++;
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -42,7 +46,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	field->controlType = "Edit";
 	field->name = label;
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
@@ -106,8 +110,10 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 
 FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label)
 {
+	static int fieldId = 130010;
 	FormField* field = new DatePickerField();
 
+	field->controlChildId = fieldId++;
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
@@ -118,8 +124,8 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 	field->controlType = "DatePicker";
 	field->name = label;
 	
-	field->control = CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD|WS_VISIBLE|WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, NULL, hInst, NULL);
+	field->control = CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
@@ -211,6 +217,21 @@ void EditField::loadValue(Object obj){
 	}
 }
 
+void EditField::clearValue(){
+	SetWindowText(getControl(), L"");
+}
+
+Object EditField::storeValue(Object obj){
+	LPWSTR str = new wchar_t[80];
+	GetWindowText(getControl(), str, 80);
+	string key = Designer::ws2s(getName());
+	string value = Designer::ws2s(str);
+	obj[key.c_str()] = value;	
+	return obj;
+}
+
+
+
 
 void DatePickerField::loadValue(Object obj){
 	const wchar_t* name = getName();
@@ -223,14 +244,29 @@ void DatePickerField::loadValue(Object obj){
 		Designer::UnixTimeToFileTime(t, &ft);
 		FileTimeToSystemTime(&ft, &time);
 		DateTime_SetSystemtime(getControl(), GDT_VALID, &time);
-
 	} else {
 		SYSTEMTIME time;
 		GetLocalTime(&time);
 		DateTime_SetSystemtime(getControl(), GDT_VALID, &time);
-
 	}
 }
 
+
+void DatePickerField::clearValue(){
+}
+
+Object DatePickerField::storeValue(Object obj){
+	SYSTEMTIME time;
+	DateTime_GetSystemtime(getControl(), &time);
+	wchar_t* date = new wchar_t[80];
+	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"YYYY-MM-DD", date, 80);
+
+	LPWSTR str = new wchar_t[80];
+	string key = Designer::ws2s(getName());
+	string value = Designer::ws2s(date);
+	obj[key.c_str()] = value;	
+	return obj;
+	
+}
 
 

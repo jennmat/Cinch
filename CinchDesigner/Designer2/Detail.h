@@ -27,6 +27,7 @@ public:
 	void getDetailPageTitle(int, wchar_t*);
 	void CreateTableForPage(int i);
 	void CreateTextareaForPage(int i);
+	HWND GetDetailPage(int i);
 	void ShowPage(int i);
 	void show(HWND parent, HINSTANCE hInst, RECT displayArea);
 

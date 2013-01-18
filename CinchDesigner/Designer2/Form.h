@@ -10,10 +10,13 @@ private:
 	FormLayout layout;
 	Detail detail;
 	HWND parent;
-
+	string id;
+	Value value;
+	Database* db;
 public:
 	Form();
-	void LoadDocument(Document& doc);
+	void LoadDocument(Database*, Document*);
+	void SaveDocument(int changedFieldId);
 	void addField(FormField* field);
 	void addDetail(LPWSTR title);
 	void removeAllDetailPages();

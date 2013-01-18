@@ -15,7 +15,11 @@ private:
 	HWND control;
 	char* controlType;
 	const wchar_t* name;
+	
+
 public:
+	int controlChildId;
+
 	void setLabel(HWND label);
 	void setControl(HWND control);
 	char* getControlType();
@@ -23,6 +27,8 @@ public:
 	HWND getLabel();
 	HWND getControl();
 	virtual void loadValue(Object obj) = 0;
+	virtual void clearValue() = 0;
+	virtual Object storeValue(Object obj) = 0;
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label);
@@ -35,9 +41,13 @@ public:
 class DatePickerField : public FormField {
 public:
 	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
 };
 
 class EditField : public FormField {
 public:
 	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
 };

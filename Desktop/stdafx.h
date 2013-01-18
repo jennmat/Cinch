@@ -20,6 +20,7 @@
 #include "CinchGrid.h"
 #include "CinchDesigner.h"
 #include "CouchViewDelegate.h"
+
 #include "CouchDB.hpp"
 #include "util.h"
 
