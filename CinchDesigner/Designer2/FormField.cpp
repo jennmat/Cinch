@@ -244,9 +244,13 @@ void DatePickerField::loadValue(Object obj){
 		Designer::UnixTimeToFileTime(t, &ft);
 		FileTimeToSystemTime(&ft, &time);
 		DateTime_SetSystemtime(getControl(), GDT_VALID, &time);
-	} else {
+	} else if ( obj[n.c_str()].isString() ){
 		SYSTEMTIME time;
-		GetLocalTime(&time);
+		int month, day, year;
+		sscanf_s(obj[n.c_str()].getString().c_str(), "%d-%d-%d", &year, &month, &day);
+		time.wYear = year;
+		time.wMonth = month;
+		time.wDay = day;
 		DateTime_SetSystemtime(getControl(), GDT_VALID, &time);
 	}
 }
@@ -259,7 +263,7 @@ Object DatePickerField::storeValue(Object obj){
 	SYSTEMTIME time;
 	DateTime_GetSystemtime(getControl(), &time);
 	wchar_t* date = new wchar_t[80];
-	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"YYYY-MM-DD", date, 80);
+	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
 
 	LPWSTR str = new wchar_t[80];
 	string key = Designer::ws2s(getName());
