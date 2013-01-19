@@ -172,6 +172,7 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
     return hPrev; 
 } 
 
+void SizeWindows(HWND hWnd);
 
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
@@ -190,7 +191,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, 0, 1350, 600, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -233,10 +234,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addDetail(TEXT("Notes"));
    d->getForm()->addDetail(TEXT("Tenants"));
    d->getForm()->addDetail(TEXT("Inspections"));
-   d->getForm()->getDetail()->CreateTextareaForPage(0);
-   d->getForm()->getDetail()->CreateTableForPage(1);
-   d->getForm()->getDetail()->CreateTableForPage(2);
+   d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
+   d->getForm()->getDetail()->CreateTableForPage(L"tenants", 1);
+   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 2);
 
+   ShowWindow(grid, SW_SHOW);
+   ShowWindow(designer, SW_SHOW);
 
    SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
    SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right, client.bottom, SW_SHOW);
@@ -276,6 +279,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    ShowWindow(tree, SW_SHOW);
+   SizeWindows(hWnd);
    return TRUE;
 }
 
@@ -352,7 +356,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Database db = conn.getDatabase("property");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->getForm()->LoadDocument(&db, &d);
+		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
 		break;
 		}
 	case WM_KILLFOCUS:

@@ -11,11 +11,10 @@ private:
 	Detail detail;
 	HWND parent;
 	string id;
-	Value value;
-	Database* db;
+	Object obj;
 public:
 	Form();
-	void LoadDocument(Database*, Document*);
+	void LoadDocument(string _id, Object obj);
 	void SaveDocument(int changedFieldId);
 	void addField(FormField* field);
 	void addDetail(LPWSTR title);

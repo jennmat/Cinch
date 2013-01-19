@@ -139,11 +139,9 @@ void Form::save(wchar_t* filename){
 }
 
 
-void Form::LoadDocument(Database *_db, Document* doc){
-	id = doc->getID();
-	db = _db;
-	value = doc->getData();
-	Object obj = value.getObject();
+void Form::LoadDocument(string _id, Object _obj){
+	id = _id;
+	obj = _obj;
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		field->clearValue();
@@ -152,31 +150,21 @@ void Form::LoadDocument(Database *_db, Document* doc){
 	string nickname = obj["nickname"].getString();
 	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
 
-	for(int i=0; i<detail.getDetailPageCount(); i++){
-		if ( i == 2 ){
-			HWND inspectionsDetail = detail.GetDetailPage(i);
-			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(inspectionsDetail, GWL_USERDATA);
-			Array a = obj["inspections"].getArray();
-
-			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(obj["inspections"].getArray());
-			gridcontrol->setDelegate(d);
-
-			gridcontrol->reloadData();
-			
-		}
-	}
+	detail.LoadDocument(obj);
 }
 
 void Form::SaveDocument(int changedFieldId){
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		if ( field->controlChildId == changedFieldId ){
-			Object obj = value.getObject();
 			obj = field->storeValue(obj);
 			Connection conn;
 			
 			Database db2 = conn.getDatabase("property");
-			db2.createDocument(Value(obj), id);
+			Document updatedDoc = db2.createDocument(Value(obj), id);
+			Value v = updatedDoc.getData();
+
+			LoadDocument(id, v.getObject());
 		}
 	}
 }

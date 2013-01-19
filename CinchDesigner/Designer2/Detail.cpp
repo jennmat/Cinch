@@ -50,17 +50,26 @@ void Detail::ShowPage(int i){
 
 }
 
-void Detail::CreateTableForPage(int i){
+void Detail::CreateTableForPage(wchar_t* field, int i){
 	detailPages[i] = CinchGrid::CreateCinchGrid(tabControl, new BlankDelegate());
 	contentType[i] = TABLE_CONTENT;
+	int len = wcslen(field) + sizeof(wchar_t);
+	fieldName[i] = new wchar_t[len];
+	memset(fieldName[i], 0, len);
+	wcscpy_s(fieldName[i], len, field);
 
 	ShowPage(i);
 }
 
-void Detail::CreateTextareaForPage(int i){
+void Detail::CreateTextareaForPage(wchar_t* field, int i){
 	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 						0, 0, CONTROL_WIDTH, 200, tabControl, NULL, GetModuleHandle(0), NULL);
 	contentType[i] = TEXTAREA_CONTENT;
+	int len = wcslen(field) + sizeof(wchar_t);
+	fieldName[i] = new wchar_t[len];
+	memset(fieldName[i], 0, len);
+	wcscpy_s(fieldName[i], len, field);
+
 	HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
 	SendMessage(detailPages[i], WM_SETFONT,(WPARAM)hFont,0);	
 	
@@ -83,9 +92,9 @@ void Detail::load(Object obj)
 
 		string content = tab["content"].getString();
 		if( content.compare("Table") == 0 ){
-			CreateTableForPage(i);
+			//CreateTableForPage(i);
 		} else if ( content.compare("Text") == 0 ){
-			CreateTextareaForPage(i);
+			//CreateTextareaForPage(i);
 		}
 		ShowPage(i);
 		ShowWindow(detail, SW_SHOW);
@@ -125,17 +134,23 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch(message){
 	case WM_COMMAND:
 		{
-			int i = TabCtrl_GetCurSel(self->tabControl);
-			if ( i >= 0 ){
-				int wmId    = LOWORD(wParam);
-				int wmEvent = HIWORD(wParam);
+			int wmId    = LOWORD(wParam);
+			int wmEvent = HIWORD(wParam);
 		
-				if( wmId == IDM_TABULAR ){
-					self->CreateTableForPage(i);
-				} else if ( wmId == IDM_TEXTAREA ){
-					self->CreateTextareaForPage(i);	
-				}
+			if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
+				//_this->getForm()->SaveDocument(wmId);
+				int a = 1;
+			} else {
+				int i = TabCtrl_GetCurSel(self->tabControl);
+				if ( i >= 0 ){
 				
+					if( wmId == IDM_TABULAR ){
+						//self->CreateTableForPage(i);
+					} else if ( wmId == IDM_TEXTAREA ){
+						//self->CreateTextareaForPage(i);	
+					}
+				
+				}
 			}
 		}
 		break;
@@ -285,3 +300,33 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 	//ShowWindow(tab2, SW_SHOW);
 }
 
+
+
+void Detail::LoadDocument(Object obj){
+	for(int i=0; i<getDetailPageCount(); i++){
+		HWND inspectionsDetail = GetDetailPage(i);
+		wchar_t* field = fieldName[i];
+		string f = ws2s(field);
+		const char* cfieldname = f.c_str();
+
+		if ( contentType[i] == TABLE_CONTENT ){ 
+			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(inspectionsDetail, GWL_USERDATA);
+			
+			Array a = obj[cfieldname].getArray();
+
+			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(obj[cfieldname].getArray());
+			gridcontrol->setDelegate(d);
+
+			gridcontrol->reloadData();
+		} else {
+			if ( obj[cfieldname].isString() ){
+				string val = obj[cfieldname].getString();
+				wstring valw = Designer::s2ws(val);
+				LPCWSTR r = valw.c_str();
+				SetWindowText(detailPages[i], r);
+			} else {
+				SetWindowText(detailPages[i], L"");
+			}
+		}
+	}
+}

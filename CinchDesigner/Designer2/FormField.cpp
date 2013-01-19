@@ -171,12 +171,12 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 	field->name = label;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
-		0, 0, CONTROL_WIDTH, 45, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 60, parent, NULL, hInst, NULL);
 
 	HWND option1 = CreateWindowEx(0, L"BUTTON", L"Yes", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, NULL, hInst, NULL);
+		10, 10, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, NULL, hInst, NULL);
 	HWND option2 = CreateWindowEx(0, L"BUTTON", L"No", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		0, 20, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, NULL, hInst, NULL);
+		10, 30, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, NULL, hInst, NULL);
 	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(option1, WM_SETFONT,(WPARAM)hFont,0);

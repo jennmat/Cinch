@@ -23,7 +23,6 @@
 #define IDC_ADD_TO_VISIBLE_TABS                 1013
 #define IDC_REMOVE_FROM_VISIBLE_TABS            1014
 #define IDM_EDIT_FIELDS                         40000
-#define IDS_APP_TITLE                           40000
 #define IDC_VISIBLE_UP                          40002
 #define IDC_VISIBLE_DOWN                        40003
 #define IDC_VISIBLE_FIELDS                      40003

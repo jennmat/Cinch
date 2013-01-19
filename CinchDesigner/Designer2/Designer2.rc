@@ -96,7 +96,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 STRINGTABLE
 {
     IDC_DESIGNER2                 "DESIGNER2"
-    IDS_APP_TITLE                 "Designer2"
 }
 
 
