@@ -22,6 +22,8 @@
 #include "util.h"
 
 // TODO: reference additional headers your program requires here
+class Form;
+
 #include "FormField.h"
 #include "FormLayout.h"
 #include "Detail.h"

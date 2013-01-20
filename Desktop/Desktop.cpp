@@ -366,6 +366,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
+		if ( wmEvent == EN_KILLFOCUS ){
+			int a = 1;
+		}
 		switch (wmId)
 		{
 		case IDM_ABOUT:

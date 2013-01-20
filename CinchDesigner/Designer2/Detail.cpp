@@ -9,7 +9,7 @@ using namespace Designer;
 
 TCHAR detailClassName[] = _T("CinchDetail");
 
-
+#define DETAIL_START_ID 14
 
 void RegisterCinchTabControl()
 {
@@ -32,12 +32,14 @@ void RegisterCinchTabControl()
 }
 
 
-Detail::Detail(){
+Detail::Detail() {
 	detail = NULL;
 	for(int i=0; i<MAX_DETAIL_PAGES; i++){
 		detailPages[i] = NULL;
 	}
 }
+
+
 
 void Detail::ShowPage(int i){
 	RECT tabs;
@@ -63,7 +65,7 @@ void Detail::CreateTableForPage(wchar_t* field, int i){
 
 void Detail::CreateTextareaForPage(wchar_t* field, int i){
 	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
-						0, 0, CONTROL_WIDTH, 200, tabControl, NULL, GetModuleHandle(0), NULL);
+						0, 0, CONTROL_WIDTH, 200, detail, (HMENU)(i+DETAIL_START_ID), GetModuleHandle(0), NULL);
 	contentType[i] = TEXTAREA_CONTENT;
 	int len = wcslen(field) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
@@ -100,6 +102,7 @@ void Detail::load(Object obj)
 		ShowWindow(detail, SW_SHOW);
 	}
 }
+
 
 Array Detail::JsonFormat()
 {
@@ -138,8 +141,7 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			int wmEvent = HIWORD(wParam);
 		
 			if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
-				//_this->getForm()->SaveDocument(wmId);
-				int a = 1;
+				self->getForm()->SaveDocument(wmId);
 			} else {
 				int i = TabCtrl_GetCurSel(self->tabControl);
 				if ( i >= 0 ){
@@ -181,6 +183,7 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
         // if we received the TCN_SELCHANGE message, process it
         // (TCN_SELCHANGE is when the selection changes from
         // one tab item to another)
+		
         if (lpnmhdr->code == TCN_SELCHANGE)
         {
             // get the newly selected tab item
@@ -259,7 +262,7 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 		HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
 		//SendMessage(tab1, WM_SETFONT,(WPARAM)hFont,0);	
 		SendMessage(tabControl, WM_SETFONT,(WPARAM)hFont,0);	
-		//SetWindowSubclass(tabControl, Detail::DetailWndProc, 0, (DWORD_PTR)this);
+		//SetWindowSubclass(tabControl, Detail::WndProc, 0, (DWORD_PTR)this);
 
 		
 	}
@@ -301,6 +304,13 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 }
 
 
+void Detail::setForm(Form *_form){
+	form = _form;
+}
+
+Form * Detail::getForm(){
+	return form;
+}
 
 void Detail::LoadDocument(Object obj){
 	for(int i=0; i<getDetailPageCount(); i++){
@@ -329,4 +339,27 @@ void Detail::LoadDocument(Object obj){
 			}
 		}
 	}
+}
+
+
+Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
+	int page = DETAIL_START_ID - changedFieldId;
+	if ( page >= 0 && page < getDetailPageCount() ){
+		wchar_t* field = fieldName[page];
+		string f = ws2s(field);
+		const char* cfieldname = f.c_str();
+
+		if ( contentType[page] == TEXTAREA_CONTENT ){
+			int len = GetWindowTextLength(detailPages[page]);
+			len++;
+			wchar_t* text = new wchar_t[len];
+			memset(text, 0, len);
+			GetWindowText(detailPages[page], text, len); 
+	
+			string s = Designer::ws2s(text);
+			obj[cfieldname] = s;
+		}
+	}
+
+	return obj;
 }

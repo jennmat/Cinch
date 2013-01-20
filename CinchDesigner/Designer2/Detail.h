@@ -17,9 +17,11 @@ private:
 	wchar_t* fieldName[MAX_DETAIL_PAGES];
 	HWND detail;
 	HWND tabControl;
-	
+	Form* form;
 public:
 	Detail();
+	void setForm(Form *);
+	Form* getForm();
 	Array JsonFormat();
 	void load(Object obj);
 	void addDetailPage(LPWSTR title);
@@ -33,7 +35,7 @@ public:
 	void show(HWND parent, HINSTANCE hInst, RECT displayArea);
 
 	void LoadDocument(Object obj);
-	void StoreDocument();
+	Object StoreValuesToDocument(int changedFieldId, Object obj);
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

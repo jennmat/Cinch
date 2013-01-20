@@ -7,7 +7,7 @@ using namespace JsonBox;
 using namespace std;
 
 Form::Form(){
-
+	detail.setForm(this);
 }
 
 void Form::addField(FormField* field){
@@ -158,15 +158,20 @@ void Form::SaveDocument(int changedFieldId){
 		FormField* field = layout.getField(i);
 		if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
-			Connection conn;
 			
-			Database db2 = conn.getDatabase("property");
-			Document updatedDoc = db2.createDocument(Value(obj), id);
-			Value v = updatedDoc.getData();
-
-			LoadDocument(id, v.getObject());
 		}
 	}
+
+	obj = detail.StoreValuesToDocument(changedFieldId, obj);
+
+	Connection conn;
+	
+	Database db2 = conn.getDatabase("property");
+	Document updatedDoc = db2.createDocument(Value(obj), id);
+	Value v = updatedDoc.getData();
+
+	LoadDocument(id, v.getObject());
+
 }
 
 
