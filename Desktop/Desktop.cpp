@@ -223,20 +223,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("price")));
+   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("price")));
    d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("purchaseAmount")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("lastAppraisedValue")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("mortgagePayment")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("minimumRent")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("maximumRent")));
+   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("purchaseAmount")));
+   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("lastAppraisedValue")));
+   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("mortgagePayment")));
+   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
    d->getForm()->addField(FormField::createRadioGroup(designer, hInst, TEXT("occupied")));
    d->getForm()->addDetail(TEXT("Notes"));
-   d->getForm()->addDetail(TEXT("Tenants"));
    d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"tenants", 1);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 2);
+   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);

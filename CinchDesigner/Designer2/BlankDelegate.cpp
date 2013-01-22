@@ -92,6 +92,9 @@ void BlankDelegate::editingFinished(HWND editor, int row, int col)
 	
 }
 
+void BlankDelegate::willLoseFocus(){
+}
+
 bool BlankDelegate::allowNewRows() {
 	return true;
 }

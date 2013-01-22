@@ -8,13 +8,18 @@ using namespace CouchDB;
 class ArrayOfObjectsDelegate: public GridDelegate {
 
 private:
-	Array array;
 	int rowCount;
 	wstring view;
-	Object lastRead;
-	Object viewResults;
+	vector<vector<wstring> > data;
+	vector<string> fields;
+	vector<wstring> titles;
+	Detail * detail;
+	int fieldId;
 public:
-	ArrayOfObjectsDelegate(Array);
+	ArrayOfObjectsDelegate(Detail *, int);
+	void setData(Array array);
+	void addColumn(string field, wstring title);
+
 	int totalRows();
 	int totalColumns();
 	int columnWidth(int column);
@@ -35,6 +40,7 @@ public:
 	void setupEditorForCell(HWND editor, int row, int col);
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
 	void editingFinished(HWND editor, int row, int col);
+	void willLoseFocus();
 
 	bool allowNewRows();
 	bool allowNewColumns();
@@ -42,4 +48,6 @@ public:
 
 	HFONT getFont();
 	HFONT getEditFont();
+
+	Array storeValuesToArray(Array obj);
 };

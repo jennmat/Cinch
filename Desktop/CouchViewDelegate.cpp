@@ -132,6 +132,9 @@ HWND CouchViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
 void CouchViewDelegate::editingFinished(HWND hwnd, int row, int col){
 }
 
+void CouchViewDelegate::willLoseFocus(){
+}
+
 bool CouchViewDelegate::allowNewRows(){
 	return false;
 }

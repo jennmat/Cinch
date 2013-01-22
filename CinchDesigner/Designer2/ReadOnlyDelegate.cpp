@@ -70,6 +70,9 @@ void ReadOnlyDelegate::editingFinished(HWND editor, int row, int col)
 	
 }
 
+void ReadOnlyDelegate::willLoseFocus(){
+}
+
 bool ReadOnlyDelegate::allowNewRows() {
 	return true;
 }

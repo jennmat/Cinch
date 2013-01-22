@@ -76,6 +76,7 @@
     <ClInclude Include="..\..\JsonBox\include\JsonBox\Value.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\JsonBox\examples\main.cpp" />
     <ClCompile Include="..\..\JsonBox\src\Array.cpp" />
     <ClCompile Include="..\..\JsonBox\src\Convert.cpp" />
     <ClCompile Include="..\..\JsonBox\src\Escaper.cpp" />

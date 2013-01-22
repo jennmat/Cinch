@@ -74,5 +74,8 @@
     <ClCompile Include="..\..\JsonBox\src\Value.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JsonBox\examples\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

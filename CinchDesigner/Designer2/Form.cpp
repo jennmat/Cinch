@@ -163,7 +163,7 @@ void Form::SaveDocument(int changedFieldId){
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
-
+	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
 	Database db2 = conn.getDatabase("property");

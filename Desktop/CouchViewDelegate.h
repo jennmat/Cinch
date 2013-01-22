@@ -37,6 +37,7 @@ public:
 	void setupEditorForCell(HWND editor, int row, int col);
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
 	void editingFinished(HWND editor, int row, int col);
+	void willLoseFocus();
 
 	bool allowNewRows();
 	bool allowNewColumns();

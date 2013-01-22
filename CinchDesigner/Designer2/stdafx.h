@@ -32,6 +32,7 @@ class Form;
 #include "BlankDelegate.h"
 #include "ArrayOfObjectsDelegate.h"
 #include "util.h"
+#include "MaskEdit.h"
 
 #include "CinchGrid.h"
 #include "CinchDesigner.h"

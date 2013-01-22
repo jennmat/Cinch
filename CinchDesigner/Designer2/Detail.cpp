@@ -48,12 +48,10 @@ void Detail::ShowPage(int i){
 	GetClientRect(tabControl, &tabControlClient);
 	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom, 0);
 	ShowWindow(detailPages[i], SW_SHOW);
-	
-
 }
 
 void Detail::CreateTableForPage(wchar_t* field, int i){
-	detailPages[i] = CinchGrid::CreateCinchGrid(tabControl, new BlankDelegate());
+	detailPages[i] = CinchGrid::CreateCinchGrid(detail, new BlankDelegate());
 	contentType[i] = TABLE_CONTENT;
 	int len = wcslen(field) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
@@ -155,6 +153,9 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				}
 			}
 		}
+		break;
+	case WM_KILLFOCUS:
+		OutputDebugStringW(TEXT("lost focus\n"));
 		break;
 	case WM_NCCREATE:
 		{
@@ -314,17 +315,20 @@ Form * Detail::getForm(){
 
 void Detail::LoadDocument(Object obj){
 	for(int i=0; i<getDetailPageCount(); i++){
-		HWND inspectionsDetail = GetDetailPage(i);
+		HWND detail = GetDetailPage(i);
 		wchar_t* field = fieldName[i];
 		string f = ws2s(field);
 		const char* cfieldname = f.c_str();
 
 		if ( contentType[i] == TABLE_CONTENT ){ 
-			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(inspectionsDetail, GWL_USERDATA);
+			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			
 			Array a = obj[cfieldname].getArray();
 
-			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(obj[cfieldname].getArray());
+			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
+			d->addColumn("date", L"Date");
+			d->addColumn("result", L"Result");
+			d->setData(obj[cfieldname].getArray());
 			gridcontrol->setDelegate(d);
 
 			gridcontrol->reloadData();
@@ -348,7 +352,8 @@ Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
 		wchar_t* field = fieldName[page];
 		string f = ws2s(field);
 		const char* cfieldname = f.c_str();
-
+		HWND detail = GetDetailPage(page);
+		
 		if ( contentType[page] == TEXTAREA_CONTENT ){
 			int len = GetWindowTextLength(detailPages[page]);
 			len++;
@@ -358,6 +363,14 @@ Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
 	
 			string s = Designer::ws2s(text);
 			obj[cfieldname] = s;
+		} else if ( contentType[page] == TABLE_CONTENT ){
+			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
+			
+			ArrayOfObjectsDelegate * d = (ArrayOfObjectsDelegate *)gridcontrol->getDelegate();
+
+			Array a = obj[cfieldname].getArray();
+			Array updated = d->storeValuesToArray(a);
+			obj[cfieldname] = updated;
 		}
 	}
 

@@ -91,6 +91,7 @@
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormField.h" />
     <ClInclude Include="FormLayout.h" />
+    <ClInclude Include="MaskEdit.h" />
     <ClInclude Include="ReadOnlyDelegate.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -106,6 +107,7 @@
     <ClCompile Include="FormField.cpp" />
     <ClCompile Include="FormLayout.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MaskEdit.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="ReadOnlyDelegate.cpp" />
     <ClCompile Include="stdafx.cpp">

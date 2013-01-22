@@ -53,11 +53,39 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	return field;
 }
 
+
+
+FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wchar_t * label)
+{
+	static int fieldId = 13001;
+
+	FormField* field = new NumberField();
+
+	field->controlChildId = fieldId++;
+
+
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+
+	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+
+	field->controlType = "Edit";
+	field->name = label;
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
+
+	MaskEditControl(field->control, "0123456789\b", TRUE);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	return field;
+}
+
 const wchar_t* FormField::getName(){
 	return name;
 }
-
-
 
 
 FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t * label)
@@ -273,4 +301,30 @@ Object DatePickerField::storeValue(Object obj){
 	
 }
 
+void NumberField::loadValue(Object obj){
+	const wchar_t* name = getName();
+	string n = Designer::ws2s(name);
+	if ( obj[n.c_str()].isInteger() ){
+		int val = obj[n.c_str()].getInt();
+		wchar_t* w = new wchar_t[80];
+		memset(w, 0, 80);
+		_itow_s(val, w, 80, 10);
+		SetWindowText(getControl(), w); 
+	}
+}
+
+void NumberField::clearValue(){
+	SetWindowText(getControl(), L"");
+}
+
+Object NumberField::storeValue(Object obj){
+	LPWSTR str = new wchar_t[80];
+	GetWindowText(getControl(), str, 80);
+	long val = _wtol(str);
+	string key = Designer::ws2s(getName());
+	
+	
+	obj[key.c_str()] = val;	
+	return obj;
+}
 

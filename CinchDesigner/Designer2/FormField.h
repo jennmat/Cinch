@@ -30,6 +30,7 @@ public:
 	virtual void clearValue() = 0;
 	virtual Object storeValue(Object obj) = 0;
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label);
+	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
@@ -46,6 +47,14 @@ public:
 };
 
 class EditField : public FormField {
+public:
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+};
+
+
+class NumberField : public FormField {
 public:
 	void loadValue(Object obj);
 	void clearValue();
