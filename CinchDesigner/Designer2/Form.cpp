@@ -156,10 +156,10 @@ void Form::LoadDocument(string _id, Object _obj){
 void Form::SaveDocument(int changedFieldId){
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
-		if ( field->controlChildId == changedFieldId ){
+		//if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
 			
-		}
+		//}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);

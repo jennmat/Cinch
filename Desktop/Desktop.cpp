@@ -229,7 +229,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("lastAppraisedValue")));
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("mortgagePayment")));
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
-   d->getForm()->addField(FormField::createRadioGroup(designer, hInst, TEXT("occupied")));
+   d->getForm()->addField(FormField::createYesNoField(designer, hInst, TEXT("occupied")));
    d->getForm()->addDetail(TEXT("Notes"));
    d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);

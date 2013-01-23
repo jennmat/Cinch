@@ -213,6 +213,42 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 }
 
 
+FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t * label)
+{
+	static int fieldId = 70010;
+	
+	FormField* field = new YesNoField();
+	field->controlChildId = fieldId++;
+	
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+
+	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+
+	field->controlType = "Radio";
+	field->name = label;
+	
+	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
+		0, 0, CONTROL_WIDTH, 60, parent, NULL, hInst, NULL);
+
+	NotifyParentControl(field->control);
+
+	HWND option1 = CreateWindowEx(0, L"BUTTON", L"Yes", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
+		10, 10, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)YES_RADIO, hInst, NULL);
+	HWND option2 = CreateWindowEx(0, L"BUTTON", L"No", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
+		10, 30, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)NO_RADIO, hInst, NULL);
+	
+	
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(option1, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(option2, WM_SETFONT,(WPARAM)hFont,0);
+	return field;
+}
+
+
+
 FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t * label)
 {
 	FormField* field = new EditField();
@@ -319,12 +355,48 @@ void NumberField::clearValue(){
 
 Object NumberField::storeValue(Object obj){
 	LPWSTR str = new wchar_t[80];
-	GetWindowText(getControl(), str, 80);
-	long val = _wtol(str);
 	string key = Designer::ws2s(getName());
-	
-	
-	obj[key.c_str()] = val;	
+	if ( GetWindowTextLength(getControl()) > 0 ){
+		GetWindowText(getControl(), str, 80);
+		long val = _wtol(str);
+		
+		obj[key.c_str()] = val;	
+	} else {
+		obj[key.c_str()] = Value();
+	}
 	return obj;
 }
 
+
+void YesNoField::loadValue(Object obj){
+	const wchar_t* name = getName();
+	string n = Designer::ws2s(name);
+	if ( obj[n.c_str()].isBoolean() ){
+		bool val = obj[n.c_str()].getBoolean();
+		if ( val ){
+			CheckDlgButton(getControl(), YES_RADIO, BST_CHECKED);
+			CheckDlgButton(getControl(), NO_RADIO, BST_UNCHECKED);
+		} else {
+			CheckDlgButton(getControl(), NO_RADIO, BST_CHECKED);
+			CheckDlgButton(getControl(), YES_RADIO, BST_UNCHECKED);
+		}
+	}
+}
+
+void YesNoField::clearValue(){
+	CheckDlgButton(getControl(), YES_RADIO, BST_UNCHECKED);
+	CheckDlgButton(getControl(), NO_RADIO, BST_UNCHECKED);	
+}
+
+Object YesNoField::storeValue(Object obj){
+	LPWSTR str = new wchar_t[80];
+	string key = Designer::ws2s(getName());
+	
+	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
+		obj[key.c_str()] = true;	
+	} else if ( IsDlgButtonChecked(getControl(), NO_RADIO ) ) {
+		obj[key.c_str()] = false;	
+	}
+	
+	return obj;
+}

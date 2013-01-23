@@ -92,6 +92,7 @@
     <ClInclude Include="FormField.h" />
     <ClInclude Include="FormLayout.h" />
     <ClInclude Include="MaskEdit.h" />
+    <ClInclude Include="NotifyParent.h" />
     <ClInclude Include="ReadOnlyDelegate.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -108,6 +109,7 @@
     <ClCompile Include="FormLayout.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MaskEdit.cpp" />
+    <ClCompile Include="NotifyParent.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="ReadOnlyDelegate.cpp" />
     <ClCompile Include="stdafx.cpp">

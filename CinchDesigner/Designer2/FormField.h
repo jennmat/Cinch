@@ -35,6 +35,7 @@ public:
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t * label);
+	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t * label);
 	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t * label);
 };
 
@@ -55,6 +56,16 @@ public:
 
 
 class NumberField : public FormField {
+public:
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+};
+
+#define YES_RADIO 130908
+#define NO_RADIO 130909
+
+class YesNoField : public FormField {
 public:
 	void loadValue(Object obj);
 	void clearValue();

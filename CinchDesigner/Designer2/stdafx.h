@@ -33,6 +33,7 @@ class Form;
 #include "ArrayOfObjectsDelegate.h"
 #include "util.h"
 #include "MaskEdit.h"
+#include "NotifyParent.h"
 
 #include "CinchGrid.h"
 #include "CinchDesigner.h"

@@ -41,11 +41,9 @@ int ArrayOfObjectsDelegate::totalColumns(){
 	return fields.size();
 }
 
-
 int ArrayOfObjectsDelegate::columnWidth(int col){
 	return 200;
 }
-
 
 int ArrayOfObjectsDelegate::rowHeight(){
 	return 25;

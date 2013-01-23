@@ -192,12 +192,15 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		case DTN_DATETIMECHANGE:
 			_this->getForm()->SaveDocument(((LPNMHDR)lParam)->idFrom);
 			break;
-        }
+		}
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
-		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
+		if ( wmEvent == BN_CLICKED ){
+			_this->getForm()->SaveDocument(wmId);
+		}
+		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == BN_KILLFOCUS){
 			_this->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)

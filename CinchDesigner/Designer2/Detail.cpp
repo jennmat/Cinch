@@ -138,7 +138,7 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			int wmId    = LOWORD(wParam);
 			int wmEvent = HIWORD(wParam);
 		
-			if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
+			if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == BN_KILLFOCUS ){
 				self->getForm()->SaveDocument(wmId);
 			} else {
 				int i = TabCtrl_GetCurSel(self->tabControl);
