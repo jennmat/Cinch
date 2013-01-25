@@ -17,6 +17,7 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include "Toolbar.h"
 #include "CinchGrid.h"
 #include "CinchDesigner.h"
 #include "CouchViewDelegate.h"

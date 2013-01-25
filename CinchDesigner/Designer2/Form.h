@@ -14,6 +14,7 @@ private:
 	Object obj;
 public:
 	Form();
+	void NewDocument();
 	void LoadDocument(string _id, Object obj);
 	void SaveDocument(int changedFieldId);
 	void addField(FormField* field);

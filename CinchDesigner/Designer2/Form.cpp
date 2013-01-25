@@ -138,6 +138,10 @@ void Form::save(wchar_t* filename){
 	v.writeToFile(cfilename);
 }
 
+void Form::NewDocument(){
+	Object * obj = new Object();
+	LoadDocument("", *obj);
+}
 
 void Form::LoadDocument(string _id, Object _obj){
 	id = _id;

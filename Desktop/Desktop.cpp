@@ -14,6 +14,7 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
+#define TOOLBAR_HEIGHT 54
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -39,7 +40,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HACCEL hAccelTable;
 
 	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	//LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_DESKTOP, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
@@ -209,8 +210,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
   
-
-
+   toolbar = CreateCinchToolbar(hWnd);
+   ShowWindow(toolbar, SW_SHOW);
+   UpdateWindow(toolbar);
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -238,9 +240,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
 
-   SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
-   SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right, client.bottom, SW_SHOW);
-
+ 
    Database db = conn.getDatabase("property");
    Object views = db.listViews();
 
@@ -284,12 +284,12 @@ void SizeWindows(HWND hWnd)
 {
 	RECT client;
 	GetClientRect(hWnd, &client);
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, LIST_WIDTH, client.bottom, 0);
-	SetWindowPos(tree, HWND_TOP, 0, 0, TREE_WIDTH, client.bottom, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
-
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, TOOLBAR_HEIGHT, LIST_WIDTH, client.bottom, 0);
+	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
+	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
+	SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
 }
-
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -371,6 +371,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
+		case IDM_NEW_DOCUMENT:
+			{
+			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+			designercontrol->getForm()->NewDocument();
+			break;
+			}
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
