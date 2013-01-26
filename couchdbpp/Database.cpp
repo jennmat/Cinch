@@ -202,6 +202,11 @@ Document Database::createDocument(Value data,
    return doc;
 }
 
+
+void Database::listenForChanges(void (*changesArrivedFunc)()){
+	comm.readChangesFeed(name, changesArrivedFunc);
+}
+
 ostream& operator<<(ostream &out, const CouchDB::Database &db){
    return out << "<Database: " << db.getName() << ">";
 }

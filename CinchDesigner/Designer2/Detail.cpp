@@ -331,7 +331,7 @@ void Detail::LoadDocument(Object obj){
 			d->setData(obj[cfieldname].getArray());
 			gridcontrol->setDelegate(d);
 
-			gridcontrol->reloadData();
+			gridcontrol->reloadData(false);
 		} else {
 			if ( obj[cfieldname].isString() ){
 				string val = obj[cfieldname].getString();

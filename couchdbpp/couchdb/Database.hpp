@@ -54,6 +54,8 @@ class Database{
 
 	  vector<Document> documentsVectorFromValue(const Value& value);
 
+	  void listenForChanges(void (*)());
+
    protected:
       Communication& getCommunication();
 

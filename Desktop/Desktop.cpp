@@ -187,8 +187,6 @@ void SizeWindows(HWND hWnd);
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
-
    hInst = hInstance; // Store instance handle in our global variable
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
@@ -233,9 +231,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
    d->getForm()->addField(FormField::createYesNoField(designer, hInst, TEXT("occupied")));
    d->getForm()->addDetail(TEXT("Notes"));
-   d->getForm()->addDetail(TEXT("Inspections"));
+   //d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
+   //d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
@@ -277,6 +275,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(tree, SW_SHOW);
    SizeWindows(hWnd);
+
+   DWORD threadId;
+   CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+
    return TRUE;
 }
 
@@ -337,13 +339,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 				
-				gridcontrol->reloadData();
+				gridcontrol->reloadData(false);
 
 			}
 
 		}
 		break;
 		}
+	case WM_NEW_DATA_ARRIVED:
+		{
+		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+		delegate->loadViewResults();			
+		gridcontrol->reloadData(true);
+		}
+		break;
 	case CINCHGRID_ROW_SELECTED:
 		{
 		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
@@ -356,9 +365,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
 		break;
 		}
-	case WM_KILLFOCUS:
-		OutputDebugStringW(TEXT("Lost focus in desktop"));
-		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -423,4 +429,17 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+void changesArrived(){
+	PostMessage(hWnd, WM_NEW_DATA_ARRIVED, 0, 0);
+}
+
+DWORD WINAPI ChangesListener(LPVOID lParam){
+
+	Connection conn;
+	Database db = conn.getDatabase("property");
+	db.listenForChanges(changesArrived);
+
+	return 0;
 }

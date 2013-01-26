@@ -55,6 +55,8 @@ class Communication{
                       const std::string &method = "GET",
                       const std::string &data = "");
 
+	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
+
       std::string getRawData(const std::string&);
    private:
       void init(const std::string&);

@@ -11,13 +11,23 @@ using namespace CouchDB;
 CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 {
 	rowCount = 0;
+	viewInitialized = false;
 }
 
-void CouchViewDelegate::setView(const wstring& design, const wstring& _view)
+void CouchViewDelegate::setView(const wstring& _design, const wstring& _view)
 {
 	view = _view;
+	design = _design;
+	viewInitialized = true;
+	loadViewResults();
+}
+
+void CouchViewDelegate::loadViewResults(){
+
+	if ( viewInitialized == false ) return;
+
 	Database db = conn.getDatabase("property");
-	
+
 	string s = ws2s(design);
 	int ix = s.find("/");
 	s = s.substr(ix);
@@ -158,7 +168,7 @@ HFONT CouchViewDelegate::getEditFont(){
 
 
 string CouchViewDelegate::getDocumentIdForRow(int row){
-
+	if( row < 0 ) return "";
 	if (viewResults["total_rows"].getInt() > 0 ){
 	   Array rows = viewResults["rows"].getArray();
 	   Object o = rows[row].getObject();

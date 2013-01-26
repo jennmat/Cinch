@@ -12,6 +12,8 @@ private:
 	int rowCount;
 	wchar_t** data;
 	wstring view;
+	wstring design;
+	bool viewInitialized;
 	Object lastRead;
 	Object viewResults;
 public:
@@ -47,4 +49,5 @@ public:
 	HFONT getEditFont();
 
 	void setView(const wstring&, const wstring&);
+	void loadViewResults();
 };
