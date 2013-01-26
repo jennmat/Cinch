@@ -47,6 +47,9 @@
     <ClInclude Include="Toolbar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Replication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -1,6 +1,7 @@
 
-<!-- saved from url=(0062)https://raw.github.com/jennmat/CinchDesigner/master/.gitignore -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">#OS junk files
+
+Desktop/Replication.h
+
 [Tt]humbs.db
 *.DS_Store
 
@@ -63,4 +64,4 @@ packages/
 *.dbmdl
 
 #Test files
-*.testsettings</pre></body></html>
+*.testsettings

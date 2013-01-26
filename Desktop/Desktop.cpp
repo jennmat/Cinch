@@ -231,9 +231,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
    d->getForm()->addField(FormField::createYesNoField(designer, hInst, TEXT("occupied")));
    d->getForm()->addDetail(TEXT("Notes"));
-   //d->getForm()->addDetail(TEXT("Inspections"));
+   d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   //d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
+   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
@@ -279,6 +279,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    DWORD threadId;
    CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
+#ifdef REPLICATION
+   db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
+#endif 
    return TRUE;
 }
 
