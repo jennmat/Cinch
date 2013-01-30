@@ -6,11 +6,17 @@
 
 CouchViewDelegate* delegate;
 
+class Desktop : public FormDelegate {
+	void formModified();
+};
+
 HWND hWnd; //Main window
 HWND grid;
 HWND tree;
 HWND designer;
 HWND toolbar;
+
+Desktop desktop;
 
 CouchDB::Connection conn;
 

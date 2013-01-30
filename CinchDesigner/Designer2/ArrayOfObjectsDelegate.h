@@ -13,6 +13,7 @@ private:
 	vector<vector<wstring> > data;
 	vector<string> fields;
 	vector<wstring> titles;
+	vector<int> widths;
 	Detail * detail;
 	int fieldId;
 public:
@@ -50,4 +51,7 @@ public:
 	HFONT getEditFont();
 
 	Array storeValuesToArray(Array obj);
+
+	void deserializeUIElements(Object obj);
+	Object serializeUIElements();
 };

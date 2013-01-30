@@ -21,6 +21,7 @@ int ArrayOfObjectsDelegate::totalRows()
 void ArrayOfObjectsDelegate::addColumn(std::string field, std::wstring title){
 	fields.push_back(field);
 	titles.push_back(title);
+	widths.push_back(250);
 }
 
 void ArrayOfObjectsDelegate::setData(Array array){
@@ -42,7 +43,7 @@ int ArrayOfObjectsDelegate::totalColumns(){
 }
 
 int ArrayOfObjectsDelegate::columnWidth(int col){
-	return 200;
+	return widths[col];
 }
 
 int ArrayOfObjectsDelegate::rowHeight(){
@@ -180,5 +181,37 @@ Array ArrayOfObjectsDelegate::storeValuesToArray(Array a){
 	}
 
 	return a;
+}
+
+void ArrayOfObjectsDelegate::deserializeUIElements(Object obj){
+	fields.clear();
+	titles.clear();
+	widths.clear();
+	if( obj["columns"].isArray() ){
+		Array columns = obj["columns"].getArray();
+		for(unsigned int i=0; i<columns.size(); i++){
+			Object col = columns[i].getObject();
+			fields.push_back(col["field"].getString());
+			titles.push_back(Designer::s2ws(col["field"].getString()));
+			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
+				widths.push_back(col["width"].getInt());
+			} else {
+				widths.push_back(250);
+			}
+		}
+	}
+}
+
+Object ArrayOfObjectsDelegate::serializeUIElements(){
+	Object o;
+	Array columns;
+	for(unsigned int i=0; i<fields.size(); i++){
+		Object col;
+		col["field"] = Value(fields[i]);
+		col["width"] = Value(250);
+		columns.push_back(col);
+	}
+	o["columns"] = columns;
+	return o;
 }
 

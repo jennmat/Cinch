@@ -131,7 +131,8 @@ vector<Document> Database::listDocuments(){
 }
 
 Document Database::getDocument(const string &id, const string &rev){
-   string url = "/" + name + "/" + id;
+	char * escaped = curl_easy_escape(comm.curl, id.c_str(), id.size());
+   string url = "/" + name + "/" + escaped;
    if(rev.size() > 0)
       url += "?rev=" + rev;
 

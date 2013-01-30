@@ -22,14 +22,14 @@ public:
 	Detail();
 	void setForm(Form *);
 	Form* getForm();
-	Array JsonFormat();
-	void load(Object obj);
+	Array serializeUIElements();
+	void deserializeUIElements(Object obj);
 	void addDetailPage(LPWSTR title);
 	void removeAllDetailPages();
 	int getDetailPageCount();
 	void getDetailPageTitle(int, wchar_t*);
-	void CreateTableForPage(wchar_t*, int i);
-	void CreateTextareaForPage(wchar_t*, int i);
+	void CreateTableForPage(const wchar_t*, GridDelegate* delegate, int i);
+	void CreateTextareaForPage(const wchar_t*, int i);
 	HWND GetDetailPage(int i);
 	void ShowPage(int i);
 	void show(HWND parent, HINSTANCE hInst, RECT displayArea);

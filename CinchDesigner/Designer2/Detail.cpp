@@ -50,8 +50,8 @@ void Detail::ShowPage(int i){
 	ShowWindow(detailPages[i], SW_SHOW);
 }
 
-void Detail::CreateTableForPage(wchar_t* field, int i){
-	detailPages[i] = CinchGrid::CreateCinchGrid(detail, new BlankDelegate());
+void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, int i){
+	detailPages[i] = CinchGrid::CreateCinchGrid(detail, delegate);
 	contentType[i] = TABLE_CONTENT;
 	int len = wcslen(field) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
@@ -61,7 +61,7 @@ void Detail::CreateTableForPage(wchar_t* field, int i){
 	ShowPage(i);
 }
 
-void Detail::CreateTextareaForPage(wchar_t* field, int i){
+void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 						0, 0, CONTROL_WIDTH, 200, detail, (HMENU)(i+DETAIL_START_ID), GetModuleHandle(0), NULL);
 	contentType[i] = TEXTAREA_CONTENT;
@@ -80,21 +80,23 @@ HWND Detail::GetDetailPage(int i){
 	return detailPages[i];
 }
 
-void Detail::load(Object obj)
+void Detail::deserializeUIElements(Object obj)
 {
 	Array tabs = obj["tabs"].getArray();
 
 	for(unsigned int i=0; i<tabs.size(); i++){
 		Object tab = tabs[i].getObject();
-		string title = tab["title"].getString();
-		wstring wtitle = s2ws(title);
+		string name = tab["name"].getString();
+		wstring wtitle = s2ws(name);
 		addDetailPage(LPWSTR(wtitle.c_str()));
 
 		string content = tab["content"].getString();
 		if( content.compare("Table") == 0 ){
-			//CreateTableForPage(i);
+			ArrayOfObjectsDelegate* delegate = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
+			delegate->deserializeUIElements(tab["config"].getObject());
+			CreateTableForPage(s2ws(name).c_str(), delegate, i);
 		} else if ( content.compare("Text") == 0 ){
-			//CreateTextareaForPage(i);
+			CreateTextareaForPage(s2ws(name).c_str(), i);
 		}
 		ShowPage(i);
 		ShowWindow(detail, SW_SHOW);
@@ -102,7 +104,7 @@ void Detail::load(Object obj)
 }
 
 
-Array Detail::JsonFormat()
+Array Detail::serializeUIElements()
 {
 	Array tabs;
 
@@ -115,9 +117,13 @@ Array Detail::JsonFormat()
 		wcstombs_s(&t, ctitle, 80, title, 80);
 
 		Object tab;
-		tab["title"] = Value(ctitle);
+		tab["name"] = Value(ctitle);
 		if ( contentType[i] == TABLE_CONTENT ){
 			tab["content"] = Value("Table");
+			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
+			ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
+			tab["config"] = delegate->serializeUIElements();
+
 		} else if (contentType[i] == TEXTAREA_CONTENT ){
 			tab["content"] = Value("Text");
 		}
@@ -149,7 +155,6 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					} else if ( wmId == IDM_TEXTAREA ){
 						//self->CreateTextareaForPage(i);	
 					}
-				
 				}
 			}
 		}
@@ -325,13 +330,15 @@ void Detail::LoadDocument(Object obj){
 			
 			Array a = obj[cfieldname].getArray();
 
-			ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
+			/*ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
 			d->addColumn("date", L"Date");
 			d->addColumn("result", L"Result");
 			d->setData(obj[cfieldname].getArray());
-			gridcontrol->setDelegate(d);
+			gridcontrol->setDelegate(d);*/
+			ArrayOfObjectsDelegate * d = (ArrayOfObjectsDelegate *)gridcontrol->getDelegate();
+			d->setData(obj[cfieldname].getArray());
 
-			gridcontrol->reloadData(false);
+			gridcontrol->reloadData();
 		} else {
 			if ( obj[cfieldname].isString() ){
 				string val = obj[cfieldname].getString();

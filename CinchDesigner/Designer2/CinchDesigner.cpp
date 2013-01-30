@@ -341,7 +341,9 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			GetWindowRect(hWnd, &window);
 
 			_this->getForm()->show(hWnd, GetModuleHandle(0));
-
+			if( _this->getForm()->getDelegate() != 0 ){
+				_this->getForm()->getDelegate()->formModified();
+			}
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}

@@ -12,8 +12,12 @@ private:
 	HWND parent;
 	string id;
 	Object obj;
+
+	FormDelegate* delegate;
 public:
 	Form();
+	void setDelegate(FormDelegate *);
+	FormDelegate* getDelegate();
 	void NewDocument();
 	void LoadDocument(string _id, Object obj);
 	void SaveDocument(int changedFieldId);
@@ -25,6 +29,8 @@ public:
 	void adjust(HWND parent, HINSTANCE hInst);
 	int minWidth();
 	int minHeight();
+	Value serializeForm();
+	void deserializeForm(HWND parent, Value v);
 	void save(wchar_t* filename);
 	void open(HWND parent, wchar_t* filename);
 };

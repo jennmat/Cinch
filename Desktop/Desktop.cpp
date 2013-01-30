@@ -219,9 +219,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
-
+   
+   Database db = conn.getDatabase("property");
+   
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
+   
+   d->getForm()->setDelegate(&desktop);
+   /*d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("price")));
    d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
@@ -233,13 +237,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addDetail(TEXT("Notes"));
    d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
+   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
+
+   Document doc = db.getDocument("template/property");
+   Value v = doc.getData();
+   d->getForm()->deserializeForm(designer, v);
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
 
  
-   Database db = conn.getDatabase("property");
    Object views = db.listViews();
 
    if ( views["total_rows"].getInt() > 0 ){
@@ -342,7 +349,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 				
-				gridcontrol->reloadData(false);
+				gridcontrol->reloadData();
 
 			}
 
@@ -353,7 +360,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 		delegate->loadViewResults();			
-		gridcontrol->reloadData(true);
+		gridcontrol->reloadData();
 		}
 		break;
 	case CINCHGRID_ROW_SELECTED:
@@ -446,3 +453,15 @@ DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	return 0;
 }
+
+void Desktop::formModified(){
+	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+   
+	Value v = d->getForm()->serializeForm();
+
+	Connection conn;
+	Database db = conn.getDatabase("property");
+
+	db.createDocument(v, "template/property");
+}
+

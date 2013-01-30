@@ -46,6 +46,8 @@ class Document{
       const std::string& getKey() const;
       const std::string& getRevision() const;
 
+	  const std::string getEscapedID() const;
+
       std::vector<Revision> getAllRevisions();
 
       Value getData();
