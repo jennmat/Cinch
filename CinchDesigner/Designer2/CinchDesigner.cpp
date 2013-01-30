@@ -278,13 +278,31 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	{
 	case WM_INITDIALOG:
 		{
-		return (INT_PTR)TRUE;
+
+			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
+			int count = _this->getForm()->getLayout()->getFieldCount();
+			for(int i=0; i<count; i++){
+				FormField* field = _this->getForm()->getLayout()->getField(i);
+				HWND label = field->getLabel();
+				wchar_t title[80];
+				GetWindowText(label, title, 80);
+				SendMessage(visibleFields, LB_ADDSTRING, i+1, (LPARAM) title); 
+		
+			}
+		
+		
+			return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:
+		if ( LOWORD(wParam) == IDCANCEL ){
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
 		if (LOWORD(wParam) == IDOK)
 		{
 			HWND fields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
 			int count = ListBox_GetCount(fields);
+			_this->getForm()->removeAllFields();
 			for(int i=0; i<count; i++){
 				wchar_t szFieldName[80];
 				ListBox_GetText(fields, i, szFieldName);
@@ -301,7 +319,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 						field = FormField::createMultilineText(hWnd, GetModuleHandle(0), szFieldName);
 						break;
 					case 3:
-						field = FormField::createRadioGroup(hWnd, GetModuleHandle(0), szFieldName);
+						field = FormField::createYesNoField(hWnd, GetModuleHandle(0), szFieldName);
 						break;
 					case 4:
 						field = FormField::createRadioGroup(hWnd, GetModuleHandle(0), szFieldName);
@@ -392,6 +410,12 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected-1, text);
 				ListBox_SetCurSel(visible, selected-1);
+
+				int temp;
+				temp = newFieldTypes[selected];
+				newFieldTypes[selected] = newFieldTypes[selected-1];
+				newFieldTypes[selected-1] = temp;
+				
 			}
 		}
 		else if ( LOWORD(wParam) == IDC_FIELD_DOWN )

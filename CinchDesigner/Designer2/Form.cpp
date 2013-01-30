@@ -8,6 +8,7 @@ using namespace std;
 
 Form::Form(){
 	detail.setForm(this);
+	hasDocument = false;
 }
 
 void Form::addField(FormField* field){
@@ -22,6 +23,10 @@ void Form::removeAllDetailPages(){
 	detail.removeAllDetailPages();
 }
 
+void Form::removeAllFields(){
+	layout.removeAllFields();
+}
+
 int Form::minHeight()
 {
 	return 250;
@@ -34,6 +39,10 @@ int Form::minWidth()
 
 Detail* Form::getDetail(){
 	return &detail;
+}
+
+FormLayout* Form::getLayout(){
+	return &layout;
 }
 
 void Form::show(HWND parent, HINSTANCE hInst){
@@ -151,9 +160,13 @@ void Form::LoadDocument(string _id, Object _obj){
 	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
 
 	detail.LoadDocument(obj);
+
+	hasDocument = true;
 }
 
 void Form::SaveDocument(int changedFieldId){
+	if ( hasDocument == false ) return; 
+
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		//if ( field->controlChildId == changedFieldId ){

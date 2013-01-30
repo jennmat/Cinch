@@ -14,11 +14,12 @@ private:
 	HWND detail;
 public:
 	FormLayout();
-	void addField(FormField* field);\
+	void addField(FormField* field);
 	int getFieldCount();
 	FormField* getField(int);
 	void update(HWND parent);
 	void show(HWND parent, HINSTANCE hInst, RECT displayArea);
+	void removeAllFields();
 	int minWidth();
 	int minHeight();
 };

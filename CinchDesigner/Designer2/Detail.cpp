@@ -149,7 +149,6 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					} else if ( wmId == IDM_TEXTAREA ){
 						//self->CreateTextareaForPage(i);	
 					}
-				
 				}
 			}
 		}

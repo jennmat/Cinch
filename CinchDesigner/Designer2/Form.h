@@ -12,6 +12,7 @@ private:
 	HWND parent;
 	string id;
 	Object obj;
+	bool hasDocument;
 public:
 	Form();
 	void LoadDocument(string _id, Object obj);
@@ -19,7 +20,9 @@ public:
 	void addField(FormField* field);
 	void addDetail(LPWSTR title);
 	void removeAllDetailPages();
+	void removeAllFields();
 	Detail* getDetail();
+	FormLayout* getLayout();
 	void show(HWND parent, HINSTANCE hInst);
 	void adjust(HWND parent, HINSTANCE hInst);
 	int minWidth();

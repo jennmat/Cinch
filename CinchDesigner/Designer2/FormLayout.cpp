@@ -24,6 +24,16 @@ int FormLayout::minWidth()
 	return 100;
 }
 
+void FormLayout::removeAllFields(){
+	for(int j=0; j<i; j++){
+		DestroyWindow(fields[j]->getControl());
+		DestroyWindow(fields[j]->getLabel());
+		fields[j] = NULL;
+	}
+
+	i = 0;
+}
+
 void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 {	
 	int y = LAYOUT_MARGIN;
