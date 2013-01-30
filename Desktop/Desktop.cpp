@@ -14,6 +14,7 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
+#define TOOLBAR_HEIGHT 54
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -39,7 +40,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HACCEL hAccelTable;
 
 	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	//LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_DESKTOP, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
@@ -186,8 +187,6 @@ void SizeWindows(HWND hWnd);
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
-
    hInst = hInstance; // Store instance handle in our global variable
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
@@ -209,8 +208,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
   
-
-
+   toolbar = CreateCinchToolbar(hWnd);
+   ShowWindow(toolbar, SW_SHOW);
+   UpdateWindow(toolbar);
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -219,9 +219,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
-
+   
+   Database db = conn.getDatabase("property");
+   
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
+   
+   d->getForm()->setDelegate(&desktop);
+   /*d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
    d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
    d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("price")));
    d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
@@ -233,15 +237,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->addDetail(TEXT("Notes"));
    d->getForm()->addDetail(TEXT("Inspections"));
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);
+   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
+
+   Document doc = db.getDocument("template/property");
+   Value v = doc.getData();
+   d->getForm()->deserializeForm(designer, v);
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
 
-   SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, TREE_WIDTH + LIST_WIDTH, client.bottom, SW_SHOW);
-   SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right, client.bottom, SW_SHOW);
-
-   Database db = conn.getDatabase("property");
+ 
    Object views = db.listViews();
 
    if ( views["total_rows"].getInt() > 0 ){
@@ -277,6 +282,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(tree, SW_SHOW);
    SizeWindows(hWnd);
+
+   DWORD threadId;
+   CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+
+#ifdef REPLICATION
+   db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
+#endif 
    return TRUE;
 }
 
@@ -284,12 +296,12 @@ void SizeWindows(HWND hWnd)
 {
 	RECT client;
 	GetClientRect(hWnd, &client);
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, 0, LIST_WIDTH, client.bottom, 0);
-	SetWindowPos(tree, HWND_TOP, 0, 0, TREE_WIDTH, client.bottom, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
-
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, TOOLBAR_HEIGHT, LIST_WIDTH, client.bottom, 0);
+	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
+	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
+	SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
 }
-
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -344,6 +356,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 		}
+	case WM_NEW_DATA_ARRIVED:
+		{
+		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+		delegate->loadViewResults();			
+		gridcontrol->reloadData();
+		}
+		break;
 	case CINCHGRID_ROW_SELECTED:
 		{
 		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
@@ -356,9 +375,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
 		break;
 		}
-	case WM_KILLFOCUS:
-		OutputDebugStringW(TEXT("Lost focus in desktop"));
-		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -371,6 +387,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
+		case IDM_NEW_DOCUMENT:
+			{
+			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+			designercontrol->getForm()->NewDocument();
+			break;
+			}
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
@@ -418,3 +440,28 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+
+void changesArrived(){
+	PostMessage(hWnd, WM_NEW_DATA_ARRIVED, 0, 0);
+}
+
+DWORD WINAPI ChangesListener(LPVOID lParam){
+
+	Connection conn;
+	Database db = conn.getDatabase("property");
+	db.listenForChanges(changesArrived);
+
+	return 0;
+}
+
+void Desktop::formModified(){
+	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+   
+	Value v = d->getForm()->serializeForm();
+
+	Connection conn;
+	Database db = conn.getDatabase("property");
+
+	db.createDocument(v, "template/property");
+}
+

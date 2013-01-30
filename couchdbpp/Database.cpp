@@ -131,7 +131,8 @@ vector<Document> Database::listDocuments(){
 }
 
 Document Database::getDocument(const string &id, const string &rev){
-   string url = "/" + name + "/" + id;
+	char * escaped = curl_easy_escape(comm.curl, id.c_str(), id.size());
+   string url = "/" + name + "/" + escaped;
    if(rev.size() > 0)
       url += "?rev=" + rev;
 
@@ -201,6 +202,45 @@ Document Database::createDocument(Value data,
 
    return doc;
 }
+
+
+void Database::listenForChanges(void (*changesArrivedFunc)()){
+	comm.readChangesFeed(name, changesArrivedFunc);
+}
+
+
+void Database::startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password)
+{
+	Object obj;
+	obj["source"] = name;
+	stringstream target;
+	target << "https://" << username << ":" << password << "@" << destinationHost << "/" << destinationDatabase;
+	obj["target"] = target.str();
+	obj["continuous"] = Value(true);
+	obj["create_target"] = Value(true);
+
+	string data = createJSON(Value(obj));
+    Value response = comm.getData("/_replicate", "POST", data);
+
+	Object pull;
+	stringstream source;
+	source << "https://" << username << ":" << password << "@" << destinationHost << "/" << destinationDatabase;
+	pull["target"] = name;
+	pull["continuous"] = Value(true);
+	pull["source"] = source.str();
+
+	data = createJSON(Value(pull));
+    response = comm.getData("/_replicate", "POST", data);
+
+	stringstream r;
+	r << response;
+
+	string q = r.str();
+
+	int a  =1;
+}
+
+
 
 ostream& operator<<(ostream &out, const CouchDB::Database &db){
    return out << "<Database: " << db.getName() << ">";

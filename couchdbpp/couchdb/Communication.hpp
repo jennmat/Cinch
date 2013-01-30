@@ -42,6 +42,7 @@ Value createValue(T value){
 
 class Communication{
 	friend class Database;
+	friend class Document;
    public:
       typedef std::map<std::string, std::string> HeaderMap;
 
@@ -54,6 +55,8 @@ class Communication{
       Value getData(const std::string&, const HeaderMap&,
                       const std::string &method = "GET",
                       const std::string &data = "");
+
+	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
 
       std::string getRawData(const std::string&);
    private:

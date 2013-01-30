@@ -17,10 +17,12 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include "Toolbar.h"
 #include "CinchGrid.h"
 #include "CinchDesigner.h"
 #include "CouchViewDelegate.h"
-
+// Comment out if you don't want replication 
+#include "Replication.h"
 #include "CouchDB.hpp"
 #include "util.h"
 

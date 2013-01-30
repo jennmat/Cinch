@@ -17,6 +17,7 @@
 #include "couchdb/Exception.hpp"
 #include "JsonBox.h"
 
+#include <sstream>
 
 using namespace std;
 using namespace CouchDB;
@@ -104,6 +105,29 @@ string Communication::getRawData(const string &url){
    HeaderMap headers;
    getRawData(url, "GET", "", headers);
    return buffer;
+}
+
+void Communication::readChangesFeed(const std::string& database, void (*newDataArrived)()){
+	int last_seq = 0;
+	while(true){
+		std::stringstream s;
+		s << "/" << database << "/_changes?feed=longpoll&since=" << last_seq;
+		string url = s.str();
+		string data = getRawData(s.str());
+		Value value = parseData(data);
+		if ( value.isObject() ){
+			newDataArrived();
+	
+			Object obj = value.getObject();
+			if ( obj["last_seq"].isInteger() ){
+				last_seq = obj["last_seq"].getInt();
+			}
+		}
+
+		if ( last_seq == 0 ){
+			return;
+		}
+	}
 }
 
 Value Communication::getData(const string &url, const string &method,

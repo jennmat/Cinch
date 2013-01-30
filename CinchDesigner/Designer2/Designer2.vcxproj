@@ -90,6 +90,7 @@
     <ClInclude Include="CinchDesigner.h" />
     <ClInclude Include="Detail.h" />
     <ClInclude Include="Form.h" />
+    <ClInclude Include="FormDelegate.h" />
     <ClInclude Include="FormField.h" />
     <ClInclude Include="FormLayout.h" />
     <ClInclude Include="MaskEdit.h" />

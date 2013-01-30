@@ -54,6 +54,8 @@ class Database{
 
 	  vector<Document> documentsVectorFromValue(const Value& value);
 
+	  void listenForChanges(void (*)());
+	  void startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password);
    protected:
       Communication& getCommunication();
 

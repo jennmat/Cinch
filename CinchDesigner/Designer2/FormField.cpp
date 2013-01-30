@@ -71,7 +71,7 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
-	field->controlType = "Edit";
+	field->controlType = "Number";
 	field->name = label;
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
@@ -227,7 +227,7 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
-	field->controlType = "Radio";
+	field->controlType = "YesNo";
 	field->name = label;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,

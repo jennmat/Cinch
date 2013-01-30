@@ -23,9 +23,14 @@
 
 // TODO: reference additional headers your program requires here
 class Form;
+class FormDelegate;
+
+#include "CinchGrid.h"
+#include "CinchDesigner.h"
 
 #include "FormField.h"
 #include "FormLayout.h"
+#include "FormDelegate.h"
 #include "Detail.h"
 #include "Form.h"
 #include "ReadOnlyDelegate.h"
@@ -34,9 +39,6 @@ class Form;
 #include "util.h"
 #include "MaskEdit.h"
 #include "NotifyParent.h"
-
-#include "CinchGrid.h"
-#include "CinchDesigner.h"
 
 #include <CommCtrl.h>
 #include <Windows.h>
