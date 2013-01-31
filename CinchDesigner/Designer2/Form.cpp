@@ -11,6 +11,7 @@ Form::Form(){
 	hasDocument = false;
 	delegate = 0;
 
+}
 
 void Form::addField(FormField* field){
 	layout.addField(field);
@@ -132,8 +133,7 @@ void Form::deserializeForm(HWND parent, Value v){
 
 }
 
-Value Form::serializeForm(){
-	Object o;
+Object Form::serializeFormToObject(Object obj){
 	
 	Array fields;
 	for(int i=0; i<layout.getFieldCount(); i++){
@@ -150,21 +150,20 @@ Value Form::serializeForm(){
 		fields.push_back(f);
 	}
 
-	o["fields"] = fields;
+	obj["fields"] = fields;
 
-	o["tabs"] = detail.serializeUIElements();
+	obj["tabs"] = detail.serializeUIElements();
 
-	Value v(o);
-	
-	return v;
+	return obj;
 }
 
 void Form::save(wchar_t* filename){
-	Value v = serializeForm();
+	Object o;
+	o = serializeFormToObject(o);
 	
 	char cfilename[80];
 	size_t t;
-
+	Value v(o);
 	wcstombs_s(&t, cfilename, filename, 80);
 	v.writeToFile(cfilename);
 }
@@ -215,6 +214,7 @@ void Form::SaveDocument(int changedFieldId){
 	
 	Database db2 = conn.getDatabase("property");
 	Document updatedDoc = db2.createDocument(Value(obj), id);
+
 	Value v = updatedDoc.getData();
 
 	LoadDocument(id, v.getObject());

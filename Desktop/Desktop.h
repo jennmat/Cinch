@@ -7,7 +7,10 @@
 CouchViewDelegate* delegate;
 
 class Desktop : public FormDelegate {
+public:
+	Object loadedForm;
 	void formModified();
+
 };
 
 HWND hWnd; //Main window

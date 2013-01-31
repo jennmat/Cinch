@@ -182,10 +182,11 @@ Document Database::createDocument(Value data,
    }
 
    string json = createJSON(data);
+   char* escapedId = curl_easy_escape(comm.curl, id.c_str(), id.length());
 
    Value var;
    if(id.size() > 0)
-      var = comm.getData("/" + name + "/" + id, "PUT", json);
+      var = comm.getData("/" + name + "/" + escapedId, "PUT", json);
    else
       var = comm.getData("/" + name + "/", "POST", json);
 

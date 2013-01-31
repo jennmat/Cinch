@@ -239,9 +239,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
    d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
 
-   Document doc = db.getDocument("template/property");
-   Value v = doc.getData();
-   d->getForm()->deserializeForm(designer, v);
+   try {
+	Document doc = db.getDocument("template/property");
+	Value v = doc.getData();
+	desktop.loadedForm = v.getObject();
+	d->getForm()->deserializeForm(designer, v);
+   }catch(Exception e){
+   }
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
@@ -457,11 +461,11 @@ DWORD WINAPI ChangesListener(LPVOID lParam){
 void Desktop::formModified(){
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
-	Value v = d->getForm()->serializeForm();
+	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
 	Database db = conn.getDatabase("property");
 
-	db.createDocument(v, "template/property");
+	db.createDocument(Value(o), "template/property");
 }
 

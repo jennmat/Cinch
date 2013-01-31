@@ -31,7 +31,7 @@ public:
 	void adjust(HWND parent, HINSTANCE hInst);
 	int minWidth();
 	int minHeight();
-	Value serializeForm();
+	Object serializeFormToObject(Object obj);
 	void deserializeForm(HWND parent, Value v);
 	void save(wchar_t* filename);
 	void open(HWND parent, wchar_t* filename);
