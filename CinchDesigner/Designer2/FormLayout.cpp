@@ -2,16 +2,16 @@
 #include "stdafx.h"
 #include <stdio.h>
 
+using namespace std;
 
 FormLayout::FormLayout()
 {
-	i = 0;
+
 }
 
 void FormLayout::addField(FormField* field)
 {
-	fields[i] = field;
-	i++;
+	fields.push_back(field);
 }
 
 int FormLayout::minHeight()
@@ -25,13 +25,12 @@ int FormLayout::minWidth()
 }
 
 void FormLayout::removeAllFields(){
-	for(int j=0; j<i; j++){
+	for(int j=0; j<fields.size(); j++){
 		DestroyWindow(fields[j]->getControl());
 		DestroyWindow(fields[j]->getLabel());
-		fields[j] = NULL;
 	}
 
-	i = 0;
+	fields.clear();
 }
 
 void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
@@ -44,7 +43,7 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 	int accumulatedHeight = LAYOUT_MARGIN;
 
 	int j;
-	for(j=0; j<i; j++){
+	for(j=0; j<this->fields.size(); j++){
 		FormField* field = this->fields[j];
 		
 		RECT control;
@@ -85,7 +84,7 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 	
 	bool secondColumnBeingFilled = false;
 
-	for(j=0; j<i; j++){
+	for(j=0; j<this->fields.size(); j++){
 		FormField* field = this->fields[j];
 	
 		RECT rect;
@@ -119,9 +118,17 @@ void FormLayout::update(HWND parent)
 }
 
 int FormLayout::getFieldCount(){
-	return i;
+	return fields.size();
 }
 
 FormField* FormLayout::getField(int index){
 	return fields[index];
+}
+
+void FormLayout::removeField(int index){
+	fields.erase(fields.begin()+index);
+}
+
+void FormLayout::swapFields(int a, int b){
+	swap(fields[a], fields[b]);
 }

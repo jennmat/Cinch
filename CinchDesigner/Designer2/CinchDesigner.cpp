@@ -12,9 +12,6 @@
 #define MAX_LOADSTRING 100
 
 
-int newFieldTypes[MAX_FIELDS];
-int countNewFields;
-
 HWND designerHWnd;
 
 //
@@ -284,9 +281,10 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			for(int i=0; i<count; i++){
 				FormField* field = _this->getForm()->getLayout()->getField(i);
 				HWND label = field->getLabel();
-				wchar_t title[80];
+				wchar_t* title = new wchar_t[80];
+				memset(title, 0, 80);
 				GetWindowText(label, title, 80);
-				SendMessage(visibleFields, LB_ADDSTRING, i+1, (LPARAM) title); 
+				SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM) title); 
 		
 			}
 		
@@ -300,64 +298,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		}
 		if (LOWORD(wParam) == IDOK)
 		{
-			HWND fields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
-			int count = ListBox_GetCount(fields);
-			_this->getForm()->removeAllFields();
-			for(int i=0; i<count; i++){
-				wchar_t szFieldName[80];
-				ListBox_GetText(fields, i, szFieldName);
-				FormField* field;
-
-				switch(newFieldTypes[i]){
-					case 0:
-						field = FormField::createEditField(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 1:
-						field = FormField::createEditField(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 2:
-						field = FormField::createMultilineText(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 3:
-						field = FormField::createYesNoField(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 4:
-						field = FormField::createRadioGroup(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 5:
-						field = FormField::createComboBox(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-					case 6:
-						field = FormField::createDatePicker(hWnd, GetModuleHandle(0), szFieldName);
-						break;
-
-				}
-				_this->getForm()->addField(field);
-			}
-				
-			/*
-				HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
-				int selected = SendMessage(typeCombo, CB_GETCURSEL, 0, 0);
-				if( selected != CB_ERR ){
-					FormField field;
-					switch(selected){
-					
-					}
-					
-					form.addField(field);
-						
-				}	
-				
-				RECT window;
-				GetWindowRect(hWnd, &window);
-
-				form.show(hWnd, hInst);
-				*/
-
-
-			RECT window;
-			GetWindowRect(hWnd, &window);
-
+			
 			_this->getForm()->show(hWnd, GetModuleHandle(0));
 			if( _this->getForm()->getDelegate() != 0 ){
 				_this->getForm()->getDelegate()->formModified();
@@ -377,7 +318,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_GetText(hiddenFields, selected, text);
 				
 				int pos = (int)SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM)text); 
-
+				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), text));
 				ListBox_DeleteString(hiddenFields, selected);
 
 			}
@@ -396,7 +337,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				int pos = (int)SendMessage(hidden, LB_ADDSTRING, 0, (LPARAM)text); 
 
 				ListBox_DeleteString(visible, selected);
-
+				_this->getForm()->getLayout()->removeField(selected);
 			}
 		}
 		else if ( LOWORD(wParam) == IDC_FIELD_UP )
@@ -413,10 +354,8 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_InsertString(visible, selected-1, text);
 				ListBox_SetCurSel(visible, selected-1);
 
-				int temp;
-				temp = newFieldTypes[selected];
-				newFieldTypes[selected] = newFieldTypes[selected-1];
-				newFieldTypes[selected-1] = temp;
+				_this->getForm()->getLayout()->swapFields(selected, selected-1);
+				
 				
 			}
 		}
@@ -434,6 +373,9 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected+1, text);
 				ListBox_SetCurSel(visible, selected+1);
+
+				_this->getForm()->getLayout()->swapFields(selected, selected+1);
+				
 			}
 
 		} else if (LOWORD(wParam) == IDC_NEW_FIELD ){
@@ -482,8 +424,36 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 				int selected = SendMessage(GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE), CB_GETCURSEL, 0, 0);
 
-				newFieldTypes[countNewFields] = selected;
-				countNewFields++;
+				CinchDesigner* _this = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+				int type = SendMessage(typeCombo, CB_GETCURSEL, 0, 0);
+				FormField* field;
+				switch(type){
+				case 0:
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 1:
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 2:
+					field = FormField::createMultilineText(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 3:
+					field = FormField::createYesNoField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 4:
+					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 5:
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				case 6:
+					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				default:
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					break;
+				}
+				_this->getForm()->addField(field);
 			}
 
 			EndDialog(hDlg, LOWORD(wParam));
