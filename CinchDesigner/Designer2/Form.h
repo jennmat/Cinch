@@ -12,7 +12,7 @@ private:
 	HWND parent;
 	string id;
 	Object obj;
-
+	bool hasDocument;
 	FormDelegate* delegate;
 public:
 	Form();
@@ -24,12 +24,14 @@ public:
 	void addField(FormField* field);
 	void addDetail(LPWSTR title);
 	void removeAllDetailPages();
+	void removeAllFields();
 	Detail* getDetail();
+	FormLayout* getLayout();
 	void show(HWND parent, HINSTANCE hInst);
 	void adjust(HWND parent, HINSTANCE hInst);
 	int minWidth();
 	int minHeight();
-	Value serializeForm();
+	Object serializeFormToObject(Object obj);
 	void deserializeForm(HWND parent, Value v);
 	void save(wchar_t* filename);
 	void open(HWND parent, wchar_t* filename);

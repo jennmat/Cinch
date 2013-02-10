@@ -294,7 +294,7 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 	TabCtrl_GetItemRect(tabControl, 0, &tr);
 
 	for(int i=0; i<getDetailPageCount(); i++){
-		SetWindowPos(detailPages[i], HWND_TOP, 0, tr.bottom, displayArea.right-displayArea.left, displayArea.bottom-displayArea.top, 0);
+		SetWindowPos(detailPages[i], HWND_TOP, 0, tr.bottom, displayArea.right-displayArea.left, displayArea.bottom-displayArea.top-tr.bottom, 0);
 	}
 
 

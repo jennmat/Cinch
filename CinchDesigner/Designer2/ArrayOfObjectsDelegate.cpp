@@ -37,6 +37,14 @@ void ArrayOfObjectsDelegate::setData(Array array){
 		}
 		data.push_back(rowData);
 	} 
+
+	for(int i=0; i<data.size(); i++){
+		vector<wstring> row = data[i];
+		for(int j=0; j<row.size(); j++){
+			wstring jk = row[j];
+			int a = 1;
+		}
+	}
 }
 
 int ArrayOfObjectsDelegate::totalColumns(){
@@ -124,7 +132,6 @@ void ArrayOfObjectsDelegate::editingFinished(HWND hwnd, int row, int col){
 	wchar_t* text = new wchar_t[len];
 	GetWindowText(hwnd, text, len);
 	data[row][col] = text;
-
 }
 
 void ArrayOfObjectsDelegate::willLoseFocus(){

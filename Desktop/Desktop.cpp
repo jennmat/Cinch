@@ -190,7 +190,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, 1350, 600, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, 0, 1000, 700, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -220,7 +220,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-   Database db = conn.getDatabase("property");
+   Database db = conn.getDatabase("property2");
    
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
@@ -239,9 +239,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
    d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
 
-   Document doc = db.getDocument("template/property");
-   Value v = doc.getData();
-   d->getForm()->deserializeForm(designer, v);
+   try {
+	Document doc = db.getDocument("template/property");
+	Value v = doc.getData();
+	desktop.loadedForm = v.getObject();
+	d->getForm()->deserializeForm(designer, v);
+   }catch(Exception e){
+   }
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
@@ -296,9 +300,9 @@ void SizeWindows(HWND hWnd)
 {
 	RECT client;
 	GetClientRect(hWnd, &client);
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, TOOLBAR_HEIGHT, LIST_WIDTH, client.bottom, 0);
-	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom, 0);
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, TOOLBAR_HEIGHT, LIST_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
+	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
 	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
 	SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
 }
@@ -369,7 +373,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase("property");
+		Database db = conn.getDatabase("property2");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
 		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
@@ -402,8 +406,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
-	case WM_ERASEBKGND:
-		return 1;
 	case WM_SIZE:
 		SizeWindows(hWnd);
 		break;
@@ -448,7 +450,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
-	Database db = conn.getDatabase("property");
+	Database db = conn.getDatabase("property2");
 	db.listenForChanges(changesArrived);
 
 	return 0;
@@ -457,11 +459,11 @@ DWORD WINAPI ChangesListener(LPVOID lParam){
 void Desktop::formModified(){
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
-	Value v = d->getForm()->serializeForm();
+	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
-	Database db = conn.getDatabase("property");
+	Database db = conn.getDatabase("property2");
 
-	db.createDocument(v, "template/property");
+	db.createDocument(Value(o), "template/property");
 }
 

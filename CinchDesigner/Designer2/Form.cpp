@@ -8,7 +8,9 @@ using namespace std;
 
 Form::Form(){
 	detail.setForm(this);
+	hasDocument = false;
 	delegate = 0;
+
 }
 
 void Form::addField(FormField* field){
@@ -23,6 +25,10 @@ void Form::removeAllDetailPages(){
 	detail.removeAllDetailPages();
 }
 
+void Form::removeAllFields(){
+	layout.removeAllFields();
+}
+
 int Form::minHeight()
 {
 	return 250;
@@ -35,6 +41,10 @@ int Form::minWidth()
 
 Detail* Form::getDetail(){
 	return &detail;
+}
+
+FormLayout* Form::getLayout(){
+	return &layout;
 }
 
 void Form::show(HWND parent, HINSTANCE hInst){
@@ -123,8 +133,7 @@ void Form::deserializeForm(HWND parent, Value v){
 
 }
 
-Value Form::serializeForm(){
-	Object o;
+Object Form::serializeFormToObject(Object obj){
 	
 	Array fields;
 	for(int i=0; i<layout.getFieldCount(); i++){
@@ -141,21 +150,20 @@ Value Form::serializeForm(){
 		fields.push_back(f);
 	}
 
-	o["fields"] = fields;
+	obj["fields"] = fields;
 
-	o["tabs"] = detail.serializeUIElements();
+	obj["tabs"] = detail.serializeUIElements();
 
-	Value v(o);
-	
-	return v;
+	return obj;
 }
 
 void Form::save(wchar_t* filename){
-	Value v = serializeForm();
+	Object o;
+	o = serializeFormToObject(o);
 	
 	char cfilename[80];
 	size_t t;
-
+	Value v(o);
 	wcstombs_s(&t, cfilename, filename, 80);
 	v.writeToFile(cfilename);
 }
@@ -185,23 +193,27 @@ void Form::LoadDocument(string _id, Object _obj){
 	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
 
 	detail.LoadDocument(obj);
+
+	hasDocument = true;
 }
 
 void Form::SaveDocument(int changedFieldId){
+	if ( hasDocument == false ) return; 
+
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
-		//if ( field->controlChildId == changedFieldId ){
+		if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
-			
-		//}
+		}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase("property");
+	Database db2 = conn.getDatabase("property2");
 	Document updatedDoc = db2.createDocument(Value(obj), id);
+
 	Value v = updatedDoc.getData();
 
 	LoadDocument(id, v.getObject());
