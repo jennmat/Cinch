@@ -25,6 +25,7 @@ void ArrayOfObjectsDelegate::addColumn(std::string field, std::wstring title){
 }
 
 void ArrayOfObjectsDelegate::setData(Array array){
+	data.clear();
 	rowCount = array.size();
 	for(unsigned int i=0; i<array.size(); i++){
 		Object o = array[i].getObject();

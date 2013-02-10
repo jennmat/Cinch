@@ -231,14 +231,14 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	field->name = label;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
-		0, 0, CONTROL_WIDTH, 60, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 70, parent, NULL, hInst, NULL);
 
 	NotifyParentControl(field->control);
 
 	HWND option1 = CreateWindowEx(0, L"BUTTON", L"Yes", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		10, 10, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)YES_RADIO, hInst, NULL);
+		10, 15, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)YES_RADIO, hInst, NULL);
 	HWND option2 = CreateWindowEx(0, L"BUTTON", L"No", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		10, 30, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)NO_RADIO, hInst, NULL);
+		10, 40, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)NO_RADIO, hInst, NULL);
 	
 	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
