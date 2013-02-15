@@ -24,6 +24,9 @@
     <None Include="New.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="LIST.BMP">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

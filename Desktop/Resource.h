@@ -17,6 +17,7 @@
 #define IDC_VIEW_TREE			1098
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
+#define IDB_TREE			9482
 #endif
 // Next default values for new objects
 //

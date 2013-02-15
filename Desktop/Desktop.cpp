@@ -110,7 +110,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 // g_nClosed, and g_nDocument - global indexes of the images.
 
-HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
+HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
 { 
     TVITEM tvi; 
     TVINSERTSTRUCT tvins; 
@@ -119,24 +119,18 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
     static HTREEITEM hPrevLev2Item = NULL; 
     HTREEITEM hti; 
 
-    tvi.mask = TVIF_TEXT | TVIF_IMAGE 
-               | TVIF_SELECTEDIMAGE | TVIF_PARAM; 
+	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 
     // Set the text of the item. 
     tvi.pszText = lpszItem; 
     tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-
-    // Assume the item is not a parent item, so give it a 
-    // document image. 
-    //tvi.iImage = g_nDocument; 
-    //tvi.iSelectedImage = g_nDocument; 
-
-    // Save the heading level in the item's application-defined 
-    // data area. 
-    tvi.lParam = (LPARAM)nLevel; 
+	tvi.iImage = 2;
+	tvi.iSelectedImage = 2;
+   
+	tvi.lParam = data;
     tvins.item = tvi; 
     tvins.hInsertAfter = hPrev; 
-
+	
     // Set the parent item based on the specified level. 
     if (nLevel == 1) 
         tvins.hParent = TVI_ROOT; 
@@ -163,10 +157,10 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
     if (nLevel > 1)
     { 
         hti = TreeView_GetParent(hwndTV, hPrev); 
-        tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE; 
+	    tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
         tvi.hItem = hti; 
-        //tvi.iImage = g_nClosed; 
-        //tvi.iSelectedImage = g_nClosed; 
+		tvi.iImage = 0; 
+        tvi.iSelectedImage = 0;
         TreeView_SetItem(hwndTV, &tvi); 
     } 
 
@@ -203,19 +197,26 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    InitCommonControls();
 
-   tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+   tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
 	   0, 0, TREE_WIDTH, client.bottom,
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
+	HIMAGELIST hImageList=ImageList_Create(16,16,ILC_COLOR16,3,10);					  // Macro: 16x16:16bit with 2 pics [array]
+	HBITMAP hBitMap=LoadBitmap(hInst,MAKEINTRESOURCE(IDB_TREE));					  // load the picture from the resource
+	
+	ImageList_Add(hImageList,hBitMap,NULL);								      // Macro: Attach the image, to the image list
+	DeleteObject(hBitMap);													  // no need it after loading the bitmap
+	//SendMessage(hWnd,IDC_TREE1,TVM_SETIMAGELIST,0,(LPARAM)hImageList); // put it onto the tree control
+	//TreeView_SetImageList(tree, hImageList, 0);
   
-   toolbar = CreateCinchToolbar(hWnd);
-   ShowWindow(toolbar, SW_SHOW);
-   UpdateWindow(toolbar);
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	toolbar = CreateCinchToolbar(hWnd);
+	ShowWindow(toolbar, SW_SHOW);
+	UpdateWindow(toolbar);
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
-   delegate = new CouchViewDelegate(conn);
-   //delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
+	delegate = new CouchViewDelegate(conn);
+	//delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
 
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
@@ -257,23 +258,44 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   Array rows = views["rows"].getArray();
 	   for(unsigned int i=0; i<rows.size(); i++){
 		   Object row = rows[i].getObject();
-		
-		   wstring name = s2ws(row["id"].getString());
+			
+		   Object doc = row["doc"].getObject();
+		  
+		   wstring name;
+		   wstring id = s2ws(row["id"].getString());
+		   if ( doc["label"].isString() ){
+				name = s2ws(doc["label"].getString());
+		   } else {
+				name = s2ws(row["id"].getString());
+		   }
 		   LPWSTR str = new wchar_t[80];
 		   wcscpy_s(str, 80, name.c_str());
 
-		   AddItemToTree(tree, str, 1);
+		   AddItemToTree(tree, str, NULL, 1);
 	
-		   Object doc = row["doc"].getObject();
 		   Object views = doc["views"].getObject();
 		   Object::const_iterator it = views.begin();
 		   for(it=views.begin(); it != views.end(); it++){
 				pair<string, Value> p = *it;
+				wstring view = s2ws(p.first);
 				wstring name = s2ws(p.first);
+				Object o = p.second.getObject();
+				if ( o["label"].isString() ){
+					name = s2ws(o["label"].getString());
+				}
 				LPWSTR str = new wchar_t[80];
 				wcscpy_s(str, 80, name.c_str());
 
-				AddItemToTree(tree, str, 2);
+				int dlen = id.length() + sizeof(wchar_t);
+				ViewPair* v = new ViewPair;
+				v->design = new wchar_t[dlen];
+				wcscpy_s(v->design, dlen, id.c_str());
+
+				int vlen = view.length() + sizeof(wchar_t);
+				v->view = new wchar_t[vlen];
+				wcscpy_s(v->view, vlen, view.c_str());
+				
+				AddItemToTree(tree, str, (LPARAM)v, 2);
 		
 		   }
 		   //for(unsigned int j = 0; j<views.size(); j++){
@@ -335,26 +357,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TVITEM tvitem;
 
 			tvitem.hItem = item;
-			tvitem.mask = TVIF_TEXT;
-			tvitem.cchTextMax = 80;
-			wchar_t text[80];
-			memset(text, 0, 80);
-			tvitem.pszText = text;
-			if( item != TreeView_GetRoot(tree) ){
-				TreeView_GetItem(tree, &tvitem);
-				wstring s(text);
+			tvitem.mask = TVIF_PARAM;
+			TreeView_GetItem(tree, &tvitem);
 
-				HTREEITEM parent = TreeView_GetParent(tree, item);
-				tvitem.hItem = parent;
-				TreeView_GetItem(tree, &tvitem);
-				wstring design(text);
-
-				delegate->setView(design, s);
-
+			if ( tvitem.lParam != NULL ){
+				ViewPair * v = (ViewPair *)tvitem.lParam;
+			
+				delegate->setView(v->design, v->view);
 				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-				
 				gridcontrol->reloadData();
-
 			}
 
 		}

@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Desktop.ico" />
+    <None Include="LIST.BMP" />
     <None Include="New.ico" />
     <None Include="small.ico" />
   </ItemGroup>
