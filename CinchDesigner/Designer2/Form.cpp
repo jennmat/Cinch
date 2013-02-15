@@ -99,7 +99,12 @@ void Form::deserializeForm(HWND parent, Value v){
 
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object field = fields[i].getObject();
-		string label = field["name"].getString();
+		string label;
+		if( field["label"].isString() ){
+			label = field["label"].getString();
+		} else {
+			label = field["name"].getString();
+		}
 		string name = field["name"].getString();
 		wstring wlabel = Designer::s2ws(label);
 		wstring wname = Designer::s2ws(name);
@@ -109,18 +114,23 @@ void Form::deserializeForm(HWND parent, Value v){
 		memset(wcname, 0, name.length() + sizeof(wchar_t));
 		wcscpy_s(wcname, name.length()+sizeof(wchar_t), wname.c_str());
 
+		wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
+		memset(wclabel, 0, label.length() + sizeof(wchar_t));
+		wcscpy_s(wclabel, label.length()+sizeof(wchar_t), wlabel.c_str());
+
+
 		FormField* formField;
 
 		if ( type.compare("DatePicker") == 0 ){
-			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname, wclabel);
 		} else if ( type.compare("Radio") == 0 ){
-			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname, wclabel);
 		} else if ( type.compare("Number") == 0 ){
-			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname, wclabel);
 		} else if ( type.compare("YesNo") == 0 ){
-			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname, wclabel);
 		} else {
-			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
 		}
 
 		addField(formField);
@@ -145,8 +155,12 @@ Object Form::serializeFormToObject(Object obj){
 		size_t t;
 		wcstombs_s(&t, label, wlab, 80);
 
-		f["name"] = Value(label);
+		char name[80];
+		wcstombs_s(&t, name, fld->getName(), 80);
+		
+		f["label"] = Value(label);
 		f["type"] = Value(fld->getControlType());
+		f["name"] = Value(name);
 		fields.push_back(f);
 	}
 
@@ -199,12 +213,12 @@ void Form::LoadDocument(string _id, Object _obj){
 
 void Form::SaveDocument(int changedFieldId){
 	if ( hasDocument == false ) return; 
-
+	
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
-		if ( field->controlChildId == changedFieldId ){
+		//if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
-		}
+		//}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);

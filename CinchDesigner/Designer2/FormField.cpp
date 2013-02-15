@@ -28,7 +28,7 @@ char* FormField::getControlType()
 	return this->controlType;
 }
 
-FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	static int fieldId = 12002;
 
@@ -44,7 +44,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Edit";
-	field->name = label;
+	field->name = name;
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
@@ -55,7 +55,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 
 
 
-FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	static int fieldId = 13001;
 
@@ -88,7 +88,7 @@ const wchar_t* FormField::getName(){
 }
 
 
-FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	FormField* field = new EditField();
 
@@ -136,7 +136,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 }
 
 
-FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	static int fieldId = 130010;
 	FormField* field = new DatePickerField();
@@ -150,7 +150,7 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "DatePicker";
-	field->name = label;
+	field->name = name;
 	
 	field->control = CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
@@ -161,7 +161,7 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 }
 
 
-FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	FormField* field = new EditField();
 
@@ -173,7 +173,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Checkbox";
-	field->name = label;
+	field->name = name;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|BS_AUTOCHECKBOX|WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, NULL, hInst, NULL);
@@ -184,7 +184,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 }
 
 
-FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	FormField* field = new EditField();
 
@@ -196,7 +196,7 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Radio";
-	field->name = label;
+	field->name = name;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
 		0, 0, CONTROL_WIDTH, 60, parent, NULL, hInst, NULL);
@@ -213,9 +213,9 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 }
 
 
-FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
-	static int fieldId = 70010;
+	static int fieldId = 7022;
 	
 	FormField* field = new YesNoField();
 	field->controlChildId = fieldId++;
@@ -228,10 +228,10 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "YesNo";
-	field->name = label;
+	field->name = name;
 	
 	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
-		0, 0, CONTROL_WIDTH, 60, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 60, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	NotifyParentControl(field->control);
 
@@ -249,7 +249,7 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 
 
 
-FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t * label)
+FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	FormField* field = new EditField();
 
@@ -261,7 +261,7 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Multiline";
-	field->name = label;
+	field->name = name;
 	
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);

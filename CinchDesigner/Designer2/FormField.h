@@ -29,14 +29,14 @@ public:
 	virtual void loadValue(Object obj) = 0;
 	virtual void clearValue() = 0;
 	virtual Object storeValue(Object obj) = 0;
-	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t * label);
-	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t * label);
+	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 };
 
 

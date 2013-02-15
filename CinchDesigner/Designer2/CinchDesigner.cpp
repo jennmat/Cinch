@@ -175,8 +175,8 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 			point.x = GET_X_LPARAM(lParam);
 			point.y = GET_Y_LPARAM(lParam);
 			HMENU hPopupMenu = CreatePopupMenu();
-			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDM_EDIT_FIELDS, L"Edit Fields");
-            InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDM_EDIT_TABS, L"Edit Tabs");
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EDIT_FIELDS, L"Edit Fields");
+            InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EDIT_TABS, L"Edit Tabs");
             ClientToScreen(hWnd, &point);
 			TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, hWnd, NULL);
 		}
@@ -202,20 +202,14 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		} else {
 			switch (wmId)
 			{
-			case IDM_EDIT_TABS:
+			case IDD_EDIT_TABS:
 				DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_TABS), hWnd, EditTabs);
 				break;
 			case IDM_EXIT:
 				DestroyWindow(hWnd);
 				break;
-			case IDM_EDIT_FIELDS:
+			case IDD_EDIT_FIELDS:
 				DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EDIT_FIELDS), hWnd, EditFields);
-				break;
-			case IDM_SAVE_FORM:
-				_this->SaveForm();
-				break;
-			case IDM_OPEN_FORM:
-				_this->ChooseForm();
 				break;
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);
@@ -318,7 +312,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_GetText(hiddenFields, selected, text);
 				
 				int pos = (int)SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM)text); 
-				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), text));
+				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), text, text));
 				ListBox_DeleteString(hiddenFields, selected);
 
 			}
@@ -412,14 +406,16 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_FIELD_NAME));
 			if ( len > 0 ){
-				wchar_t szNewFieldName[80];
-				GetDlgItemText(hDlg, IDC_NEW_FIELD_NAME, szNewFieldName, 80);
+				wchar_t* szNewFieldName = new wchar_t[80];
+				wchar_t* szNewFieldLabel = new wchar_t[80];
 
+				GetDlgItemText(hDlg, IDC_NEW_FIELD_NAME, szNewFieldName, 80);
+				GetDlgItemText(hDlg, IDC_NEW_FIELD_LABEL, szNewFieldLabel, 80);
 				HWND parent = GetParent(hDlg);
 				HWND visibleFieldsList = GetDlgItem(parent, IDC_VISIBLE_FIELDS);
 				int count = ListBox_GetCount(visibleFieldsList);
 
-				ListBox_InsertString(visibleFieldsList, count, szNewFieldName);
+				ListBox_InsertString(visibleFieldsList, count, szNewFieldLabel);
 
 				HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 				int selected = SendMessage(GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE), CB_GETCURSEL, 0, 0);
@@ -429,28 +425,28 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				FormField* field;
 				switch(type){
 				case 0:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 1:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 2:
-					field = FormField::createMultilineText(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createMultilineText(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 3:
-					field = FormField::createYesNoField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createYesNoField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 4:
-					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 5:
-					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 6:
-					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				default:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName);
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				}
 				_this->getForm()->addField(field);
