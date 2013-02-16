@@ -220,7 +220,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-   Database db = conn.getDatabase("property2");
+   Database db = conn.getDatabase("property");
    
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
@@ -373,7 +373,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase("property2");
+		Database db = conn.getDatabase("property");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
 		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
@@ -450,7 +450,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
-	Database db = conn.getDatabase("property2");
+	Database db = conn.getDatabase("property");
 	db.listenForChanges(changesArrived);
 
 	return 0;
@@ -462,7 +462,7 @@ void Desktop::formModified(){
 	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
-	Database db = conn.getDatabase("property2");
+	Database db = conn.getDatabase("property");
 
 	db.createDocument(Value(o), "template/property");
 }

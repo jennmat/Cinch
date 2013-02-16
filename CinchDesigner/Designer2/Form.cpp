@@ -211,7 +211,7 @@ void Form::SaveDocument(int changedFieldId){
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase("property2");
+	Database db2 = conn.getDatabase("property");
 	Document updatedDoc = db2.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();
