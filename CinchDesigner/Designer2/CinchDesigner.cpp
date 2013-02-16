@@ -396,6 +396,8 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Choose from a few values");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Choose from many values");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
+
 	
 		ComboBox_SelectString(combo, 0, L"Medium Text");
 		return (INT_PTR)TRUE;
@@ -444,6 +446,9 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				case 6:
 					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					break;
+				case 7:
+					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				default:
 					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);

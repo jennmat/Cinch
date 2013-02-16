@@ -72,7 +72,7 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Number";
-	field->name = label;
+	field->name = name;
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
