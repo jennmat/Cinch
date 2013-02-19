@@ -121,13 +121,13 @@ void Form::deserializeForm(HWND parent, Value v){
 
 		FormField* formField;
 
-		if ( type.compare("DatePicker") == 0 ){
+		if ( type.compare(DATEPICKER) == 0 ){
 			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname, wclabel);
-		} else if ( type.compare("Radio") == 0 ){
+		} else if ( type.compare(RADIO) == 0 ){
 			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname, wclabel);
-		} else if ( type.compare("Number") == 0 ){
+		} else if ( type.compare(NUMBER) == 0 ){
 			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname, wclabel);
-		} else if ( type.compare("YesNo") == 0 ){
+		} else if ( type.compare(YESNO) == 0 ){
 			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname, wclabel);
 		} else {
 			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);

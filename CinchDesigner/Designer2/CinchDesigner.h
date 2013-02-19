@@ -4,6 +4,11 @@
 #include "stdafx.h"
 #define MAX_FIELDS 200
 
+#define DATEPICKER "DatePicker"
+#define NUMBER "Number"
+#define YESNO "YesNo"
+#define RADIO "Radio"
+
 class CinchDesigner {
 private:
 	HWND edit;

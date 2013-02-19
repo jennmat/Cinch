@@ -13,6 +13,8 @@ private:
 	vector<vector<wstring> > data;
 	vector<string> fields;
 	vector<wstring> titles;
+	vector<HWND> editors;
+	vector<string> editorTypes;
 	vector<int> widths;
 	Detail * detail;
 	int fieldId;

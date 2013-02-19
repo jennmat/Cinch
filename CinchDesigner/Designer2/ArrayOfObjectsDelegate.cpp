@@ -103,8 +103,28 @@ void ArrayOfObjectsDelegate::setupEditorForCell(HWND editor, int row, int col){
 	if ( row >= rowCount ){
 		SetWindowText(editor, L"");
 	} else {
-		const wchar_t* c = cellContent(row, col);
-		SetWindowText(editor, c);
+		if (editorTypes[col].compare(DATEPICKER) == 0 ){
+			const wchar_t* timeStr = this->cellContent(row, col);
+			if (timeStr == NULL ) return;
+
+			SYSTEMTIME time;
+			int month, day, year;
+			GetLocalTime(&time);
+
+			if ( wcslen(timeStr) > 0 ){
+				swscanf_s(timeStr, TEXT("%d-%d-%d"), &year, &month, &day);
+				time.wMonth = month;
+				time.wDay = day;
+				time.wYear = year;
+			}
+
+			DateTime_SetSystemtime(editor, GDT_VALID, &time);
+			return;
+
+		} else {
+			const wchar_t* c = cellContent(row, col);
+			SetWindowText(editor, c);
+		}
 	}
 }
 
@@ -118,20 +138,40 @@ bool ArrayOfObjectsDelegate::allowHeaderTitleEditing(int col){
 }
 
 HWND ArrayOfObjectsDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
-	return CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-		0, 0, 0, 0, parent, NULL, hInst, NULL);
+	if ( editors[col] == NULL ){
+		if ( editorTypes[col].compare(DATEPICKER) == 0 ){
+			editors[col] =  CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+				0, 0, 0, 0, parent, NULL, hInst, NULL);
+			DateTime_SetFormat(editors[col], L"yyyy-MM-dd");
+		} else {
+			CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+				0, 0, 0, 0, parent, NULL, hInst, NULL);
+		}
+	}
+	return editors[col];
 }
 
 void ArrayOfObjectsDelegate::editingFinished(HWND hwnd, int row, int col){
 	if ( row < 0 ) return;
 	string field = fields[col];
 
-	int len = GetWindowTextLength(hwnd);
-	len += sizeof(wchar_t);
+	if ( editorTypes[col].compare(DATEPICKER) == 0 ){
+		SYSTEMTIME time;
+		DateTime_GetSystemtime(hwnd, &time);
+		wchar_t* text = new wchar_t[20];
+		memset(text, 0, 20);
+		GetDateFormatEx(LOCALE_NAME_INVARIANT, 0, &time, L"yyyy-MM-dd", text, 20, NULL);
 
-	wchar_t* text = new wchar_t[len];
-	GetWindowText(hwnd, text, len);
-	data[row][col] = text;
+		data[row][col] = text;
+
+	} else {
+		int len = GetWindowTextLength(hwnd);
+		len += sizeof(wchar_t);
+
+		wchar_t* text = new wchar_t[len];
+		GetWindowText(hwnd, text, len);
+		data[row][col] = text;
+	}
 }
 
 void ArrayOfObjectsDelegate::willLoseFocus(){
@@ -199,8 +239,10 @@ void ArrayOfObjectsDelegate::deserializeUIElements(Object obj){
 		Array columns = obj["columns"].getArray();
 		for(unsigned int i=0; i<columns.size(); i++){
 			Object col = columns[i].getObject();
-			fields.push_back(col["field"].getString());
-			titles.push_back(Designer::s2ws(col["field"].getString()));
+			fields.push_back(col["name"].getString());
+			editorTypes.push_back(col["type"].getString());
+			editors.push_back(NULL);
+			titles.push_back(Designer::s2ws(col["name"].getString()));
 			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
 				widths.push_back(col["width"].getInt());
 			} else {
@@ -215,7 +257,7 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	Array columns;
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
-		col["field"] = Value(fields[i]);
+		col["name"] = Value(fields[i]);
 		col["width"] = Value(250);
 		columns.push_back(col);
 	}
