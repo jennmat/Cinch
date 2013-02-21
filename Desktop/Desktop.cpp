@@ -242,10 +242,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
 
    try {
-	Document doc = db.getDocument("template/property");
+	/*Document doc = db.getDocument("template/property");
 	Value v = doc.getData();
 	desktop.loadedForm = v.getObject();
-	d->getForm()->deserializeForm(designer, v);
+	d->getForm()->deserializeForm(designer, v);*/
    }catch(Exception e){
    }
 
@@ -261,7 +261,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		   Object row = rows[i].getObject();
 			
 		   Object doc = row["doc"].getObject();
-		  
+		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
+			   continue;
+		   }
 		   wstring name;
 		   wstring id = s2ws(row["id"].getString());
 		   if ( doc["label"].isString() ){
@@ -388,7 +390,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Database db = conn.getDatabase("property2");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
+		designercontrol->LoadDocument("property2", d.getID(), v.getObject());
 		break;
 		}
 	case WM_COMMAND:

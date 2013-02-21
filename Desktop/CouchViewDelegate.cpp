@@ -178,3 +178,6 @@ string CouchViewDelegate::getDocumentIdForRow(int row){
 	return "";
 }
 
+
+void CouchViewDelegate::headerContextClick(HWND grid, int x, int y){
+}

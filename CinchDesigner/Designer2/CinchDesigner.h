@@ -8,6 +8,10 @@
 #define NUMBER "Number"
 #define YESNO "YesNo"
 #define RADIO "Radio"
+#define EDIT "Edit"
+
+using namespace JsonBox;
+using namespace std;
 
 class CinchDesigner {
 private:
@@ -15,6 +19,8 @@ private:
 	HWND hWnd;
 	HBRUSH hbrBkgnd;
 	Form* form;
+	Object loadedForm;
+	string type;
 public:
 	CinchDesigner(HWND);
 
@@ -25,6 +31,12 @@ public:
 	void ChooseForm();
 	void SaveForm();
 	void SetupDetail(HWND);
+	
+	void LoadDocument(string database, string _id, Object obj);
+	
+	Object getLoadedForm();
+	void setLoadedForm(Object obj);
+	string getType();
 
 
 	static LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);

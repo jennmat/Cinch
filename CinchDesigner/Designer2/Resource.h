@@ -10,6 +10,7 @@
 #define IDC_NEW_FIELD_NAME                      111
 #define IDC_NEW_FIELD_TYPE                      112
 #define IDD_EDIT_FIELDS                         114
+#define IDD_EDIT_COLUMNS                        116
 #define IDC_HIDDEN_FIELDS                       1007
 #define IDC_HIDDEN_TABS                         1008
 #define IDC_VISIBLE_TABS                        1009

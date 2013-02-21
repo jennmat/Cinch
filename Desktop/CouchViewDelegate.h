@@ -48,6 +48,8 @@ public:
 	HFONT getFont();
 	HFONT getEditFont();
 
+	void headerContextClick(HWND hwnd, int x, int y);
+
 	void setView(const wstring&, const wstring&);
 	void loadViewResults();
 };

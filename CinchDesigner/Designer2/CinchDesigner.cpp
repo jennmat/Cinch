@@ -295,7 +295,14 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			
 			_this->getForm()->show(hWnd, GetModuleHandle(0));
 			if( _this->getForm()->getDelegate() != 0 ){
-				_this->getForm()->getDelegate()->formModified();
+
+				Object o = _this->getForm()->serializeFormToObject(_this->getLoadedForm());
+
+				Connection conn;
+				Database db = conn.getDatabase("property2");
+
+				Document newDoc = db.createDocument(Value(o), "template/"+ _this->getType());
+				_this->setLoadedForm(newDoc.getData().getObject());
 			}
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
@@ -652,4 +659,32 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+void CinchDesigner::LoadDocument(string database, string _id, Object obj){
+	/* First load the template for this doc */
+	if ( obj["type"].isString() ){
+		type = obj["type"].getString();
+		Connection conn;
+		Database db = conn.getDatabase(database);
+		Document doc = db.getDocument("template/" + type);
+		Value v = doc.getData();
+		loadedForm = v.getObject();
+		form->deserializeForm(hWnd, v);
+    }
+
+	form->LoadDocument(_id, obj);
+
+}
+
+Object CinchDesigner::getLoadedForm(){
+	return loadedForm;
+}
+
+void CinchDesigner::setLoadedForm(Object obj){
+	loadedForm = obj;
+}
+
+string CinchDesigner::getType(){
+	return type;
 }

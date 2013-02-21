@@ -18,10 +18,11 @@ int ArrayOfObjectsDelegate::totalRows()
 	return rowCount;
 }
 
-void ArrayOfObjectsDelegate::addColumn(std::string field, std::wstring title){
+void ArrayOfObjectsDelegate::addColumn(std::string field, std::wstring title, string editorType){
 	fields.push_back(field);
 	titles.push_back(title);
 	widths.push_back(250);
+	editorTypes.push_back(editorType);
 }
 
 void ArrayOfObjectsDelegate::setData(Array array){
@@ -75,8 +76,11 @@ const wchar_t* ArrayOfObjectsDelegate::cellContent(int row, int col)
 	wchar_t* result;
 
     vector<wstring> rowData = data[row];
-	wstring data = rowData[col];
-
+	wstring data = L"";
+	if ( col < rowData.size() ) {
+		data = rowData[col];
+	}
+	
 	result = new wchar_t[80];
 	wcscpy_s(result, 80, data.c_str());
 	return result;
@@ -144,7 +148,7 @@ HWND ArrayOfObjectsDelegate::editorForColumn(int col, HWND parent, HINSTANCE hIn
 				0, 0, 0, 0, parent, NULL, hInst, NULL);
 			DateTime_SetFormat(editors[col], L"yyyy-MM-dd");
 		} else {
-			CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			editors[col] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 				0, 0, 0, 0, parent, NULL, hInst, NULL);
 		}
 	}
@@ -242,7 +246,7 @@ void ArrayOfObjectsDelegate::deserializeUIElements(Object obj){
 			fields.push_back(col["name"].getString());
 			editorTypes.push_back(col["type"].getString());
 			editors.push_back(NULL);
-			titles.push_back(Designer::s2ws(col["name"].getString()));
+			titles.push_back(Designer::s2ws(col["label"].getString()));
 			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
 				widths.push_back(col["width"].getInt());
 			} else {
@@ -258,6 +262,8 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
 		col["name"] = Value(fields[i]);
+		col["type"] = editorTypes[i];
+		col["label"] = Designer::ws2s(titles[i]);
 		col["width"] = Value(250);
 		columns.push_back(col);
 	}
@@ -265,3 +271,12 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	return o;
 }
 
+void ArrayOfObjectsDelegate::headerContextClick(HWND grid, int x, int y){
+	HMENU hPopupMenu = CreatePopupMenu();
+	InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EDIT_COLUMNS, L"Edit Columns...");
+	POINT point;
+	point.x = x;
+	point.y = y;
+    ClientToScreen(grid, &point);
+	TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, detail->getDetailHwnd(), NULL);
+}

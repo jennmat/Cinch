@@ -21,7 +21,7 @@ private:
 public:
 	ArrayOfObjectsDelegate(Detail *, int);
 	void setData(Array array);
-	void addColumn(string field, wstring title);
+	void addColumn(string field, wstring label, string editorType);
 
 	int totalRows();
 	int totalColumns();
@@ -53,6 +53,8 @@ public:
 	HFONT getEditFont();
 
 	Array storeValuesToArray(Array obj);
+
+	void headerContextClick(HWND grid, int x, int y);
 
 	void deserializeUIElements(Object obj);
 	Object serializeUIElements();

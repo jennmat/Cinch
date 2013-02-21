@@ -94,6 +94,10 @@ void Form::open(HWND parent, wchar_t* filename)
 }
 
 void Form::deserializeForm(HWND parent, Value v){
+	
+	removeAllDetailPages();
+	removeAllFields();
+
 	Object o = v.getObject();
 	Array fields = o["fields"].getArray();
 
@@ -198,6 +202,9 @@ FormDelegate* Form::getDelegate(){
 void Form::LoadDocument(string _id, Object _obj){
 	id = _id;
 	obj = _obj;
+
+	
+
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		field->clearValue();
