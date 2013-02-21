@@ -664,13 +664,20 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 void CinchDesigner::LoadDocument(string database, string _id, Object obj){
 	/* First load the template for this doc */
 	if ( obj["type"].isString() ){
-		type = obj["type"].getString();
-		Connection conn;
-		Database db = conn.getDatabase(database);
-		Document doc = db.getDocument("template/" + type);
-		Value v = doc.getData();
-		loadedForm = v.getObject();
-		form->deserializeForm(hWnd, v);
+		string t = obj["type"].getString();
+
+		if ( type.compare(t) == 0 ){
+			/* skip loading the form, since we already have it */
+		} else {
+			type = t;
+			Connection conn;
+			Database db = conn.getDatabase(database);
+			Document doc = db.getDocument("template/" + type);
+			Value v = doc.getData();
+			loadedForm = v.getObject();
+			form->deserializeForm(hWnd, v);
+
+		}
     }
 
 	form->LoadDocument(_id, obj);
