@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+#include <CommCtrl.h>
 
 using namespace JsonBox;
 
@@ -37,6 +38,7 @@ public:
 	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createReferenceField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config);
 };
 
 
@@ -70,4 +72,12 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
+};
+
+class ReferenceField : public FormField {
+public:
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+
 };

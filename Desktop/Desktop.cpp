@@ -222,7 +222,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-   Database db = conn.getDatabase("property2");
+   Database db = conn.getDatabase("bugs");
    
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
@@ -248,6 +248,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	d->getForm()->deserializeForm(designer, v);*/
    }catch(Exception e){
    }
+
+
+   LOGFONT font;
+   SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &font, 0);
+
 
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
@@ -387,10 +392,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase("property2");
+		Database db = conn.getDatabase("bugs");
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->LoadDocument("property2", d.getID(), v.getObject());
+		designercontrol->LoadDocument("bugs", d.getID(), v.getObject());
 		break;
 		}
 	case WM_COMMAND:
@@ -462,7 +467,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
-	Database db = conn.getDatabase("property2");
+	Database db = conn.getDatabase("bugs");
 	db.listenForChanges(changesArrived);
 
 	return 0;
@@ -474,7 +479,7 @@ void Desktop::formModified(){
 	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
-	Database db = conn.getDatabase("property2");
+	Database db = conn.getDatabase("bugs");
 
 	db.createDocument(Value(o), "template/property");
 }

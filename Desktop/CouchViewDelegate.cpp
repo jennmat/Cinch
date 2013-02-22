@@ -26,7 +26,7 @@ void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	Database db = conn.getDatabase("property2");
+	Database db = conn.getDatabase("bugs");
 
 	string s = ws2s(design);
 	int ix = s.find("/");
@@ -157,12 +157,12 @@ void CouchViewDelegate::prepareNewRow(int row){
 }
 
 HFONT CouchViewDelegate::getFont(){
-	HFONT hFont=CreateFont(17,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	return hFont;
 }
 
 HFONT CouchViewDelegate::getEditFont(){
-	HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	return hFont;
 }
 

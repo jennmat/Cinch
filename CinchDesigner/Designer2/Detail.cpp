@@ -75,7 +75,7 @@ void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 	memset(fieldName[i], 0, len);
 	wcscpy_s(fieldName[i], len, field);
 
-	HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(detailPages[i], WM_SETFONT,(WPARAM)hFont,0);	
 	
 	ShowPage(i);
@@ -418,7 +418,7 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 		tab2 = CinchGrid::CreateCinchGrid(tabControl, new BlankDelegate());
 		tab3 = CinchGrid::CreateCinchGrid(tabControl, new BlankDelegate());*/
 		
-		HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+		HFONT hFont=DEFAULT_FONT;
 		//SendMessage(tab1, WM_SETFONT,(WPARAM)hFont,0);	
 		SendMessage(tabControl, WM_SETFONT,(WPARAM)hFont,0);	
 		//SetWindowSubclass(tabControl, Detail::WndProc, 0, (DWORD_PTR)this);

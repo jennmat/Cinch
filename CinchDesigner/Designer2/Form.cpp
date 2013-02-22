@@ -113,7 +113,10 @@ void Form::deserializeForm(HWND parent, Value v){
 		wstring wlabel = Designer::s2ws(label);
 		wstring wname = Designer::s2ws(name);
 		string type = field["type"].getString();
-
+		Value config;
+		if ( field["config"].isObject() ){
+			config = field["config"].getObject();
+		}
 		wchar_t* wcname = new wchar_t[name.length()+sizeof(wchar_t)];
 		memset(wcname, 0, name.length() + sizeof(wchar_t));
 		wcscpy_s(wcname, name.length()+sizeof(wchar_t), wname.c_str());
@@ -133,6 +136,12 @@ void Form::deserializeForm(HWND parent, Value v){
 			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname, wclabel);
 		} else if ( type.compare(YESNO) == 0 ){
 			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(MULTILINE) == 0 ){
+			formField = FormField::createMultilineText(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(EDIT) == 0 ){
+			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(REFERENCE) == 0 ){
+			formField = FormField::createReferenceField(parent, GetModuleHandle(0), wcname, wclabel, config);
 		} else {
 			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
 		}
@@ -232,7 +241,7 @@ void Form::SaveDocument(int changedFieldId){
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase("property2");
+	Database db2 = conn.getDatabase("bugs");
 	Document updatedDoc = db2.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();

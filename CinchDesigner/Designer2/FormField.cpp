@@ -39,7 +39,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -50,6 +50,62 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
+	return field;
+}
+
+FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config)
+{
+	static int fieldId = 9870;
+
+	FormField* field = new ReferenceField();
+
+	field->controlChildId = fieldId++;
+
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+
+	HFONT hFont=DEFAULT_FONT
+	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+
+	vector<string>* ids = new vector<string>();
+
+
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	field->controlType = "Reference";
+	field->name = name;
+	
+	if ( config.isObject() ){
+		if ( config["pick-from"].isObject() ){
+			Object pick = config["pick-from"].getObject();
+			string design, view;
+			design = pick["design"].getString();
+			view = pick["view"].getString();
+
+			if ( design.length() > 0 && view.length() > 0 ){
+				Connection conn;
+				Database db = conn.getDatabase("bugs");
+				Object results = db.viewResults(design, view, Value(), 10);
+
+				Array rows = results["rows"].getArray();
+				for(unsigned int i=0; i<rows.size(); i++){
+					Object row = rows[i].getObject();
+					string key = row["key"].getString();
+
+					wstring wkey = Designer::s2ws(key);
+					SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)wkey.c_str()); 
+					ids->push_back(row["id"].getString());
+				}
+			}
+		}
+	}
+
+	SetWindowLong(field->control, GWL_USERDATA, (ULONG_PTR)ids);
+
 	return field;
 }
 
@@ -67,7 +123,7 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -95,7 +151,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE | WS_TABSTOP,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -145,7 +201,7 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -168,7 +224,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -191,7 +247,7 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -223,7 +279,7 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -256,15 +312,15 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=CreateFont(16,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont = DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Multiline";
 	field->name = name;
 	
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL,
-		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
+		0, 0, CONTROL_WIDTH, 75, parent, NULL, hInst, NULL);
 	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	return field;
@@ -286,8 +342,10 @@ void EditField::clearValue(){
 }
 
 Object EditField::storeValue(Object obj){
-	LPWSTR str = new wchar_t[80];
-	GetWindowText(getControl(), str, 80);
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
+	
+	GetWindowText(getControl(), str, len);
 	string key = Designer::ws2s(getName());
 	string value = Designer::ws2s(str);
 	obj[key.c_str()] = value;	
@@ -400,3 +458,46 @@ Object YesNoField::storeValue(Object obj){
 	
 	return obj;
 }
+
+
+
+
+void ReferenceField::clearValue(){
+	ComboBox_SetCurSel(getControl(), -1);
+}
+
+Object ReferenceField::storeValue(Object obj){
+
+	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
+	int idx = ComboBox_GetCurSel(getControl());
+
+	string key = Designer::ws2s(getName());
+
+	if ( idx >= 0 ){
+		string id = (*ids)[idx];
+		obj[key.c_str()] = id;	
+	} else {
+		obj[key.c_str()] = Value();
+	}
+
+	return obj;
+
+}
+
+void ReferenceField::loadValue(Object obj){
+
+	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
+	
+	const wchar_t* name = getName();
+	string n = Designer::ws2s(name);
+
+	if ( obj[n.c_str()].isString() ){
+		string id = obj[n.c_str()].getString();
+		for(int i=0; i<ids->size(); i++){
+			if( (*ids)[i].compare(id) == 0 ){
+				ComboBox_SetCurSel(getControl(), i);
+			}
+		}
+	}
+}
+

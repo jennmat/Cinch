@@ -197,7 +197,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		if ( wmEvent == BN_CLICKED ){
 			_this->getForm()->SaveDocument(wmId);
 		}
-		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == BN_KILLFOCUS){
+		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == BN_KILLFOCUS || wmEvent == CBN_SELCHANGE){
 			_this->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)
@@ -299,7 +299,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				Object o = _this->getForm()->serializeFormToObject(_this->getLoadedForm());
 
 				Connection conn;
-				Database db = conn.getDatabase("property2");
+				Database db = conn.getDatabase("bugs");
 
 				Document newDoc = db.createDocument(Value(o), "template/"+ _this->getType());
 				_this->setLoadedForm(newDoc.getData().getObject());
@@ -405,6 +405,18 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
+		Connection conn;
+		Database d = conn.getDatabase("bugs");
+		Object obj = d.viewResults("all-objects", "by-label", Value(), 10);
+		if ( obj["rows"].isArray() ){
+			Array results = obj["rows"].getArray();
+			for(unsigned int i=0; i<results.size(); i++){
+				Object row = results[i].getObject();
+				string key = row["key"].getString();
+				wstring wkey = Designer::s2ws(key);
+				SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
+			}
+		}
 	
 		ComboBox_SelectString(combo, 0, L"Medium Text");
 		return (INT_PTR)TRUE;
@@ -458,7 +470,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				default:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value());
 					break;
 				}
 				_this->getForm()->addField(field);
@@ -672,11 +684,13 @@ void CinchDesigner::LoadDocument(string database, string _id, Object obj){
 			type = t;
 			Connection conn;
 			Database db = conn.getDatabase(database);
-			Document doc = db.getDocument("template/" + type);
-			Value v = doc.getData();
-			loadedForm = v.getObject();
-			form->deserializeForm(hWnd, v);
-
+			try {
+				Document doc = db.getDocument("template/" + type);
+				Value v = doc.getData();
+				loadedForm = v.getObject();
+				form->deserializeForm(hWnd, v);
+			}catch(Exception e){
+			}
 		}
     }
 

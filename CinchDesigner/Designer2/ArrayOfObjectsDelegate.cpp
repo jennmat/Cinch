@@ -39,9 +39,9 @@ void ArrayOfObjectsDelegate::setData(Array array){
 		data.push_back(rowData);
 	} 
 
-	for(int i=0; i<data.size(); i++){
+	for(unsigned int i=0; i<data.size(); i++){
 		vector<wstring> row = data[i];
-		for(int j=0; j<row.size(); j++){
+		for(unsigned int j=0; j<row.size(); j++){
 			wstring jk = row[j];
 			int a = 1;
 		}
@@ -77,7 +77,7 @@ const wchar_t* ArrayOfObjectsDelegate::cellContent(int row, int col)
 
     vector<wstring> rowData = data[row];
 	wstring data = L"";
-	if ( col < rowData.size() ) {
+	if ( col < (int)rowData.size() ) {
 		data = rowData[col];
 	}
 	
@@ -200,12 +200,12 @@ void ArrayOfObjectsDelegate::prepareNewRow(int row){
 }
 
 HFONT ArrayOfObjectsDelegate::getFont(){
-	HFONT hFont=CreateFont(17,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 
 HFONT ArrayOfObjectsDelegate::getEditFont(){
-	HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 

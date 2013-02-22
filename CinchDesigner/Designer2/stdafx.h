@@ -10,12 +10,15 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#include <WindowsX.h>
 
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
+#include <CommCtrl.h>
 
 #include "Resource.h"
 #include "JsonBox.h"
@@ -46,7 +49,7 @@ class FormDelegate;
 #define ROW_HEIGHT 25
 #define LABEL_WIDTH 150
 #define LABEL_HEIGHT 25
-#define ROW_MARGIN 10
+#define ROW_MARGIN 7
 #define CONTROL_WIDTH 200
 #define CONTROL_HEIGHT 25
 #define MARGIN 10
