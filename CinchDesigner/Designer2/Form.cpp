@@ -195,7 +195,7 @@ void Form::save(wchar_t* filename){
 	v.writeToFile(cfilename);
 }
 
-void Form::NewDocument(){
+void Form::NewDocument(string type){
 	Object * obj = new Object();
 	LoadDocument("", *obj);
 }

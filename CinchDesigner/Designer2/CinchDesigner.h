@@ -25,6 +25,8 @@ private:
 	Form* form;
 	Object loadedForm;
 	string type;
+
+	void loadForm(string database, string type);
 public:
 	CinchDesigner(HWND);
 
@@ -36,6 +38,7 @@ public:
 	void SaveForm();
 	void SetupDetail(HWND);
 	
+	void NewDocument(string database, string type);
 	void LoadDocument(string database, string _id, Object obj);
 	
 	Object getLoadedForm();
@@ -46,7 +49,7 @@ public:
 	static LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 	
 	static HWND CreateCinchDesigner(HWND parent);
-	
+
 };
 
 

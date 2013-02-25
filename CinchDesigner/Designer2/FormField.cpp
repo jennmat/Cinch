@@ -40,12 +40,12 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
 	HFONT hFont=DEFAULT_FONT
-	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Edit";
 	field->name = name;
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -71,7 +71,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 	vector<string>* ids = new vector<string>();
 
 
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -493,7 +493,7 @@ void ReferenceField::loadValue(Object obj){
 
 	if ( obj[n.c_str()].isString() ){
 		string id = obj[n.c_str()].getString();
-		for(int i=0; i<ids->size(); i++){
+		for(unsigned int i=0; i<ids->size(); i++){
 			if( (*ids)[i].compare(id) == 0 ){
 				ComboBox_SetCurSel(getControl(), i);
 			}

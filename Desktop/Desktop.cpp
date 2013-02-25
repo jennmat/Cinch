@@ -356,27 +356,98 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_NOTIFY:
 		{
-
 		LPNMHDR pnmhdr = (LPNMHDR)lParam;
-		if  (pnmhdr->idFrom == IDC_VIEW_TREE && pnmhdr->code == TVN_SELCHANGED ){
+		LPNMTOOLBAR lpnmTB = (LPNMTOOLBAR)lParam;
+
+		switch(pnmhdr->code){
+		case TVN_SELCHANGED:
+			if  (pnmhdr->idFrom == IDC_VIEW_TREE && pnmhdr->code == TVN_SELCHANGED ){
+				HTREEITEM item = ((LPNM_TREEVIEW)pnmhdr)->itemNew.hItem;
+
+				TVITEM tvitem;
+
+				tvitem.hItem = item;
+				tvitem.mask = TVIF_PARAM;
+				TreeView_GetItem(tree, &tvitem);
+
+				if ( tvitem.lParam != NULL ){
+					ViewPair * v = (ViewPair *)tvitem.lParam;
 			
-			HTREEITEM item = ((LPNM_TREEVIEW)pnmhdr)->itemNew.hItem;
+					delegate->setView(v->design, v->view);
+					CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+					gridcontrol->reloadData();
+				}
 
-			TVITEM tvitem;
-
-			tvitem.hItem = item;
-			tvitem.mask = TVIF_PARAM;
-			TreeView_GetItem(tree, &tvitem);
-
-			if ( tvitem.lParam != NULL ){
-				ViewPair * v = (ViewPair *)tvitem.lParam;
-			
-				delegate->setView(v->design, v->view);
-				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-				gridcontrol->reloadData();
 			}
 
+
+			break;
+		case TBN_DROPDOWN:
+			// Get the coordinates of the button.
+            RECT rc;
+            SendMessage(lpnmTB->hdr.hwndFrom, TB_GETRECT, (WPARAM)lpnmTB->iItem, (LPARAM)&rc);
+
+            // Convert to screen coordinates.            
+            MapWindowPoints(lpnmTB->hdr.hwndFrom, HWND_DESKTOP, (LPPOINT)&rc, 2);                         
+        
+            // Get the menu.
+			//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(0), MAKEINTRESOURCE(IDR_POPUP)); 
+         
+            // Get the submenu for the first menu item.
+            //HMENU hPopupMenu = GetSubMenu(hMenuLoaded, 0);
+
+
+			HMENU hPopupMenu = CreatePopupMenu();
+
+			objectTypes.clear();
+
+			Connection conn;
+			Database db = conn.getDatabase("bugs");
+			Object r = db.viewResults("all-objects", "by-label", Value(), 100);
+			Array rows = r["rows"].getArray();
+			for(unsigned int i=0; i<rows.size(); i++){
+				Object row = rows[i].getObject();
+				string key = row["key"].getString();
+				wstring wkey = s2ws(key);
+				
+				Document doc = db.getDocument(row["id"].getString());
+
+				objectTypes.push_back(doc.getData().getObject());
+
+				InsertMenu(hPopupMenu, i, MF_BYPOSITION | MF_STRING, IDD_ADD_OBJECT, wkey.c_str());
+            }
+			
+
+			MENUINFO mi;
+			memset(&mi, 0, sizeof(mi));
+			mi.cbSize = sizeof(mi);
+			mi.fMask = MIM_STYLE;
+			mi.dwStyle = MNS_NOTIFYBYPOS;
+			SetMenuInfo(hPopupMenu, &mi);
+
+            // Set up the pop-up menu.
+            // In case the toolbar is too close to the bottom of the screen, 
+            // set rcExclude equal to the button rectangle and the menu will appear above 
+            // the button, and not below it.
+         
+            TPMPARAMS tpm;
+         
+            tpm.cbSize    = sizeof(TPMPARAMS);
+            tpm.rcExclude = rc;
+         
+            // Show the menu and wait for input. 
+            // If the user selects an item, its WM_COMMAND is sent.
+         
+            TrackPopupMenuEx(hPopupMenu, 
+                             TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, 
+                             rc.left, rc.bottom, hWnd, &tpm);
+
+            DestroyMenu(hPopupMenu);
+         
+        return (FALSE);
+			break;
 		}
+		
 		break;
 		}
 	case WM_NEW_DATA_ARRIVED:
@@ -398,6 +469,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		designercontrol->LoadDocument("bugs", d.getID(), v.getObject());
 		break;
 		}
+	case WM_MENUCOMMAND:
+		{
+		int idx = wParam;
+		Object objectDefinition = objectTypes[idx];
+		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+		designercontrol->NewDocument("bugs", objectDefinition["name"].getString());
+			
+
+		}
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -410,12 +491,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
-		case IDM_NEW_DOCUMENT:
-			{
-			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-			designercontrol->getForm()->NewDocument();
-			break;
-			}
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;

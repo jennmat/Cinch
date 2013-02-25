@@ -673,25 +673,37 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+void CinchDesigner::loadForm(string database, string t){
+	if ( type.compare(t) == 0 ){
+		/* skip loading the form, since we already have it */
+		/* TODO: Check here if the form has been changed */
+	} else {
+		type = t;
+		Connection conn;
+		Database db = conn.getDatabase(database);
+		try {
+			Document doc = db.getDocument("template/" + type);
+			Value v = doc.getData();
+			loadedForm = v.getObject();
+			form->deserializeForm(hWnd, v);
+		}catch(Exception e){
+		}
+	}
+}
+
+void CinchDesigner::NewDocument(string database, string type){
+	loadForm(database, type);
+	Object* obj = new Object();
+	(*obj)["type"] = Value(type);
+	form->LoadDocument("", *obj);
+}
+
 void CinchDesigner::LoadDocument(string database, string _id, Object obj){
 	/* First load the template for this doc */
 	if ( obj["type"].isString() ){
 		string t = obj["type"].getString();
 
-		if ( type.compare(t) == 0 ){
-			/* skip loading the form, since we already have it */
-		} else {
-			type = t;
-			Connection conn;
-			Database db = conn.getDatabase(database);
-			try {
-				Document doc = db.getDocument("template/" + type);
-				Value v = doc.getData();
-				loadedForm = v.getObject();
-				form->deserializeForm(hWnd, v);
-			}catch(Exception e){
-			}
-		}
+		loadForm(database, t);
     }
 
 	form->LoadDocument(_id, obj);

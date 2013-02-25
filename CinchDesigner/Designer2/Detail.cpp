@@ -254,12 +254,12 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			Object configuration = detail->getConfiguration();
 			Array tabs = configuration["tabs"].getArray();
 
-			for(int i=0; i<tabs.size(); i++){
+			for(unsigned int i=0; i<tabs.size(); i++){
 				Object tab = tabs[i].getObject();
 				if ( tab["name"].getString().compare(tabName) == 0 ){
 					Object config = tab["config"].getObject();
 					Array columns = config["columns"].getArray();
-					for(int j=0; j<columns.size(); j++){
+					for(unsigned int j=0; j<columns.size(); j++){
 						Object column = columns[j].getObject();
 		
 						wstring label = s2ws(column["label"].getString());
