@@ -27,6 +27,8 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
+INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -419,7 +421,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
 			
 
-			InsertMenu(hPopupMenu, i+1, MF_BYPOSITION | MF_STRING, IDD_ADD_DOCUMENT_TYPE, L"Document Type");
+			InsertMenu(hPopupMenu, i+1, MF_BYPOSITION | MF_STRING, IDC_ADD_DOCUMENT_TYPE, L"Document Type");
 
 			MENUINFO mi;
 			memset(&mi, 0, sizeof(mi));
@@ -474,9 +476,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	case WM_MENUCOMMAND:
 		{
-		int idx = wParam;
+		unsigned int idx = wParam;
 		if ( idx >= objectTypes.size() ){
-			//New document type
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
 		} else {
 			Object objectDefinition = objectTypes[idx];
 			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
@@ -541,6 +543,54 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+
+
+// Message handler for about box.
+INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK ){
+			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL)) + 1;
+			wchar_t * label = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL), label, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME)) + 1;
+			wchar_t * name = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME), name, len);
+
+			string sname = ws2s(name);
+			string slabel = ws2s(label);
+
+			Object obj = Object();
+			obj["name"] = sname;
+			obj["label"] = slabel;
+			obj["type"] = "object-definition";
+
+			Connection conn;
+			Database db = conn.getDatabase("bugs");
+			db.createDocument(Value(obj));
+
+		}
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+
+
 void changesArrived(){
 	PostMessage(hWnd, WM_NEW_DATA_ARRIVED, 0, 0);
 }
@@ -564,4 +614,6 @@ void Desktop::formModified(){
 
 	db.createDocument(Value(o), "template/property");
 }
+
+
 

@@ -3,23 +3,29 @@
 // Used by Desktop.rc
 //
 
-#define IDR_MAINFRAME			128
-#define IDD_DESKTOP_DIALOG	102
-#define IDD_ABOUTBOX			103
-#define IDD_ADD_OBJECT							119
-#define IDD_ADD_DOCUMENT_TYPE	121
-#define IDM_ABOUT				104
-#define IDM_EXIT				105
-#define IDM_NEW_DOCUMENT	129
-#define IDI_DESKTOP			107
-#define IDI_SMALL				108
-#define IDI_NEW				110
-#define IDC_DESKTOP			8109
-#define IDC_MYICON				2
-#define IDC_VIEW_TREE			1098
+#define IDR_MAINFRAME				128
+#define IDD_DESKTOP_DIALOG			102
+#define IDD_ABOUTBOX				103
+#define IDD_ADD_OBJECT				119
+#define IDC_ADD_DOCUMENT_TYPE		121
+#define IDM_ABOUT					104
+#define IDM_EXIT					105
+#define IDM_NEW_DOCUMENT			129
+#define IDI_DESKTOP					107
+#define IDI_SMALL					108
+#define IDI_NEW						110
+#define IDC_DESKTOP					8109
+#define IDC_MYICON					2
+#define IDC_VIEW_TREE				1098
 #ifndef IDC_STATIC
-#define IDC_STATIC				-1
-#define IDB_TREE			9482
+#define IDC_STATIC					-1
+#define IDB_TREE					9482
+
+#define IDD_ADD_DOCUMENT_TYPE                   198
+#define IDC_ADD_DOCUMENT_TYPE_NAME              1004
+#define IDC_ADD_DOCUMENT_TYPE_LABEL             1005
+
+
 #endif
 // Next default values for new objects
 //
