@@ -219,9 +219,7 @@ void Form::LoadDocument(string _id, Object _obj){
 		field->clearValue();
 		field->loadValue(obj);
 	}
-	string nickname = obj["nickname"].getString();
-	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
-
+	
 	detail.LoadDocument(obj);
 
 	hasDocument = true;

@@ -405,7 +405,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			Database db = conn.getDatabase("bugs");
 			Object r = db.viewResults("all-objects", "by-label", Value(), 100);
 			Array rows = r["rows"].getArray();
-			for(unsigned int i=0; i<rows.size(); i++){
+			unsigned int i = 0;
+			for(; i<rows.size(); i++){
 				Object row = rows[i].getObject();
 				string key = row["key"].getString();
 				wstring wkey = s2ws(key);
@@ -417,6 +418,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				InsertMenu(hPopupMenu, i, MF_BYPOSITION | MF_STRING, IDD_ADD_OBJECT, wkey.c_str());
             }
 			
+
+			InsertMenu(hPopupMenu, i+1, MF_BYPOSITION | MF_STRING, IDD_ADD_DOCUMENT_TYPE, L"Document Type");
 
 			MENUINFO mi;
 			memset(&mi, 0, sizeof(mi));
@@ -472,11 +475,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MENUCOMMAND:
 		{
 		int idx = wParam;
-		Object objectDefinition = objectTypes[idx];
-		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-		designercontrol->NewDocument("bugs", objectDefinition["name"].getString());
-			
-
+		if ( idx >= objectTypes.size() ){
+			//New document type
+		} else {
+			Object objectDefinition = objectTypes[idx];
+			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+			designercontrol->NewDocument("bugs", objectDefinition["name"].getString());
+		}
+		
 		}
 		break;
 	case WM_COMMAND:

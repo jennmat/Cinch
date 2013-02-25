@@ -7,6 +7,7 @@
 #define IDD_DESKTOP_DIALOG	102
 #define IDD_ABOUTBOX			103
 #define IDD_ADD_OBJECT							119
+#define IDD_ADD_DOCUMENT_TYPE	121
 #define IDM_ABOUT				104
 #define IDM_EXIT				105
 #define IDM_NEW_DOCUMENT	129
