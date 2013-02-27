@@ -25,7 +25,7 @@ int FormLayout::minWidth()
 }
 
 void FormLayout::removeAllFields(){
-	for(int j=0; j<fields.size(); j++){
+	for(unsigned int j=0; j<fields.size(); j++){
 		DestroyWindow(fields[j]->getControl());
 		DestroyWindow(fields[j]->getLabel());
 	}
@@ -42,7 +42,7 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 	int maxWidth = 0;
 	int accumulatedHeight = LAYOUT_MARGIN;
 
-	int j;
+	unsigned int j;
 	for(j=0; j<this->fields.size(); j++){
 		FormField* field = this->fields[j];
 		

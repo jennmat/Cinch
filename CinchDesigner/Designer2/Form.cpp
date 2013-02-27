@@ -174,6 +174,7 @@ Object Form::serializeFormToObject(Object obj){
 		f["label"] = Value(label);
 		f["type"] = Value(fld->getControlType());
 		f["name"] = Value(name);
+		f["config"] = fld->getConfig();
 		fields.push_back(f);
 	}
 

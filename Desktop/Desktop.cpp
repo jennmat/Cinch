@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Desktop.h"
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -169,6 +170,69 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
     return hPrev; 
 } 
 
+void LoadViews(HWND hwnd){
+
+	TreeView_DeleteAllItems(hwnd);
+
+	Connection conn;
+	Database db = conn.getDatabase("bugs");
+	Object views = db.listViews();
+
+   if ( views["total_rows"].getInt() > 0 ){
+	   Array rows = views["rows"].getArray();
+	   for(unsigned int i=0; i<rows.size(); i++){
+		   Object row = rows[i].getObject();
+			
+		   Object doc = row["doc"].getObject();
+		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
+			   continue;
+		   }
+		   wstring name;
+		   wstring id = s2ws(row["id"].getString());
+		   if ( doc["label"].isString() ){
+				name = s2ws(doc["label"].getString());
+		   } else {
+				name = s2ws(row["id"].getString());
+		   }
+		   LPWSTR str = new wchar_t[80];
+		   wcscpy_s(str, 80, name.c_str());
+
+		   AddItemToTree(hwnd, str, NULL, 1);
+	
+		   Object views = doc["views"].getObject();
+		   Object::const_iterator it = views.begin();
+		   for(it=views.begin(); it != views.end(); it++){
+				pair<string, Value> p = *it;
+				wstring view = s2ws(p.first);
+				wstring name = s2ws(p.first);
+				Object o = p.second.getObject();
+				if ( o["label"].isString() ){
+					name = s2ws(o["label"].getString());
+				}
+				LPWSTR str = new wchar_t[80];
+				wcscpy_s(str, 80, name.c_str());
+
+				int dlen = id.length() + sizeof(wchar_t);
+				ViewPair* v = new ViewPair;
+				v->design = new wchar_t[dlen];
+				wcscpy_s(v->design, dlen, id.c_str());
+
+				int vlen = view.length() + sizeof(wchar_t);
+				v->view = new wchar_t[vlen];
+				wcscpy_s(v->view, vlen, view.c_str());
+				
+				AddItemToTree(hwnd, str, (LPARAM)v, 2);
+		
+		   }
+		   //for(unsigned int j = 0; j<views.size(); j++){
+			 //  Object view = views[j].getObject();
+			  // int a = 1;
+			//}
+
+	   }
+   }
+}
+
 void SizeWindows(HWND hWnd);
 
 //
@@ -252,69 +316,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
 
-   LOGFONT font;
-   SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &font, 0);
-
-
    ShowWindow(grid, SW_SHOW);
    ShowWindow(designer, SW_SHOW);
 
- 
-   Object views = db.listViews();
-
-   if ( views["total_rows"].getInt() > 0 ){
-	   Array rows = views["rows"].getArray();
-	   for(unsigned int i=0; i<rows.size(); i++){
-		   Object row = rows[i].getObject();
-			
-		   Object doc = row["doc"].getObject();
-		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
-			   continue;
-		   }
-		   wstring name;
-		   wstring id = s2ws(row["id"].getString());
-		   if ( doc["label"].isString() ){
-				name = s2ws(doc["label"].getString());
-		   } else {
-				name = s2ws(row["id"].getString());
-		   }
-		   LPWSTR str = new wchar_t[80];
-		   wcscpy_s(str, 80, name.c_str());
-
-		   AddItemToTree(tree, str, NULL, 1);
-	
-		   Object views = doc["views"].getObject();
-		   Object::const_iterator it = views.begin();
-		   for(it=views.begin(); it != views.end(); it++){
-				pair<string, Value> p = *it;
-				wstring view = s2ws(p.first);
-				wstring name = s2ws(p.first);
-				Object o = p.second.getObject();
-				if ( o["label"].isString() ){
-					name = s2ws(o["label"].getString());
-				}
-				LPWSTR str = new wchar_t[80];
-				wcscpy_s(str, 80, name.c_str());
-
-				int dlen = id.length() + sizeof(wchar_t);
-				ViewPair* v = new ViewPair;
-				v->design = new wchar_t[dlen];
-				wcscpy_s(v->design, dlen, id.c_str());
-
-				int vlen = view.length() + sizeof(wchar_t);
-				v->view = new wchar_t[vlen];
-				wcscpy_s(v->view, vlen, view.c_str());
-				
-				AddItemToTree(tree, str, (LPARAM)v, 2);
-		
-		   }
-		   //for(unsigned int j = 0; j<views.size(); j++){
-			 //  Object view = views[j].getObject();
-			  // int a = 1;
-			//}
-
-	   }
-   }
+	LoadViews(tree);
+  
 
    ShowWindow(tree, SW_SHOW);
    SizeWindows(hWnd);
@@ -561,23 +567,102 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 
 			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL), label, len);
 
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL)) + 1;
+			wchar_t * plurallabel = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL), plurallabel, len);
+
+
 			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME)) + 1;
 			wchar_t * name = new wchar_t[len];
 
 			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME), name, len);
 
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_NAME)) + 1;
+			wchar_t * fname = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_NAME), fname, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL)) + 1;
+			wchar_t * flabel = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL), flabel, len);
+
+
 			string sname = ws2s(name);
 			string slabel = ws2s(label);
+			string splurallabel = ws2s(plurallabel);
 
-			Object obj = Object();
-			obj["name"] = sname;
-			obj["label"] = slabel;
-			obj["type"] = "object-definition";
+			string sfname = ws2s(fname);
+			string sflabel = ws2s(flabel);
+
+			Object definition = Object();
+			definition["name"] = sname;
+			definition["label"] = slabel;
+			definition["type"] = "object-definition";
+
+			
+			/* Create a default view */
+			char map[1024];
+			memset(map, 0, 1024);
+
+			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' ) emit(doc.%s, null); }", sname.c_str(), sfname.c_str());	
+
+			Object design = Object();
+			design["language"] = "javascript";
+			Object view = Object();
+			stringstream viewname;
+			viewname << "by-";
+			viewname << sfname;
+
+			stringstream viewlabelstream;
+			viewlabelstream << "By ";
+			viewlabelstream << sflabel;
+
+			Object v = Object();
+			v["label"] = viewlabelstream.str();
+			v["map"] = map;
+
+			view[viewname.str()] = v;
+			
+			stringstream labelstream;
+			labelstream << "All ";
+			labelstream << splurallabel;
+			design["label"] = labelstream.str();
+			design["views"] = view;
+
+			stringstream id;
+			id << "_design/";
+			id << sname;
+
+
+			/* Create a starter template */
+			Object _template = Object();
+			Array fields = Array();
+			Object field = Object();
+
+			field["name"] = sfname;
+			field["label"] = sflabel;
+			field["type"] = EDIT;
+
+			fields.push_back(field);
+			_template["fields"] = fields;
+
 
 			Connection conn;
 			Database db = conn.getDatabase("bugs");
-			db.createDocument(Value(obj));
 
+			db.createDocument(Value(definition));
+
+			db.createDocument(Value(design), id.str());
+
+			stringstream template_id;
+			template_id << "template/";
+			template_id << sname;
+
+			db.createDocument(Value(_template), template_id.str());
+
+			LoadViews(tree);
 		}
 		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 		{

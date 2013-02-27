@@ -387,9 +387,13 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	return (INT_PTR)FALSE;
 }
 
+void LoadViews(HWND hwnd);
+
 
 INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	int wmEvent;
+
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
@@ -404,6 +408,8 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Choose from many values");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
+
+		LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE));
 
 		Connection conn;
 		Database d = conn.getDatabase("bugs");
@@ -423,6 +429,18 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 	case WM_COMMAND:
+		wmEvent = HIWORD(wParam);
+		if ( wmEvent == CBN_SELCHANGE ){
+			HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
+			int type = SendMessage(typeCombo, CB_GETCURSEL, 0, 0);
+			if ( type > 7 ){
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_SHOW);
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_SHOW);
+			} else {
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_HIDE);
+			}
+		}
 		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 		{
 			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_FIELD_NAME));
@@ -470,7 +488,34 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				default:
-					field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value());
+					{
+						HWND tree = GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE);
+
+						HTREEITEM item = TreeView_GetSelection(tree);
+
+
+
+						TVITEM tvitem;
+
+						tvitem.hItem = item;
+						tvitem.mask = TVIF_PARAM;
+						TreeView_GetItem(tree, &tvitem);
+
+						if ( tvitem.lParam != NULL ){
+							DViewPair * v = (DViewPair *)tvitem.lParam;
+							Object config;
+							Object pickFrom;
+							string design = Designer::ws2s(v->design);
+							string d = design.substr(design.find("/")+1);
+							pickFrom["design"] = d;
+							pickFrom["view"] = Designer::ws2s(v->view);
+							config["pick_from"] = pickFrom;
+
+							field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value(config));
+					
+						}
+						
+					}
 					break;
 				}
 				_this->getForm()->addField(field);

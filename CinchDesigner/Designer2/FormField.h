@@ -16,7 +16,7 @@ private:
 	HWND control;
 	char* controlType;
 	const wchar_t* name;
-	
+	Value config;
 
 public:
 	int controlChildId;
@@ -27,6 +27,9 @@ public:
 	const wchar_t* getName();
 	HWND getLabel();
 	HWND getControl();
+
+	Value getConfig();
+
 	virtual void loadValue(Object obj) = 0;
 	virtual void clearValue() = 0;
 	virtual Object storeValue(Object obj) = 0;

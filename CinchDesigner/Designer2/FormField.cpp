@@ -28,6 +28,10 @@ char* FormField::getControlType()
 	return this->controlType;
 }
 
+Value FormField::getConfig(){
+	return config;
+}
+
 FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
 {
 	static int fieldId = 12002;
@@ -45,6 +49,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 
 	field->controlType = "Edit";
 	field->name = name;
+	field->config = Value();
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
@@ -78,10 +83,11 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 	
 	field->controlType = "Reference";
 	field->name = name;
-	
+	field->config = config;
+
 	if ( config.isObject() ){
-		if ( config["pick-from"].isObject() ){
-			Object pick = config["pick-from"].getObject();
+		if ( config["pick_from"].isObject() ){
+			Object pick = config["pick_from"].getObject();
 			string design, view;
 			design = pick["design"].getString();
 			view = pick["view"].getString();
@@ -118,7 +124,7 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	FormField* field = new NumberField();
 
 	field->controlChildId = fieldId++;
-
+	field->config = Value();
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -157,7 +163,8 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 
 	field->controlType = "Combo";
 	field->name = label;
-	
+	field->config = Value();
+
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
@@ -223,7 +230,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
-
+	field->config = Value();
 	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
@@ -236,6 +243,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
+
 	return field;
 }
 
@@ -246,7 +254,7 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
-
+	field->config = Value();
 	HFONT hFont=DEFAULT_FONT
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
@@ -275,7 +283,8 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	
 	FormField* field = new YesNoField();
 	field->controlChildId = fieldId++;
-	
+	field->config = Value();
+
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
@@ -318,6 +327,7 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 
 	field->controlType = "Multiline";
 	field->name = name;
+	field->config = Value();
 	
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 		0, 0, CONTROL_WIDTH, 75, parent, NULL, hInst, NULL);
