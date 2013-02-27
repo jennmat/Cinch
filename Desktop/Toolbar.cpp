@@ -51,7 +51,7 @@ HWND CreateCinchToolbar(HWND hWndParent)
 	HINSTANCE g_hInst = GetModuleHandle(0);
     // Declare and initialize local constants.
     const int ImageListID    = 0;
-    const int numButtons     = 1;
+    const int numButtons     = 2;
     const int bitmapSize     = 24;
     
     const DWORD buttonStyles = BTNS_AUTOSIZE | BTNS_DROPDOWN;
@@ -84,7 +84,8 @@ HWND CreateCinchToolbar(HWND hWndParent)
     
     TBBUTTON tbButtons[numButtons] = 
     {
-		{ MAKELONG(STD_FILENEW,  ImageListID), IDM_NEW_DOCUMENT,  TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)L"New	" }
+		{ MAKELONG(STD_FILENEW,  ImageListID), IDM_NEW_DOCUMENT,  TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)L"New	" },
+		{ MAKELONG(STD_FILENEW,  ImageListID), IDM_NEW_VIEW,  TBSTATE_ENABLED, BTNS_AUTOSIZE, {0}, 0, (INT_PTR)L"New View" }
     };
 
     // Add buttons.

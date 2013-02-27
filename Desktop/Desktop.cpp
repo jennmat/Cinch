@@ -27,6 +27,7 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	NewView(HWND, UINT, WPARAM, LPARAM);
 
 INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -502,6 +503,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		switch (wmId)
 		{
+		case IDM_NEW_VIEW:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_VIEW), hWnd, NewView);
+			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
@@ -540,6 +544,216 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	int wmId;
+	int wmEvent;
+
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+		vector<string>* compareOperators = new vector<string>();
+		HWND compareCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_COMPARE);
+		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
+		compareOperators->push_back("==");
+		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
+		compareOperators->push_back("!=");
+		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is greater than");
+		compareOperators->push_back(">");
+		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is less than");
+		compareOperators->push_back("<");
+		
+		SetWindowLong(compareCombo, GWL_USERDATA, (ULONG_PTR)compareOperators);
+
+		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+
+		Connection conn;
+		Database db = conn.getDatabase("bugs");
+		Object r = db.viewResults("all-objects", "by-label", Value(), 100);
+	
+		vector<string>* ids = new vector<string>();
+
+		Array rows = r["rows"].getArray();
+		unsigned int i = 0;
+		for(; i<rows.size(); i++){
+			Object row = rows[i].getObject();
+			string key = row["key"].getString();
+			wstring wkey = s2ws(key);
+				
+			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
+			ids->push_back(row["id"].getString());
+
+        }
+
+		SetWindowLong(typeCombo, GWL_USERDATA, (ULONG_PTR)ids);
+
+		return (INT_PTR)TRUE;
+
+		}
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		switch( wmEvent ){
+		case CBN_SELCHANGE:
+			{
+				if ( wmId == IDC_ADD_VIEW_DOC_TYPE ){
+
+					HWND fieldCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_FIELD);
+					HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
+					ComboBox_ResetContent(fieldCombo);
+					ComboBox_ResetContent(sortCombo);
+
+					HWND typeCombo = GetDlgItem(hDlg, wmId);
+					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+					int idx = ComboBox_GetCurSel(typeCombo);
+					string id = (*ids)[idx];
+
+					Connection conn;
+					Database db = conn.getDatabase("bugs");
+					Document doc = db.getDocument(id);
+					Object obj = doc.getData().getObject();
+
+					if (obj["name"].isString() ){
+						string name = obj["name"].getString();
+
+						stringstream template_id;
+						template_id << "template/" << name;
+						Document doc = db.getDocument(template_id.str());
+						Value v = doc.getData();
+						if ( v.isObject() ){
+							Object templ = v.getObject();
+							if ( templ["fields"].isArray() ){
+								Array fields = templ["fields"].getArray();
+								vector<Object>* fieldsVector = new vector<Object>();
+								for(unsigned i=0; i<fields.size(); i++){
+									Object field = fields[i].getObject();
+									string name = field["name"].getString();
+									string label = field["label"].getString();
+
+									wstring wlabel = s2ws(label);
+
+									fieldsVector->push_back(field);
+									SendMessage(fieldCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+									SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+								}
+
+								SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+								SetWindowLong(sortCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+							}
+						}
+					}
+				}
+				else if ( wmId == IDC_ADD_VIEW_FIELD ){
+					
+
+				}
+			}
+			break;
+		}
+		if ( wmId == IDOK ){
+			/* Create the view */
+			HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+			HWND fieldCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_FIELD);
+			HWND compareCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_COMPARE);
+			HWND valueEdit = GetDlgItem(hDlg, IDC_COMPARE_TO_VALUE);	
+			HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
+			HWND newViewNameEdit = GetDlgItem(hDlg, IDC_NEW_VIEW_NAME);
+
+			char map[1024];
+			memset(map, 0, 1024);
+			vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+			int idx = ComboBox_GetCurSel(typeCombo);
+			string id = (*ids)[idx];
+
+			Connection conn;
+			Database db = conn.getDatabase("bugs");
+			Document doc = db.getDocument(id);
+			Object obj = doc.getData().getObject();
+
+			string type;
+			if (obj["name"].isString() ){
+				type = obj["name"].getString();
+			}
+
+			int fieldIdx = ComboBox_GetCurSel(fieldCombo);
+			vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(fieldCombo, GWL_USERDATA);
+			Object field = (*fieldsVector)[fieldIdx];
+
+			string fieldforcomparison = field["name"].getString();
+
+			vector<string>* operatorVector = (vector<string>*)GetWindowLong(compareCombo, GWL_USERDATA);
+			int compareIdx = ComboBox_GetCurSel(compareCombo);
+			string comparison = (*operatorVector)[compareIdx];
+
+			int len = GetWindowTextLength(valueEdit) + 1;
+			wchar_t* val = new wchar_t[len];
+			GetWindowText(valueEdit, val, len);
+
+			string valueforcomparison = ws2s(val);
+
+			int sortIdx = ComboBox_GetCurSel(sortCombo);
+			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
+			Object sortFields = (*sortFieldsVector)[sortIdx];
+
+			string sortby = sortFields["name"].getString();
+			string sortbylabel = sortFields["label"].getString();
+
+			int namelen = GetWindowTextLength(newViewNameEdit) + 1;
+			wchar_t* wname = new wchar_t[namelen];
+			GetWindowText(newViewNameEdit, wname, namelen);
+
+			string name = ws2s(wname);
+
+			string viewnamesanitized = name;
+
+			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' && doc.%s && doc.%s %s '%s' ) emit(doc.%s, null); }", 
+				type.c_str(), fieldforcomparison.c_str(), fieldforcomparison.c_str(), comparison.c_str(), valueforcomparison.c_str(), sortby.c_str());	
+
+			Object design = Object();
+			design["language"] = "javascript";
+			Object view = Object();
+			stringstream viewname;
+			viewname << "by-";
+			viewname << sortby;
+
+			stringstream viewlabelstream;
+			viewlabelstream << "By ";
+			viewlabelstream << sortbylabel;
+
+			Object v = Object();
+			v["label"] = viewlabelstream.str();
+			v["map"] = map;
+
+			view[viewname.str()] = v;
+			
+			stringstream labelstream;
+			labelstream << name;
+			design["label"] = labelstream.str();
+			design["views"] = view;
+
+			stringstream design_id;
+			design_id << "_design/";
+			design_id << viewnamesanitized;
+
+			db.createDocument(Value(design), design_id.str());
+
+			LoadViews(tree);
+
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		else if (LOWORD(wParam) == IDCANCEL)
 		{
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
