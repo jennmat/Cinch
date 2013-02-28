@@ -35,7 +35,7 @@ public:
 	virtual Object storeValue(Object obj) = 0;
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
+	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
@@ -78,6 +78,15 @@ public:
 };
 
 class ReferenceField : public FormField {
+public:
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+
+};
+
+
+class ComboBoxField : public FormField {
 public:
 	void loadValue(Object obj);
 	void clearValue();

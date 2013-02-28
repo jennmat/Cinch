@@ -140,6 +140,8 @@ void Form::deserializeForm(HWND parent, Value v){
 			formField = FormField::createMultilineText(parent, GetModuleHandle(0), wcname, wclabel);
 		} else if ( type.compare(EDIT) == 0 ){
 			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(COMBO) == 0 ){
+			formField = FormField::createComboBox(parent, GetModuleHandle(0), wcname, wclabel, config);
 		} else if ( type.compare(REFERENCE) == 0 ){
 			formField = FormField::createReferenceField(parent, GetModuleHandle(0), wcname, wclabel, config);
 		} else {

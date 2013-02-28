@@ -150,9 +150,9 @@ const wchar_t* FormField::getName(){
 }
 
 
-FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config)
 {
-	FormField* field = new EditField();
+	FormField* field = new ComboBoxField();
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE | WS_TABSTOP,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -162,37 +162,25 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Combo";
-	field->name = label;
-	field->config = Value();
+	field->name = name;
+	field->config = config;
 
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
-
-	TCHAR Planets[9][10] =  
-	{
-		TEXT("Mercury"), TEXT("Venus"), TEXT("Terra"), TEXT("Mars"), 
-		TEXT("Jupiter"), TEXT("Saturn"), TEXT("Uranus"), TEXT("Neptune"), 
-		TEXT("Pluto??") 
-	};
-       
-	TCHAR A[16]; 
-	int  k = 0; 
-
-	memset(&A,0,sizeof(A));       
-	for (k = 0; k <= 8; k += 1)
-	{
-		wcscpy_s(A, sizeof(A)/sizeof(TCHAR),  (TCHAR*)Planets[k]);
-
-		// Add string to combobox.
-		SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM) A); 
+	if( config["pick_from_list"].isArray() ){
+		Array values = config["pick_from_list"].getArray();
+		for (unsigned i=0; i<values.size(); i++){
+			if ( values[i].isString() ){
+				string value = values[i].getString();
+				wstring val = Designer::s2ws(value);
+				SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)val.c_str()); 
+			}
+		}
 	}
-  
-	// Send the CB_SETCURSEL message to display an initial item 
-	//  in the selection field  
-	SendMessage(field->control, CB_SETCURSEL, (WPARAM)2, (LPARAM)0);
+
 
 	return field;
 
@@ -508,6 +496,49 @@ void ReferenceField::loadValue(Object obj){
 				ComboBox_SetCurSel(getControl(), i);
 			}
 		}
+	}
+}
+
+
+
+
+
+void ComboBoxField::clearValue(){
+	ComboBox_SetCurSel(getControl(), -1);
+}
+
+Object ComboBoxField::storeValue(Object obj){
+
+	int idx = ComboBox_GetCurSel(getControl());
+	int len = ComboBox_GetLBTextLen(getControl(), idx) + 1;
+	wchar_t* text = new wchar_t[len];
+
+	ComboBox_GetLBText(getControl(), idx, text);
+
+	string value = Designer::ws2s(text);
+
+	string key = Designer::ws2s(getName());
+
+	if ( idx >= 0 ){
+		obj[key.c_str()] = value;
+	} else {
+		obj[key.c_str()] = Value();
+	}
+
+	return obj;
+
+}
+
+void ComboBoxField::loadValue(Object obj){
+
+	const wchar_t* name = getName();
+	string n = Designer::ws2s(name);
+
+	if ( obj[n.c_str()].isString() ){
+		string value = obj[n.c_str()].getString();
+		wstring val = Designer::s2ws(value);
+		int idx = ComboBox_FindStringExact(getControl(), -1, val.c_str());
+		ComboBox_SetCurSel(getControl(), idx);
 	}
 }
 

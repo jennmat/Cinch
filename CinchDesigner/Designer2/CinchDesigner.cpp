@@ -194,10 +194,11 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
+
 		if ( wmEvent == BN_CLICKED ){
-			_this->getForm()->SaveDocument(wmId);
+			//_this->getForm()->SaveDocument(wmId);
 		}
-		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == BN_KILLFOCUS || wmEvent == CBN_SELCHANGE){
+		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == CBN_SELCHANGE){
 			_this->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)
@@ -479,7 +480,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 5:
-					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value());
 					break;
 				case 6:
 					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
