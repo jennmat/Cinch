@@ -394,6 +394,7 @@ void LoadViews(HWND hwnd);
 INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmEvent;
+	int wmId;
 
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
@@ -424,16 +425,31 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
 			}
 		}
+
+		Edit_SetCueBannerText(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), L"Add A New Option");
 	
 		ComboBox_SelectString(combo, 0, L"Medium Text");
 		return (INT_PTR)TRUE;
 		}
-
 	case WM_COMMAND:
 		wmEvent = HIWORD(wParam);
+		wmId = LOWORD(wParam);
 		if ( wmEvent == CBN_SELCHANGE ){
 			HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 			int type = SendMessage(typeCombo, CB_GETCURSEL, 0, 0);
+			if ( type == 5 ){
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_OPTIONS), SW_SHOW);
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), SW_SHOW);
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_SHOW);
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_ADD_OPTION), SW_SHOW);
+			} else {
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_OPTIONS), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_NEW_FIELD_ADD_OPTION), SW_HIDE);
+				
+			}
+
 			if ( type > 7 ){
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_SHOW);
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_SHOW);
@@ -441,6 +457,17 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_HIDE);
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_HIDE);
 			}
+		}
+		if ( wmId == IDC_NEW_FIELD_ADD_OPTION ){
+			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION)) + 1;
+			wchar_t* option = new wchar_t[len];
+			GetWindowText(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), option, len);
+
+			int count = ListBox_GetCount(GetDlgItem(hDlg, IDC_NEW_FIELD_OPTIONS));
+
+			ListBox_InsertString(GetDlgItem(hDlg, IDC_NEW_FIELD_OPTIONS), count, option);
+			
+			SetWindowText(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), L"");
 		}
 		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 		{
@@ -480,7 +507,25 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
 					break;
 				case 5:
-					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value());
+					{
+					HWND options = GetDlgItem(hDlg, IDC_NEW_FIELD_OPTIONS);
+					int count = ListBox_GetCount(options);
+					Object config;
+					Array pickFromList;
+					for(int i=0; i<count; i++){
+						int len = ListBox_GetTextLen(options, i) + 1;
+						wchar_t* text = new wchar_t[len];
+
+						ListBox_GetText(options, i, text);
+						pickFromList.push_back(Value(Designer::ws2s(text)));
+
+						free(text);
+
+					}
+					config["pick_from_list"] = pickFromList;
+
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, config);
+					}
 					break;
 				case 6:
 					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);

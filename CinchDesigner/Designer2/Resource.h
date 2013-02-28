@@ -29,3 +29,6 @@
 #define IDC_FIELD_DOWN                          40009
 #define IDC_NEW_FIELD_LABEL                     40010
 #define IDC_ADD_FIELD_VIEW_TREE                 40011
+#define IDC_NEW_FIELD_OPTIONS                   40013
+#define IDC_NEW_FIELD_NEW_OPTION                40014
+#define IDC_NEW_FIELD_ADD_OPTION                40016
