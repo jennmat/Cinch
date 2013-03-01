@@ -31,3 +31,4 @@ struct ViewPair {
 	wchar_t* design;
 	wchar_t* view;
 };
+

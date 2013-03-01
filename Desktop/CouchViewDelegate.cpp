@@ -157,12 +157,12 @@ void CouchViewDelegate::prepareNewRow(int row){
 }
 
 HFONT CouchViewDelegate::getFont(){
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 
 HFONT CouchViewDelegate::getEditFont(){
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 

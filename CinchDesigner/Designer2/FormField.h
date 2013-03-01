@@ -9,6 +9,8 @@ using namespace JsonBox;
 class EditField;
 class DatePickerField;
 
+using namespace std;
+
 class FormField
 {
 private:
@@ -33,6 +35,8 @@ public:
 	virtual void loadValue(Object obj) = 0;
 	virtual void clearValue() = 0;
 	virtual Object storeValue(Object obj) = 0;
+	virtual string serializeForJS() = 0;
+
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config);
@@ -50,6 +54,7 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
+	string serializeForJS();
 };
 
 class EditField : public FormField {
@@ -57,6 +62,7 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
+	string serializeForJS();
 };
 
 
@@ -65,6 +71,7 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
+	string serializeForJS();
 };
 
 #define YES_RADIO 130908
@@ -75,6 +82,7 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
+	string serializeForJS();
 };
 
 class ReferenceField : public FormField {
@@ -82,7 +90,7 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
-
+	string serializeForJS();
 };
 
 
@@ -91,5 +99,5 @@ public:
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
-
+	string serializeForJS();
 };

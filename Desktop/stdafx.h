@@ -25,5 +25,5 @@
 //#include "Replication.h"
 #include "CouchDB.hpp"
 #include "util.h"
-
+#include "ConditionManager.h"
 // TODO: reference additional headers your program requires here

@@ -13,7 +13,7 @@
 #define REFERENCE "Reference"
 #define COMBO "Combo"
 
-#define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"));
+#define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))
 
 using namespace JsonBox;
 using namespace std;

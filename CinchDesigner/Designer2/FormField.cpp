@@ -1,6 +1,7 @@
 
 
 #include "stdafx.h"
+#include <sstream>
 
 
 void FormField::setLabel(HWND label)
@@ -43,7 +44,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -66,17 +67,17 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 
 	field->controlChildId = fieldId++;
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	vector<string>* ids = new vector<string>();
 
 
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -126,16 +127,16 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	field->controlChildId = fieldId++;
 	field->config = Value();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Number";
 	field->name = name;
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	MaskEditControl(field->control, "0123456789\b", TRUE);
@@ -154,10 +155,10 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 {
 	FormField* field = new ComboBoxField();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE | WS_TABSTOP,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE | WS_TABSTOP,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -165,7 +166,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 	field->name = name;
 	field->config = config;
 
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -193,17 +194,17 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 	FormField* field = new DatePickerField();
 
 	field->controlChildId = fieldId++;
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "DatePicker";
 	field->name = name;
 	
-	field->control = CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+	field->control = CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -216,17 +217,17 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 {
 	FormField* field = new EditField();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 	field->config = Value();
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "Checkbox";
 	field->name = name;
 	
-	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|BS_AUTOCHECKBOX|WS_TABSTOP,
+	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|BS_AUTOCHECKBOX|WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -240,10 +241,10 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 {
 	FormField* field = new EditField();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 	field->config = Value();
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
@@ -273,17 +274,17 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	field->controlChildId = fieldId++;
 	field->config = Value();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
-	HFONT hFont=DEFAULT_FONT
+	HFONT hFont=DEFAULT_FONT;
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
 	field->controlType = "YesNo";
 	field->name = name;
 	
-	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_GROUPBOX,
+	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_TABSTOP|BS_GROUPBOX,
 		0, 0, CONTROL_WIDTH, 60, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	NotifyParentControl(field->control);
@@ -306,7 +307,7 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 {
 	FormField* field = new EditField();
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
 
 	HFONT hFont = DEFAULT_FONT;
@@ -317,12 +318,13 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 	field->name = name;
 	field->config = Value();
 	
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 		0, 0, CONTROL_WIDTH, 75, parent, NULL, hInst, NULL);
 	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	return field;
 }
+
 
 void EditField::loadValue(Object obj){
 	const wchar_t* name = getName();
@@ -348,6 +350,19 @@ Object EditField::storeValue(Object obj){
 	string value = Designer::ws2s(str);
 	obj[key.c_str()] = value;	
 	return obj;
+}
+
+string EditField::serializeForJS(){
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
+	
+	GetWindowText(getControl(), str, len);
+	string key = Designer::ws2s(getName());
+	string value = Designer::ws2s(str);
+	stringstream rc;
+	rc << "'" << value << "'";
+	return rc.str();
+
 }
 
 
@@ -393,6 +408,22 @@ Object DatePickerField::storeValue(Object obj){
 	
 }
 
+string DatePickerField::serializeForJS(){
+	SYSTEMTIME time;
+	DateTime_GetSystemtime(getControl(), &time);
+	wchar_t* date = new wchar_t[80];
+	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
+
+	LPWSTR str = new wchar_t[80];
+	string key = Designer::ws2s(getName());
+	string value = Designer::ws2s(date);
+
+	stringstream rc;
+	rc << "'" << value << "'";
+	return rc.str();
+}
+
+
 void NumberField::loadValue(Object obj){
 	const wchar_t* name = getName();
 	string n = Designer::ws2s(name);
@@ -410,17 +441,36 @@ void NumberField::clearValue(){
 }
 
 Object NumberField::storeValue(Object obj){
-	LPWSTR str = new wchar_t[80];
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
 	string key = Designer::ws2s(getName());
 	if ( GetWindowTextLength(getControl()) > 0 ){
-		GetWindowText(getControl(), str, 80);
+		GetWindowText(getControl(), str, len);
 		long val = _wtol(str);
 		
 		obj[key.c_str()] = val;	
 	} else {
 		obj[key.c_str()] = Value();
 	}
+	
+	free(str);
+
 	return obj;
+}
+
+string NumberField::serializeForJS(){
+	int len = GetWindowTextLength(getControl()) + 1;
+	if ( GetWindowTextLength(getControl()) > 0 ){
+		LPWSTR str = new wchar_t[len];
+		GetWindowText(getControl(), str, len);
+
+		string rc = Designer::ws2s(str);
+		free(str);
+		return rc;
+	}
+
+	return "0";
+
 }
 
 
@@ -445,7 +495,6 @@ void YesNoField::clearValue(){
 }
 
 Object YesNoField::storeValue(Object obj){
-	LPWSTR str = new wchar_t[80];
 	string key = Designer::ws2s(getName());
 	
 	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
@@ -457,7 +506,15 @@ Object YesNoField::storeValue(Object obj){
 	return obj;
 }
 
+string YesNoField::serializeForJS(){
+	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
+		return "'true'";
+	} else if ( IsDlgButtonChecked(getControl(), NO_RADIO ) ) {
+		return "'false'";
+	}
+	return "";
 
+}
 
 
 void ReferenceField::clearValue(){
@@ -500,7 +557,21 @@ void ReferenceField::loadValue(Object obj){
 }
 
 
+string ReferenceField::serializeForJS(){
+	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
+	int idx = ComboBox_GetCurSel(getControl());
 
+	string key = Designer::ws2s(getName());
+
+	if ( idx >= 0 ){
+		string id = (*ids)[idx];
+
+		stringstream rc;
+		rc << "'" << id << "'";
+		return rc.str();
+	}
+	return "";
+}
 
 
 void ComboBoxField::clearValue(){
@@ -527,6 +598,24 @@ Object ComboBoxField::storeValue(Object obj){
 
 	return obj;
 
+}
+
+string ComboBoxField::serializeForJS(){
+	int idx = ComboBox_GetCurSel(getControl());
+	int len = ComboBox_GetLBTextLen(getControl(), idx) + 1;
+	wchar_t* text = new wchar_t[len];
+
+	ComboBox_GetLBText(getControl(), idx, text);
+
+	string value = Designer::ws2s(text);
+
+	if ( idx >= 0 ){
+		stringstream rc;
+		rc << "'" << value << "'";
+		return rc.str();
+	} else {
+		return "";
+	}
 }
 
 void ComboBoxField::loadValue(Object obj){

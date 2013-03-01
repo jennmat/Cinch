@@ -86,6 +86,7 @@
     <None Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConditionManager.h" />
     <ClInclude Include="CouchViewDelegate.h" />
     <ClInclude Include="Desktop.h" />
     <ClInclude Include="Replication.h" />
@@ -96,6 +97,7 @@
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConditionManager.cpp" />
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
     <ClCompile Include="stdafx.cpp">

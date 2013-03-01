@@ -563,21 +563,10 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 		{
-		vector<string>* compareOperators = new vector<string>();
-		HWND compareCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_COMPARE);
-		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
-		compareOperators->push_back("==");
-		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
-		compareOperators->push_back("!=");
-		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is greater than");
-		compareOperators->push_back(">");
-		SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is less than");
-		compareOperators->push_back("<");
 		
-		SetWindowLong(compareCombo, GWL_USERDATA, (ULONG_PTR)compareOperators);
 
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
-
+		
 		Connection conn;
 		Database db = conn.getDatabase("bugs");
 		Object r = db.viewResults("all-objects", "by-label", Value(), 100);
@@ -590,13 +579,18 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Object row = rows[i].getObject();
 			string key = row["key"].getString();
 			wstring wkey = s2ws(key);
-				
+			Document doc = db.getDocument(row["id"].getString());
+			Object obj = doc.getData().getObject();
 			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
-			ids->push_back(row["id"].getString());
+			ids->push_back(obj["name"].getString());
 
         }
 
 		SetWindowLong(typeCombo, GWL_USERDATA, (ULONG_PTR)ids);
+		
+		ConditionManager* manager = new ConditionManager();
+		SetWindowLong(hDlg, GWL_USERDATA, (ULONG_PTR)manager);
+		
 
 		return (INT_PTR)TRUE;
 
@@ -617,46 +611,53 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					HWND typeCombo = GetDlgItem(hDlg, wmId);
 					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
 					int idx = ComboBox_GetCurSel(typeCombo);
-					string id = (*ids)[idx];
+					string type = (*ids)[idx];
 
+				
+					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+						
+					manager->addEmptyCondition(type, hDlg);
+					manager->arrangeWindowsInParent(hDlg, 35, 75);
+
+
+					/* Setup the sort combo */
+
+					stringstream template_id;
+					template_id << "template/" << type;
 					Connection conn;
 					Database db = conn.getDatabase("bugs");
-					Document doc = db.getDocument(id);
-					Object obj = doc.getData().getObject();
 
-					if (obj["name"].isString() ){
-						string name = obj["name"].getString();
+					Document doc = db.getDocument(template_id.str());
+					Value v = doc.getData();
+					if ( v.isObject() ){
+						Object templ = v.getObject();
+						if ( templ["fields"].isArray() ){
+							Array fields = templ["fields"].getArray();
 
-						stringstream template_id;
-						template_id << "template/" << name;
-						Document doc = db.getDocument(template_id.str());
-						Value v = doc.getData();
-						if ( v.isObject() ){
-							Object templ = v.getObject();
-							if ( templ["fields"].isArray() ){
-								Array fields = templ["fields"].getArray();
-								vector<Object>* fieldsVector = new vector<Object>();
-								for(unsigned i=0; i<fields.size(); i++){
-									Object field = fields[i].getObject();
-									string name = field["name"].getString();
-									string label = field["label"].getString();
+							vector<Object>* fieldsVector = new vector<Object>();
 
-									wstring wlabel = s2ws(label);
+							for(unsigned i=0; i<fields.size(); i++){
+								Object field = fields[i].getObject();
+								string name = field["name"].getString();
+								string label = field["label"].getString();
 
-									fieldsVector->push_back(field);
-									SendMessage(fieldCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
-									SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
-								}
+								wstring wlabel = s2ws(label);
 
-								SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+								fieldsVector->push_back(field);
+
+								SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+				
 								SetWindowLong(sortCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+
 							}
 						}
 					}
+						
 				}
 				else if ( wmId == IDC_ADD_VIEW_FIELD ){
-					
-
+					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+					manager->updateConditions("bug", hDlg);
+					manager->arrangeWindowsInParent(hDlg, 35, 75);
 				}
 			}
 			break;
@@ -664,9 +665,6 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		if ( wmId == IDOK ){
 			/* Create the view */
 			HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
-			HWND fieldCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_FIELD);
-			HWND compareCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_COMPARE);
-			HWND valueEdit = GetDlgItem(hDlg, IDC_COMPARE_TO_VALUE);	
 			HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
 			HWND newViewNameEdit = GetDlgItem(hDlg, IDC_NEW_VIEW_NAME);
 
@@ -674,33 +672,11 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			memset(map, 0, 1024);
 			vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
 			int idx = ComboBox_GetCurSel(typeCombo);
-			string id = (*ids)[idx];
+			string type = (*ids)[idx];
 
 			Connection conn;
 			Database db = conn.getDatabase("bugs");
-			Document doc = db.getDocument(id);
-			Object obj = doc.getData().getObject();
-
-			string type;
-			if (obj["name"].isString() ){
-				type = obj["name"].getString();
-			}
-
-			int fieldIdx = ComboBox_GetCurSel(fieldCombo);
-			vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(fieldCombo, GWL_USERDATA);
-			Object field = (*fieldsVector)[fieldIdx];
-
-			string fieldforcomparison = field["name"].getString();
-
-			vector<string>* operatorVector = (vector<string>*)GetWindowLong(compareCombo, GWL_USERDATA);
-			int compareIdx = ComboBox_GetCurSel(compareCombo);
-			string comparison = (*operatorVector)[compareIdx];
-
-			int len = GetWindowTextLength(valueEdit) + 1;
-			wchar_t* val = new wchar_t[len];
-			GetWindowText(valueEdit, val, len);
-
-			string valueforcomparison = ws2s(val);
+			
 
 			int sortIdx = ComboBox_GetCurSel(sortCombo);
 			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
@@ -717,8 +693,35 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 			string viewnamesanitized = name;
 
-			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' && doc.%s && doc.%s %s '%s' ) emit(doc.%s, null); }", 
-				type.c_str(), fieldforcomparison.c_str(), fieldforcomparison.c_str(), comparison.c_str(), valueforcomparison.c_str(), sortby.c_str());	
+			stringstream conditionsStream;
+
+			ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+			vector<Condition*>* conditions = manager->getConditions();
+			for(unsigned i=0; i<conditions->size(); i++){
+				Condition* c = (*conditions)[i];
+				if ( c->value != NULL ){
+				
+					int fieldIdx = ComboBox_GetCurSel(c->fieldCombo);
+					vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
+					Object field = (*fieldsVector)[fieldIdx];
+
+					string fieldforcomparison = field["name"].getString();
+
+					vector<string>* operatorVector = (vector<string>*)GetWindowLong(c->compareCombo, GWL_USERDATA);
+					int compareIdx = ComboBox_GetCurSel(c->compareCombo);
+					string comparison = (*operatorVector)[compareIdx];
+
+					conditionsStream << " && doc." << fieldforcomparison.c_str() << " && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
+					conditionsStream << c->value->serializeForJS().c_str();
+				}
+			}
+
+
+			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' %s ) emit(doc.%s, null); }", 
+				type.c_str(), conditionsStream.str().c_str(), sortby.c_str());	
+
+
+			
 
 			Object design = Object();
 			design["language"] = "javascript";
