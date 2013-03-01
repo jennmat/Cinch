@@ -508,9 +508,9 @@ Object YesNoField::storeValue(Object obj){
 
 string YesNoField::serializeForJS(){
 	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
-		return "'true'";
+		return "true";
 	} else if ( IsDlgButtonChecked(getControl(), NO_RADIO ) ) {
-		return "'false'";
+		return "false";
 	}
 	return "";
 
