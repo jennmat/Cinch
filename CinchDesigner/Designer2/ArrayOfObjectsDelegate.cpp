@@ -244,7 +244,7 @@ void ArrayOfObjectsDelegate::deserializeUIElements(Object obj){
 		for(unsigned int i=0; i<columns.size(); i++){
 			Object col = columns[i].getObject();
 			fields.push_back(col["name"].getString());
-			editorTypes.push_back(col["type"].getString());
+			editorTypes.push_back(col["cinch_type"].getString());
 			editors.push_back(NULL);
 			titles.push_back(Designer::s2ws(col["label"].getString()));
 			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
@@ -262,7 +262,7 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
 		col["name"] = Value(fields[i]);
-		col["type"] = editorTypes[i];
+		col["cinch_type"] = editorTypes[i];
 		col["label"] = Designer::ws2s(titles[i]);
 		col["width"] = Value(250);
 		columns.push_back(col);

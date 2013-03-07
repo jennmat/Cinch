@@ -176,7 +176,7 @@ void LoadViews(HWND hwnd){
 	TreeView_DeleteAllItems(hwnd);
 
 	Connection conn;
-	Database db = conn.getDatabase("bugs");
+	Database db = conn.getDatabase(DATABASE);
 	Object views = db.listViews();
 
    if ( views["total_rows"].getInt() > 0 ){
@@ -289,7 +289,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
    designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-   Database db = conn.getDatabase("bugs");
+   Database db = conn.getDatabase(DATABASE);
    
    CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
@@ -411,7 +411,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			objectTypes.clear();
 
 			Connection conn;
-			Database db = conn.getDatabase("bugs");
+			Database db = conn.getDatabase(DATABASE);
 			Object r = db.viewResults("all-objects", "by-label", Value(), 100);
 			Array rows = r["rows"].getArray();
 			unsigned int i = 0;
@@ -475,10 +475,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase("bugs");
+		Database db = conn.getDatabase(DATABASE);
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->LoadDocument("bugs", d.getID(), v.getObject());
+		designercontrol->LoadDocument(DATABASE, d.getID(), v.getObject());
 		break;
 		}
 	case WM_MENUCOMMAND:
@@ -489,7 +489,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		} else {
 			Object objectDefinition = objectTypes[idx];
 			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-			designercontrol->NewDocument("bugs", objectDefinition["name"].getString());
+			designercontrol->NewDocument(DATABASE, objectDefinition["name"].getString());
 		}
 		
 		}
@@ -568,7 +568,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 		
 		Connection conn;
-		Database db = conn.getDatabase("bugs");
+		Database db = conn.getDatabase(DATABASE);
 		Object r = db.viewResults("all-objects", "by-label", Value(), 100);
 	
 		vector<string>* ids = new vector<string>();
@@ -625,7 +625,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					stringstream template_id;
 					template_id << "template/" << type;
 					Connection conn;
-					Database db = conn.getDatabase("bugs");
+					Database db = conn.getDatabase(DATABASE);
 
 					Document doc = db.getDocument(template_id.str());
 					Value v = doc.getData();
@@ -655,8 +655,14 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						
 				}
 				else if ( wmId == IDC_ADD_VIEW_FIELD ){
+
+					HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+					int idx = ComboBox_GetCurSel(typeCombo);
+					string type = (*ids)[idx];
+
 					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
-					manager->updateConditions("bug", hDlg);
+					manager->updateConditions(type, hDlg);
 					manager->arrangeWindowsInParent(hDlg, 35, 75);
 				}
 			}
@@ -675,7 +681,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			string type = (*ids)[idx];
 
 			Connection conn;
-			Database db = conn.getDatabase("bugs");
+			Database db = conn.getDatabase(DATABASE);
 			
 
 			int sortIdx = ComboBox_GetCurSel(sortCombo);
@@ -692,6 +698,13 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			string name = ws2s(wname);
 
 			string viewnamesanitized = name;
+			for(unsigned i=0; i<viewnamesanitized.size(); i++){
+				viewnamesanitized[i] = tolower(viewnamesanitized[i]);
+				if ( viewnamesanitized[i] == ' ' ){
+					viewnamesanitized[i] = '-';
+				}
+			}
+
 
 			stringstream conditionsStream;
 
@@ -711,13 +724,13 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					int compareIdx = ComboBox_GetCurSel(c->compareCombo);
 					string comparison = (*operatorVector)[compareIdx];
 
-					conditionsStream << " && doc." << fieldforcomparison.c_str() << " && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
+					conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
 					conditionsStream << c->value->serializeForJS().c_str();
 				}
 			}
 
 
-			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' %s ) emit(doc.%s, null); }", 
+			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.%s, null); }", 
 				type.c_str(), conditionsStream.str().c_str(), sortby.c_str());	
 
 
@@ -816,14 +829,14 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			Object definition = Object();
 			definition["name"] = sname;
 			definition["label"] = slabel;
-			definition["type"] = "object-definition";
+			definition["cinch_type"] = "object-definition";
 
 			
 			/* Create a default view */
 			char map[1024];
 			memset(map, 0, 1024);
 
-			sprintf_s(map, 1024, "function(doc){ if ( doc.type && doc.type == '%s' ) emit(doc.%s, null); }", sname.c_str(), sfname.c_str());	
+			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", sname.c_str(), sfname.c_str());	
 
 			Object design = Object();
 			design["language"] = "javascript";
@@ -860,14 +873,14 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 
 			field["name"] = sfname;
 			field["label"] = sflabel;
-			field["type"] = EDIT;
+			field["cinch_type"] = EDIT;
 
 			fields.push_back(field);
 			_template["fields"] = fields;
 
 
 			Connection conn;
-			Database db = conn.getDatabase("bugs");
+			Database db = conn.getDatabase(DATABASE);
 
 			db.createDocument(Value(definition));
 
@@ -900,7 +913,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
-	Database db = conn.getDatabase("bugs");
+	Database db = conn.getDatabase(DATABASE);
 	db.listenForChanges(changesArrived);
 
 	return 0;
@@ -912,7 +925,7 @@ void Desktop::formModified(){
 	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
-	Database db = conn.getDatabase("bugs");
+	Database db = conn.getDatabase(DATABASE);
 
 	db.createDocument(Value(o), "template/property");
 }

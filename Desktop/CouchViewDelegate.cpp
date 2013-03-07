@@ -26,7 +26,7 @@ void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	Database db = conn.getDatabase("bugs");
+	Database db = conn.getDatabase(DATABASE);
 
 	string s = ws2s(design);
 	int ix = s.find("/");

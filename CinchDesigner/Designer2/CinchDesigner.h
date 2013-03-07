@@ -18,6 +18,7 @@
 using namespace JsonBox;
 using namespace std;
 
+
 class CinchDesigner {
 private:
 	HWND edit;

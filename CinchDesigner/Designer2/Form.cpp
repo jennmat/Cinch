@@ -112,7 +112,7 @@ void Form::deserializeForm(HWND parent, Value v){
 		string name = field["name"].getString();
 		wstring wlabel = Designer::s2ws(label);
 		wstring wname = Designer::s2ws(name);
-		string type = field["type"].getString();
+		string type = field["cinch_type"].getString();
 		Value config;
 		if ( field["config"].isObject() ){
 			config = field["config"].getObject();
@@ -174,7 +174,7 @@ Object Form::serializeFormToObject(Object obj){
 		wcstombs_s(&t, name, fld->getName(), 80);
 		
 		f["label"] = Value(label);
-		f["type"] = Value(fld->getControlType());
+		f["cinch_type"] = Value(fld->getControlType());
 		f["name"] = Value(name);
 		f["config"] = fld->getConfig();
 		fields.push_back(f);
@@ -242,7 +242,7 @@ void Form::SaveDocument(int changedFieldId){
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase("bugs");
+	Database db2 = conn.getDatabase(DATABASE);
 	Document updatedDoc = db2.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();

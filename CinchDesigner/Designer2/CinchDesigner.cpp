@@ -14,6 +14,8 @@
 
 HWND designerHWnd;
 
+bool savingDoc;
+
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -196,9 +198,9 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		// Parse the menu selections:
 
 		if ( wmEvent == BN_CLICKED ){
-			//_this->getForm()->SaveDocument(wmId);
+			_this->getForm()->SaveDocument(wmId);
 		}
-		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == CBN_SELCHANGE){
+		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == CBN_SELCHANGE ){
 			_this->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)
@@ -300,7 +302,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				Object o = _this->getForm()->serializeFormToObject(_this->getLoadedForm());
 
 				Connection conn;
-				Database db = conn.getDatabase("bugs");
+				Database db = conn.getDatabase(DATABASE);
 
 				Document newDoc = db.createDocument(Value(o), "template/"+ _this->getType());
 				_this->setLoadedForm(newDoc.getData().getObject());
@@ -414,7 +416,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE));
 
 		Connection conn;
-		Database d = conn.getDatabase("bugs");
+		Database d = conn.getDatabase(DATABASE);
 		Object obj = d.viewResults("all-objects", "by-label", Value(), 10);
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
@@ -785,14 +787,14 @@ void CinchDesigner::loadForm(string database, string t){
 void CinchDesigner::NewDocument(string database, string type){
 	loadForm(database, type);
 	Object* obj = new Object();
-	(*obj)["type"] = Value(type);
+	(*obj)["cinch_type"] = Value(type);
 	form->LoadDocument("", *obj);
 }
 
 void CinchDesigner::LoadDocument(string database, string _id, Object obj){
 	/* First load the template for this doc */
-	if ( obj["type"].isString() ){
-		string t = obj["type"].getString();
+	if ( obj["cinch_type"].isString() ){
+		string t = obj["cinch_type"].getString();
 
 		loadForm(database, t);
     }

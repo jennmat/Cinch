@@ -48,50 +48,52 @@ void ConditionManager::updateConditions(string type, HWND parent){
 		
 		if ( fieldIdx < 0 ) hasEmptyCondition = true;
 
-		vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
-		Object field = (*fieldsVector)[fieldIdx];
-		string name = field["name"].getString();
+		if ( fieldIdx >= 0 ){
+			vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
+			Object field = (*fieldsVector)[fieldIdx];
+			string name = field["name"].getString();
 
 
-		if ( c->value == NULL || name.compare(c->setupForField) != 0 ){
+			if ( c->value == NULL || name.compare(c->setupForField) != 0 ){
 			
-			if ( c->value != NULL ){
-				DestroyWindow(c->value->getControl());
-				DestroyWindow(c->value->getLabel());
-				free(c->value);
-			}
+				if ( c->value != NULL ){
+					DestroyWindow(c->value->getControl());
+					DestroyWindow(c->value->getLabel());
+					free(c->value);
+				}
 			
-			string type = field["type"].getString();
-			Value config = Value();
-			if ( field["config"].isObject() ){
-				config = field["config"].getObject();
-			}
+				string type = field["cinch_type"].getString();
+				Value config = Value();
+				if ( field["config"].isObject() ){
+					config = field["config"].getObject();
+				}
 					
-			FormField* formField;
+				FormField* formField;
 					
-			if ( type.compare(DATEPICKER) == 0 ){
-				formField = FormField::createDatePicker(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(RADIO) == 0 ){
-				formField = FormField::createRadioGroup(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(NUMBER) == 0 ){
-				formField = FormField::createNumberField(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(YESNO) == 0 ){
-				formField = FormField::createYesNoField(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(MULTILINE) == 0 ){
-				formField = FormField::createMultilineText(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(EDIT) == 0 ){
-				formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
-			} else if ( type.compare(COMBO) == 0 ){
-				formField = FormField::createComboBox(parent, GetModuleHandle(0), L"", L"", config);
-			} else if ( type.compare(REFERENCE) == 0 ){
-				formField = FormField::createReferenceField(parent, GetModuleHandle(0), L"", L"", config);
-			} else {
-				formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
+				if ( type.compare(DATEPICKER) == 0 ){
+					formField = FormField::createDatePicker(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(RADIO) == 0 ){
+					formField = FormField::createRadioGroup(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(NUMBER) == 0 ){
+					formField = FormField::createNumberField(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(YESNO) == 0 ){
+					formField = FormField::createYesNoField(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(MULTILINE) == 0 ){
+					formField = FormField::createMultilineText(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(EDIT) == 0 ){
+					formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
+				} else if ( type.compare(COMBO) == 0 ){
+					formField = FormField::createComboBox(parent, GetModuleHandle(0), L"", L"", config);
+				} else if ( type.compare(REFERENCE) == 0 ){
+					formField = FormField::createReferenceField(parent, GetModuleHandle(0), L"", L"", config);
+				} else {
+					formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
+				}
+
+				c->value = formField;
+				c->setupForField = field["name"].getString();
+
 			}
-
-			c->value = formField;
-			c->setupForField = field["name"].getString();
-
 		}
 	}
 
@@ -103,7 +105,7 @@ void ConditionManager::updateConditions(string type, HWND parent){
 void ConditionManager::addEmptyCondition(string type, HWND parent){
 	
 	Connection conn;
-	Database db = conn.getDatabase("bugs");
+	Database db = conn.getDatabase(DATABASE);
 
 	stringstream template_id;
 	template_id << "template/" << type;

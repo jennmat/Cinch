@@ -95,7 +95,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 
 			if ( design.length() > 0 && view.length() > 0 ){
 				Connection conn;
-				Database db = conn.getDatabase("bugs");
+				Database db = conn.getDatabase(DATABASE);
 				Object results = db.viewResults(design, view, Value(), 10);
 
 				Array rows = results["rows"].getArray();
@@ -139,7 +139,7 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
-	MaskEditControl(field->control, "0123456789\b", TRUE);
+	MaskEditControl(field->control, "0123456789.\b", TRUE);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
@@ -284,20 +284,14 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	field->controlType = "YesNo";
 	field->name = name;
 	
-	field->control = CreateWindowEx(0, L"BUTTON", L"", WS_CHILD|WS_TABSTOP|BS_GROUPBOX,
-		0, 0, CONTROL_WIDTH, 60, parent, (HMENU)field->controlChildId, hInst, NULL);
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
-	NotifyParentControl(field->control);
-
-	HWND option1 = CreateWindowEx(0, L"BUTTON", L"Yes", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		10, 10, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)YES_RADIO, hInst, NULL);
-	HWND option2 = CreateWindowEx(0, L"BUTTON", L"No", WS_CHILD|WS_VISIBLE|BS_AUTORADIOBUTTON|WS_TABSTOP,
-		10, 30, CONTROL_WIDTH, CONTROL_HEIGHT, field->control, (HMENU)NO_RADIO, hInst, NULL);
-	
-	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
-	SendMessage(option1, WM_SETFONT,(WPARAM)hFont,0);
-	SendMessage(option2, WM_SETFONT,(WPARAM)hFont,0);
+
+	SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)L"Yes"); 
+	SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)L"No"); 
+	
 	return field;
 }
 
@@ -428,7 +422,7 @@ void NumberField::loadValue(Object obj){
 	const wchar_t* name = getName();
 	string n = Designer::ws2s(name);
 	if ( obj[n.c_str()].isInteger() ){
-		int val = obj[n.c_str()].getInt();
+		double val = obj[n.c_str()].getDouble();
 		wchar_t* w = new wchar_t[80];
 		memset(w, 0, 80);
 		_itow_s(val, w, 80, 10);
@@ -446,7 +440,7 @@ Object NumberField::storeValue(Object obj){
 	string key = Designer::ws2s(getName());
 	if ( GetWindowTextLength(getControl()) > 0 ){
 		GetWindowText(getControl(), str, len);
-		long val = _wtol(str);
+		double val = _wtof(str);
 		
 		obj[key.c_str()] = val;	
 	} else {
@@ -480,26 +474,25 @@ void YesNoField::loadValue(Object obj){
 	if ( obj[n.c_str()].isBoolean() ){
 		bool val = obj[n.c_str()].getBoolean();
 		if ( val ){
-			CheckDlgButton(getControl(), YES_RADIO, BST_CHECKED);
-			CheckDlgButton(getControl(), NO_RADIO, BST_UNCHECKED);
+			ComboBox_SetCurSel(getControl(), 0);
 		} else {
-			CheckDlgButton(getControl(), NO_RADIO, BST_CHECKED);
-			CheckDlgButton(getControl(), YES_RADIO, BST_UNCHECKED);
+			ComboBox_SetCurSel(getControl(), 1);
 		}
 	}
 }
 
 void YesNoField::clearValue(){
-	CheckDlgButton(getControl(), YES_RADIO, BST_UNCHECKED);
-	CheckDlgButton(getControl(), NO_RADIO, BST_UNCHECKED);	
+	ComboBox_SetCurSel(getControl(), -1);
 }
 
 Object YesNoField::storeValue(Object obj){
+	int idx = ComboBox_GetCurSel(getControl());
 	string key = Designer::ws2s(getName());
-	
-	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
+
+
+	if ( idx == 0 ){
 		obj[key.c_str()] = true;	
-	} else if ( IsDlgButtonChecked(getControl(), NO_RADIO ) ) {
+	} else {
 		obj[key.c_str()] = false;	
 	}
 	
@@ -507,13 +500,12 @@ Object YesNoField::storeValue(Object obj){
 }
 
 string YesNoField::serializeForJS(){
-	if ( IsDlgButtonChecked(getControl(), YES_RADIO) ){
+	int idx = ComboBox_GetCurSel(getControl());
+	if ( idx == 0 ){
 		return "true";
-	} else if ( IsDlgButtonChecked(getControl(), NO_RADIO ) ) {
+	} else {
 		return "false";
 	}
-	return "";
-
 }
 
 
