@@ -120,6 +120,19 @@ HWND CinchDesigner::CreateCinchDesigner(HWND parent){
 */
 
 
+void loadTabLabels(Array tabs, HWND tabList){
+
+	for(unsigned i=0; i<tabs.size(); i++){
+		Object config = tabs[i].getObject();
+		string label = config["label"].getString();
+		wstring l = Designer::s2ws(label);
+
+		SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
+	
+	}	
+}
+
+
 CinchDesigner::CinchDesigner(HWND _hWnd){
 	hWnd = _hWnd;
 	form = new Form();
@@ -299,13 +312,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			_this->getForm()->show(hWnd, GetModuleHandle(0));
 			if( _this->getForm()->getDelegate() != 0 ){
 
-				Object o = _this->getForm()->serializeFormToObject(_this->getLoadedForm());
-
-				Connection conn;
-				Database db = conn.getDatabase(DATABASE);
-
-				Document newDoc = db.createDocument(Value(o), "template/"+ _this->getType());
-				_this->setLoadedForm(newDoc.getData().getObject());
+				_this->SaveForm();
 			}
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
@@ -578,97 +585,116 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
+
+
+INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+
+	CinchDesigner* self = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+	
+	int wmEvent;
+	int wmId;
+
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+			HWND combo = GetDlgItem(hDlg, IDC_CONTENT_COMBO);
+			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Text");
+		}
+	case WM_COMMAND:
+		wmEvent = HIWORD(wParam);
+		wmId = LOWORD(wParam);
+		switch(wmId){
+		case IDOK:
+			{
+
+			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_TAB_NAME))+1;
+			wchar_t* tabname = new wchar_t[len];
+			memset(tabname, 0, len);
+			GetWindowText(GetDlgItem(hDlg, IDC_NEW_TAB_NAME), tabname, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_TAB_LABEL))+1;
+			wchar_t* tablabel = new wchar_t[len];
+			memset(tablabel, 0, len);
+			GetWindowText(GetDlgItem(hDlg, IDC_NEW_TAB_LABEL), tablabel, len);
+
+			Object newTab = Object();
+			newTab["name"] = Designer::ws2s(tabname);
+			newTab["label"] = Designer::ws2s(tablabel);
+			newTab["content"] = "Text";
+			self->tabsForUpdate.push_back(newTab);
+
+			HWND visibleTabs = GetDlgItem(GetParent(hDlg), IDC_VISIBLE_TABS);
+			
+			loadTabLabels(self->tabsForUpdate, visibleTabs);
+
+			EndDialog(hDlg, LOWORD(wParam));
+			break;
+			}
+		case IDCANCEL:
+			EndDialog(hDlg, LOWORD(wParam));
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+
 void CinchDesigner::ChooseForm()
 {
-	OPENFILENAME ofn;       // common dialog box structure
-	wchar_t szFile[260];       // buffer for file name
 	
-	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWnd;
-	ofn.lpstrFile = szFile;
-	// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-	// use the contents of szFile to initialize itself.
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-	// Display the Open dialog box. 
-
-	if (GetOpenFileName(&ofn)==TRUE) {
-		form->open(hWnd, ofn.lpstrFile);
-	}
 }
 
 void CinchDesigner::SaveForm(){
-	OPENFILENAME ofn;       // common dialog box structure
-	wchar_t szFile[260];       // buffer for file name
-	
-	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = hWnd;
-	ofn.lpstrFile = szFile;
-	// Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-	// use the contents of szFile to initialize itself.
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	Object o = getForm()->serializeFormToObject(getLoadedForm());
 
-	// Display the Open dialog box. 
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
 
-	if (GetSaveFileName(&ofn)==TRUE) {
-		form->save(ofn.lpstrFile);
-	}
+	Document newDoc = db.createDocument(Value(o), "template/"+ getType());
+	setLoadedForm(newDoc.getData().getObject());
 }
 
 
-// Message handler for about box.
+
 INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	CinchDesigner* _this = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+	CinchDesigner* self = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
 	
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
 	case WM_INITDIALOG:
 		{
-		HWND visiblePages = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
-		Detail* detail = _this->getForm()->getDetail();
-
-		for(int i=0; i<detail->getDetailPageCount(); i++){
-			wchar_t title[80];
-			detail->getDetailPageTitle(i, title);
-			SendMessage(visiblePages, LB_ADDSTRING, 0, (LPARAM) title); 
 		
-		}
+			Object form = self->getLoadedForm();
+			if ( form["tabs"].isArray() ){
+				self->tabsForUpdate = form["tabs"].getArray();
+			} else {
+				self->tabsForUpdate = Array();
+			}
 		
+			HWND visibleTabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
+			
+			loadTabLabels(self->tabsForUpdate, visibleTabs);
+			
 		return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDOK ){
 
-			_this->getForm()->removeAllDetailPages();
+			Object form = self->getLoadedForm();
+			form["tabs"] = self->tabsForUpdate;
+			self->setLoadedForm(form);
 
-			HWND tabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
-			int count = ListBox_GetCount(tabs);
-			for(int i=0; i<count; i++){
-				wchar_t szTabName[80];
-				ListBox_GetText(tabs, i, szTabName);
-
-				_this->getForm()->addDetail(szTabName);
-			}
+			self->getForm()->deserializeForm(designerHWnd, Value(self->getLoadedForm()));
+			self->getForm()->RefreshValues();
+			self->SaveForm();
 
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
@@ -746,20 +772,9 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 		}
-		else if ( LOWORD(wParam) == IDC_ADD_NEW_TAB_BUTTON )
+		else if ( LOWORD(wParam) == IDC_NEW_TAB )
 		{
-			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_NEW_TAB_NAME));
-			if ( len > 0 ){
-				wchar_t szNewTabName[80];
-				GetDlgItemText(hDlg, IDC_NEW_TAB_NAME, szNewTabName, 80);
-				HWND visiblePages = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
-				int pos = (int)SendMessage(visiblePages, LB_ADDSTRING, 0, (LPARAM) szNewTabName); 
-				SendMessage(visiblePages, LB_SETITEMDATA, 0, (LPARAM)pos);
-
-				SetDlgItemText(hDlg, IDC_NEW_TAB_NAME, L"");
-			}
-			
-			break;
+			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_ADD_TAB), hDlg, AddTab);
 		}
 		break;
 	}
@@ -800,7 +815,6 @@ void CinchDesigner::LoadDocument(string database, string _id, Object obj){
     }
 
 	form->LoadDocument(_id, obj);
-
 }
 
 Object CinchDesigner::getLoadedForm(){

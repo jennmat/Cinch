@@ -423,10 +423,14 @@ void NumberField::loadValue(Object obj){
 	string n = Designer::ws2s(name);
 	if ( obj[n.c_str()].isInteger() ){
 		double val = obj[n.c_str()].getDouble();
-		wchar_t* w = new wchar_t[80];
-		memset(w, 0, 80);
-		_itow_s(val, w, 80, 10);
-		SetWindowText(getControl(), w); 
+		int decimal, sign;
+		char* buffer = new char[100];
+		memset(buffer, 0, 100);
+		int precision = 30;
+		_ecvt_s(buffer, 100, val, precision, &decimal, &sign);
+		wstring w = Designer::s2ws(string(buffer));
+
+		SetWindowText(getControl(), w.c_str());
 	}
 }
 

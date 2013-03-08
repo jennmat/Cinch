@@ -28,8 +28,11 @@ private:
 	Object loadedForm;
 	string type;
 
+	
 	void loadForm(string database, string type);
 public:
+	Array tabsForUpdate;
+
 	CinchDesigner(HWND);
 
 	Form* getForm();

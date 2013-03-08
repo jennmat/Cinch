@@ -11,12 +11,11 @@
 #define IDC_NEW_FIELD_TYPE                      112
 #define IDD_EDIT_FIELDS                         114
 #define IDD_EDIT_COLUMNS                        116
+#define IDD_ADD_TAB                             118
 #define IDC_ADD_FIELD_CHOOSE_FROM_LABEL         1000
 #define IDC_HIDDEN_FIELDS                       1007
 #define IDC_HIDDEN_TABS                         1008
 #define IDC_VISIBLE_TABS                        1009
-#define IDC_NEW_TAB_NAME                        1010
-#define IDC_ADD_NEW_TAB_BUTTON                  1011
 #define IDC_ADD_TO_VISIBLE_TABS                 1013
 #define IDC_REMOVE_FROM_VISIBLE_TABS            1014
 #define IDC_VISIBLE_UP                          40002
@@ -32,3 +31,7 @@
 #define IDC_NEW_FIELD_OPTIONS                   40013
 #define IDC_NEW_FIELD_NEW_OPTION                40014
 #define IDC_NEW_FIELD_ADD_OPTION                40016
+#define IDC_NEW_TAB                             40017
+#define IDC_CONTENT_COMBO                       40021
+#define IDC_NEW_TAB_LABEL                       40022
+#define IDC_NEW_TAB_NAME                        40023

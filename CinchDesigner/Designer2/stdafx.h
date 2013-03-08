@@ -59,4 +59,4 @@ class FormDelegate;
 #define IDM_TABULAR		34009
 #define IDM_TEXTAREA	34010
 
-#define DATABASE "bugs"
+#define DATABASE "worklog"

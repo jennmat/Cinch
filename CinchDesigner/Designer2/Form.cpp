@@ -211,21 +211,28 @@ FormDelegate* Form::getDelegate(){
 	return delegate;
 }
 
+void Form::RefreshValues(){
+	if ( hasDocument ){
+		
+
+		for(int i=0; i<layout.getFieldCount(); i++){
+			FormField* field = layout.getField(i);
+			field->clearValue();
+			field->loadValue(obj);
+		}
+	
+		detail.LoadDocument(obj);
+
+	}
+}
+
 void Form::LoadDocument(string _id, Object _obj){
 	id = _id;
 	obj = _obj;
 
-	
-
-	for(int i=0; i<layout.getFieldCount(); i++){
-		FormField* field = layout.getField(i);
-		field->clearValue();
-		field->loadValue(obj);
-	}
-	
-	detail.LoadDocument(obj);
-
 	hasDocument = true;
+
+	RefreshValues();
 }
 
 void Form::SaveDocument(int changedFieldId){
