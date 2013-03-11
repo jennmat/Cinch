@@ -788,8 +788,16 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
+		{
+		HWND combo = GetDlgItem(hDlg, IDC_FIELD_TYPE_COMBO);
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Text");
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
+		ComboBox_SetCurSel(combo, 0);
+
+		return (INT_PTR)TRUE;
+		}
 	case WM_COMMAND:
 		if (LOWORD(wParam) == IDOK ){
 			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL)) + 1;
@@ -873,7 +881,19 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 
 			field["name"] = sfname;
 			field["label"] = sflabel;
-			field["cinch_type"] = EDIT;
+			HWND combo = GetDlgItem(hDlg, IDC_FIELD_TYPE_COMBO);
+			int idx = ComboBox_GetCurSel(combo);
+			switch(idx){
+			case 0:
+				field["cinch_type"] = EDIT;
+				break;
+			case 1:
+				field["cinch_type"] = DATEPICKER;
+				break;
+			case 2:
+				field["cinch_type"] = NUMBER;
+				break;
+			}
 
 			fields.push_back(field);
 			_template["fields"] = fields;

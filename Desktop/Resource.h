@@ -32,12 +32,15 @@
 #define IDC_COMPARE_TO_VALUE                    1021
 
 
-#define IDD_ADD_DOCUMENT_TYPE                   198
+
+#define IDD_ADD_DOCUMENT_TYPE                   298
 #define IDC_ADD_DOCUMENT_TYPE_NAME              1004
 #define IDC_ADD_DOCUMENT_TYPE_LABEL             1005
 #define IDC_ADD_DOCUMENT_FIRST_FIELD_NAME       1008
 #define IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL      1009
 #define IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL      1012
+#define IDC_FIELD_TYPE_COMBO                    1014
+
 
 
 
