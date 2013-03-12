@@ -17,9 +17,19 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include "Windowsx.h"
+
+
+#include <CommCtrl.h>
+
+
+class Form;
+class FormDelegate;
+class FormField;
+
+
 #include "Toolbar.h"
 #include "CinchGrid.h"
-#include "CinchDesigner.h"
 #include "CouchViewDelegate.h"
 // Comment out if you don't want replication 
 //#include "Replication.h"
@@ -27,3 +37,47 @@
 #include "util.h"
 #include "ConditionManager.h"
 // TODO: reference additional headers your program requires here
+
+#include "JsonBox.h"
+#include "util.h"
+
+// TODO: reference additional headers your program requires here
+
+#include "FormField.h"
+#include "FormLayout.h"
+#include "FormDelegate.h"
+#include "Detail.h"
+#include "Form.h"
+#include "ReadOnlyDelegate.h"
+#include "BlankDelegate.h"
+#include "ArrayOfObjectsDelegate.h"
+#include "util.h"
+#include "MaskEdit.h"
+#include "NotifyParent.h"
+#include "CinchDesigner.h"
+
+#define ROW_HEIGHT 25
+#define LABEL_WIDTH 150
+#define LABEL_HEIGHT 25
+#define ROW_MARGIN 7
+#define CONTROL_WIDTH 200
+#define CONTROL_HEIGHT 25
+#define MARGIN 10
+#define LAYOUT_MARGIN 15
+
+#define IDM_TABULAR		34009
+#define IDM_TEXTAREA	34010
+
+#define DATABASE "bugs"
+
+
+#define DATEPICKER "DatePicker"
+#define NUMBER "Number"
+#define YESNO "YesNo"
+#define RADIO "Radio"
+#define MULTILINE "Multiline"
+#define EDIT "Edit"
+#define REFERENCE "Reference"
+#define COMBO "Combo"
+
+#define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))

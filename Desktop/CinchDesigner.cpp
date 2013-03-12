@@ -2,11 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "CinchDesigner.h"
-#include "Windowsx.h"
-#include <Windows.h>
-#include <CommDlg.h>
-#include "JsonBox.h"
 
 
 #define MAX_LOADSTRING 100
@@ -125,7 +120,7 @@ void loadTabLabels(Array tabs, HWND tabList){
 	for(unsigned i=0; i<tabs.size(); i++){
 		Object config = tabs[i].getObject();
 		string label = config["label"].getString();
-		wstring l = Designer::s2ws(label);
+		wstring l =s2ws(label);
 
 		SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
 	
@@ -430,7 +425,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			for(unsigned int i=0; i<results.size(); i++){
 				Object row = results[i].getObject();
 				string key = row["key"].getString();
-				wstring wkey = Designer::s2ws(key);
+				wstring wkey =s2ws(key);
 				SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
 			}
 		}
@@ -526,7 +521,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						wchar_t* text = new wchar_t[len];
 
 						ListBox_GetText(options, i, text);
-						pickFromList.push_back(Value(Designer::ws2s(text)));
+						pickFromList.push_back(Value(ws2s(text)));
 
 						free(text);
 
@@ -560,10 +555,10 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							DViewPair * v = (DViewPair *)tvitem.lParam;
 							Object config;
 							Object pickFrom;
-							string design = Designer::ws2s(v->design);
+							string design =ws2s(v->design);
 							string d = design.substr(design.find("/")+1);
 							pickFrom["design"] = d;
-							pickFrom["view"] = Designer::ws2s(v->view);
+							pickFrom["view"] =ws2s(v->view);
 							config["pick_from"] = pickFrom;
 
 							field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value(config));
@@ -621,8 +616,8 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			GetWindowText(GetDlgItem(hDlg, IDC_NEW_TAB_LABEL), tablabel, len);
 
 			Object newTab = Object();
-			newTab["name"] = Designer::ws2s(tabname);
-			newTab["label"] = Designer::ws2s(tablabel);
+			newTab["name"] =ws2s(tabname);
+			newTab["label"] =ws2s(tablabel);
 			newTab["content"] = "Text";
 			self->tabsForUpdate.push_back(newTab);
 

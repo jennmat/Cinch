@@ -33,7 +33,7 @@ void ArrayOfObjectsDelegate::setData(Array array){
 		vector<wstring> rowData;
 		for(unsigned int j=0; j<fields.size(); j++){
 			string data = o[fields[j]].getString();
-			wstring w = Designer::s2ws(data);
+			wstring w = s2ws(data);
 			rowData.push_back(w);	
 		}
 		data.push_back(rowData);
@@ -217,7 +217,7 @@ Array ArrayOfObjectsDelegate::storeValuesToArray(Array a){
 		Object obj = a[i].getObject();
 		vector<wstring> rowData = data[i];
 		for(unsigned int j=0; j<fields.size(); j++){
-			obj[fields[j]] = Designer::ws2s(rowData[j]);
+			obj[fields[j]] =ws2s(rowData[j]);
 		}
 
 		a[i] = obj;
@@ -227,7 +227,7 @@ Array ArrayOfObjectsDelegate::storeValuesToArray(Array a){
 		Object obj;
 		vector<wstring> rowData = data[i];
 		for(unsigned int j=0; j<fields.size(); j++){
-			obj[fields[j]] = Designer::ws2s(rowData[j]);
+			obj[fields[j]] =ws2s(rowData[j]);
 		}
 		a.push_back(obj);
 	}
@@ -246,7 +246,7 @@ void ArrayOfObjectsDelegate::deserializeUIElements(Object obj){
 			fields.push_back(col["name"].getString());
 			editorTypes.push_back(col["cinch_type"].getString());
 			editors.push_back(NULL);
-			titles.push_back(Designer::s2ws(col["label"].getString()));
+			titles.push_back(s2ws(col["label"].getString()));
 			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
 				widths.push_back(col["width"].getInt());
 			} else {
@@ -263,7 +263,7 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 		Object col;
 		col["name"] = Value(fields[i]);
 		col["cinch_type"] = editorTypes[i];
-		col["label"] = Designer::ws2s(titles[i]);
+		col["label"] =ws2s(titles[i]);
 		col["width"] = Value(250);
 		columns.push_back(col);
 	}

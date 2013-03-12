@@ -5,7 +5,6 @@
 
 using namespace JsonBox;
 using namespace std;
-using namespace Designer;
 
 TCHAR detailClassName[] = _T("CinchDetail");
 
@@ -472,7 +471,7 @@ Form * Detail::getForm(){
 }
 
 void Detail::LoadDocument(Object obj){
-	for(int i=0; i<getDetailPageCount(); i++){
+		for(int i=0; i<getDetailPageCount(); i++){
 		HWND detail = GetDetailPage(i);
 		wchar_t* field = fieldName[i];
 		string f = ws2s(field);
@@ -495,7 +494,7 @@ void Detail::LoadDocument(Object obj){
 		} else {
 			if ( obj[cfieldname].isString() ){
 				string val = obj[cfieldname].getString();
-				wstring valw = Designer::s2ws(val);
+				wstring valw =s2ws(val);
 				LPCWSTR r = valw.c_str();
 				SetWindowText(detailPages[i], r);
 			} else {
@@ -521,7 +520,7 @@ Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
 			memset(text, 0, len);
 			GetWindowText(detailPages[page], text, len); 
 	
-			string s = Designer::ws2s(text);
+			string s =ws2s(text);
 			obj[cfieldname] = s;
 		} else if ( contentType[page] == TABLE_CONTENT ){
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);

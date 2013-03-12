@@ -103,7 +103,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 					Object row = rows[i].getObject();
 					string key = row["key"].getString();
 
-					wstring wkey = Designer::s2ws(key);
+					wstring wkey =s2ws(key);
 					SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)wkey.c_str()); 
 					ids->push_back(row["id"].getString());
 				}
@@ -176,7 +176,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 		for (unsigned i=0; i<values.size(); i++){
 			if ( values[i].isString() ){
 				string value = values[i].getString();
-				wstring val = Designer::s2ws(value);
+				wstring val =s2ws(value);
 				SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)val.c_str()); 
 			}
 		}
@@ -322,10 +322,10 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 
 void EditField::loadValue(Object obj){
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n =ws2s(name);
 	if ( obj[n.c_str()].isString() ){
 		string val = obj[n.c_str()].getString();
-		wstring valw = Designer::s2ws(val);
+		wstring valw =s2ws(val);
 		LPCWSTR r = valw.c_str();
 		SetWindowText(getControl(), r); 
 	}
@@ -340,8 +340,8 @@ Object EditField::storeValue(Object obj){
 	LPWSTR str = new wchar_t[len];
 	
 	GetWindowText(getControl(), str, len);
-	string key = Designer::ws2s(getName());
-	string value = Designer::ws2s(str);
+	string key =ws2s(getName());
+	string value =ws2s(str);
 	obj[key.c_str()] = value;	
 	return obj;
 }
@@ -351,8 +351,8 @@ string EditField::serializeForJS(){
 	LPWSTR str = new wchar_t[len];
 	
 	GetWindowText(getControl(), str, len);
-	string key = Designer::ws2s(getName());
-	string value = Designer::ws2s(str);
+	string key =ws2s(getName());
+	string value =ws2s(str);
 	stringstream rc;
 	rc << "'" << value << "'";
 	return rc.str();
@@ -364,13 +364,13 @@ string EditField::serializeForJS(){
 
 void DatePickerField::loadValue(Object obj){
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n =ws2s(name);
 	if ( obj[n.c_str()].isInteger() ){
 		int val = obj[n.c_str()].getInt();
 		FILETIME ft;
 		SYSTEMTIME time;
 		time_t t = val;
-		Designer::UnixTimeToFileTime(t, &ft);
+		UnixTimeToFileTime(t, &ft);
 		FileTimeToSystemTime(&ft, &time);
 		DateTime_SetSystemtime(getControl(), GDT_VALID, &time);
 	} else if ( obj[n.c_str()].isString() ){
@@ -395,8 +395,8 @@ Object DatePickerField::storeValue(Object obj){
 	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
 
 	LPWSTR str = new wchar_t[80];
-	string key = Designer::ws2s(getName());
-	string value = Designer::ws2s(date);
+	string key =ws2s(getName());
+	string value =ws2s(date);
 	obj[key.c_str()] = value;	
 	return obj;
 	
@@ -409,8 +409,8 @@ string DatePickerField::serializeForJS(){
 	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
 
 	LPWSTR str = new wchar_t[80];
-	string key = Designer::ws2s(getName());
-	string value = Designer::ws2s(date);
+	string key =ws2s(getName());
+	string value =ws2s(date);
 
 	stringstream rc;
 	rc << "'" << value << "'";
@@ -420,7 +420,7 @@ string DatePickerField::serializeForJS(){
 
 void NumberField::loadValue(Object obj){
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n =ws2s(name);
 	if ( obj[n.c_str()].isInteger() ){
 		double val = obj[n.c_str()].getDouble();
 		int decimal, sign;
@@ -428,7 +428,7 @@ void NumberField::loadValue(Object obj){
 		memset(buffer, 0, 100);
 		int precision = 30;
 		_ecvt_s(buffer, 100, val, precision, &decimal, &sign);
-		wstring w = Designer::s2ws(string(buffer));
+		wstring w =s2ws(string(buffer));
 
 		SetWindowText(getControl(), w.c_str());
 	}
@@ -441,7 +441,7 @@ void NumberField::clearValue(){
 Object NumberField::storeValue(Object obj){
 	int len = GetWindowTextLength(getControl()) + 1;
 	LPWSTR str = new wchar_t[len];
-	string key = Designer::ws2s(getName());
+	string key =ws2s(getName());
 	if ( GetWindowTextLength(getControl()) > 0 ){
 		GetWindowText(getControl(), str, len);
 		double val = _wtof(str);
@@ -462,7 +462,7 @@ string NumberField::serializeForJS(){
 		LPWSTR str = new wchar_t[len];
 		GetWindowText(getControl(), str, len);
 
-		string rc = Designer::ws2s(str);
+		string rc =ws2s(str);
 		free(str);
 		return rc;
 	}
@@ -474,7 +474,7 @@ string NumberField::serializeForJS(){
 
 void YesNoField::loadValue(Object obj){
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n =ws2s(name);
 	if ( obj[n.c_str()].isBoolean() ){
 		bool val = obj[n.c_str()].getBoolean();
 		if ( val ){
@@ -491,7 +491,7 @@ void YesNoField::clearValue(){
 
 Object YesNoField::storeValue(Object obj){
 	int idx = ComboBox_GetCurSel(getControl());
-	string key = Designer::ws2s(getName());
+	string key =ws2s(getName());
 
 
 	if ( idx == 0 ){
@@ -522,7 +522,7 @@ Object ReferenceField::storeValue(Object obj){
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	int idx = ComboBox_GetCurSel(getControl());
 
-	string key = Designer::ws2s(getName());
+	string key = ws2s(getName());
 
 	if ( idx >= 0 ){
 		string id = (*ids)[idx];
@@ -540,7 +540,7 @@ void ReferenceField::loadValue(Object obj){
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n = ws2s(name);
 
 	if ( obj[n.c_str()].isString() ){
 		string id = obj[n.c_str()].getString();
@@ -557,7 +557,7 @@ string ReferenceField::serializeForJS(){
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	int idx = ComboBox_GetCurSel(getControl());
 
-	string key = Designer::ws2s(getName());
+	string key =ws2s(getName());
 
 	if ( idx >= 0 ){
 		string id = (*ids)[idx];
@@ -582,9 +582,9 @@ Object ComboBoxField::storeValue(Object obj){
 
 	ComboBox_GetLBText(getControl(), idx, text);
 
-	string value = Designer::ws2s(text);
+	string value = ws2s(text);
 
-	string key = Designer::ws2s(getName());
+	string key = ws2s(getName());
 
 	if ( idx >= 0 ){
 		obj[key.c_str()] = value;
@@ -603,7 +603,7 @@ string ComboBoxField::serializeForJS(){
 
 	ComboBox_GetLBText(getControl(), idx, text);
 
-	string value = Designer::ws2s(text);
+	string value = ws2s(text);
 
 	if ( idx >= 0 ){
 		stringstream rc;
@@ -617,11 +617,11 @@ string ComboBoxField::serializeForJS(){
 void ComboBoxField::loadValue(Object obj){
 
 	const wchar_t* name = getName();
-	string n = Designer::ws2s(name);
+	string n = ws2s(name);
 
 	if ( obj[n.c_str()].isString() ){
 		string value = obj[n.c_str()].getString();
-		wstring val = Designer::s2ws(value);
+		wstring val = s2ws(value);
 		int idx = ComboBox_FindStringExact(getControl(), -1, val.c_str());
 		ComboBox_SetCurSel(getControl(), idx);
 	}

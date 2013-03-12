@@ -110,8 +110,8 @@ void Form::deserializeForm(HWND parent, Value v){
 			label = field["name"].getString();
 		}
 		string name = field["name"].getString();
-		wstring wlabel = Designer::s2ws(label);
-		wstring wname = Designer::s2ws(name);
+		wstring wlabel =s2ws(label);
+		wstring wname =s2ws(name);
 		string type = field["cinch_type"].getString();
 		Value config;
 		if ( field["config"].isObject() ){
