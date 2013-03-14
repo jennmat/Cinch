@@ -65,6 +65,19 @@ void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, in
 	ShowPage(i);
 }
 
+void Detail::CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegate, int i){
+    HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
+	detailPages[i] = wnd;
+	contentType[i] = VIEW_CONTENT;
+	
+	int len = wcslen(label) + sizeof(wchar_t);
+	fieldName[i] = new wchar_t[len];
+	memset(fieldName[i], 0, len);
+	wcscpy_s(fieldName[i], len, label);
+
+	ShowPage(i);
+}
+
 void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 						0, 0, CONTROL_WIDTH, 200, detail, (HMENU)(i+DETAIL_START_ID), GetModuleHandle(0), NULL);
@@ -98,7 +111,18 @@ void Detail::deserializeUIElements(Object obj)
 		addDetailPage(LPWSTR(wtitle.c_str()));
 		labels.push_back(label);
 		string content = tab["content"].getString();
-		if( content.compare("Table") == 0 ){
+		if ( content.compare("View") == 0 ){
+			
+			Object config = tab["config"].getObject();
+			string design = config["design"].getString();
+			string view = config["view"].getString();
+			string startkey_from = config["startkey_with_value_of"].getString();
+			string endkey_from = config["endkey_with_value_of"].getString();
+			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from);
+			del->addColumn("title", L"Title", EDIT);
+			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
+
+		} else if( content.compare("Table") == 0 ){
 			ArrayOfObjectsDelegate* delegate = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
 			delegate->deserializeUIElements(tab["config"].getObject());
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
@@ -135,6 +159,11 @@ Array Detail::serializeUIElements()
 
 		} else if (contentType[i] == TEXTAREA_CONTENT ){
 			tab["content"] = Value("Text");
+		} else if ( contentType[i] == VIEW_CONTENT ){
+			tab["content"] = "View";
+			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
+			DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
+			tab["config"] = delegate->serializeUIElements();
 		}
 		tabs.push_back(tab);
 
@@ -471,13 +500,21 @@ Form * Detail::getForm(){
 }
 
 void Detail::LoadDocument(Object obj){
-		for(int i=0; i<getDetailPageCount(); i++){
+	for(int i=0; i<getDetailPageCount(); i++){
 		HWND detail = GetDetailPage(i);
 		wchar_t* field = fieldName[i];
 		string f = ws2s(field);
 		const char* cfieldname = f.c_str();
+		if ( contentType[i] == VIEW_CONTENT) {
+			
+			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
+			DetailViewDelegate * d = (DetailViewDelegate *)gridcontrol->getDelegate();
+			
+			d->LoadDocument(DATABASE, obj);
+			gridcontrol->reloadData();
 
-		if ( contentType[i] == TABLE_CONTENT ){ 
+
+		} else if ( contentType[i] == TABLE_CONTENT ){ 
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			
 			Array a = obj[cfieldname].getArray();

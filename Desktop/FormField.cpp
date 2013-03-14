@@ -96,7 +96,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 			if ( design.length() > 0 && view.length() > 0 ){
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);
-				Object results = db.viewResults(design, view, Value(), 10);
+				Object results = db.viewResults(design, view, 10);
 
 				Array rows = results["rows"].getArray();
 				for(unsigned int i=0; i<rows.size(); i++){

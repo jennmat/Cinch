@@ -10,6 +10,7 @@ using namespace JsonBox;
 
 #define TABLE_CONTENT 2000
 #define TEXTAREA_CONTENT 2001
+#define VIEW_CONTENT 2002
 
 #define GRID_COLUMNS_CHANGED WM_USER + 10489
 
@@ -35,6 +36,7 @@ public:
 	void getDetailPageTitle(int, wchar_t*);
 	string getDetailPageFieldName(int);
 	void CreateTableForPage(const wchar_t*, GridDelegate* delegate, int i);
+	void CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegate, int i);
 	void CreateTextareaForPage(const wchar_t*, int i);
 	HWND GetDetailPage(int i);
 	void ShowPage(int i);

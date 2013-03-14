@@ -286,51 +286,30 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	delegate = new CouchViewDelegate(conn);
 	//delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
 
-   grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
-   designer = CinchDesigner::CreateCinchDesigner(hWnd);
+	grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
+	designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-   Database db = conn.getDatabase(DATABASE);
+	Database db = conn.getDatabase(DATABASE);
    
-   CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
-   d->getForm()->setDelegate(&desktop);
-   /*d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("price")));
-   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("purchaseAmount")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("lastAppraisedValue")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("mortgagePayment")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
-   d->getForm()->addField(FormField::createYesNoField(designer, hInst, TEXT("occupied")));
-   d->getForm()->addDetail(TEXT("Notes"));
-   d->getForm()->addDetail(TEXT("Inspections"));
-   d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
-
-   try {
-	/*Document doc = db.getDocument("template/property");
-	Value v = doc.getData();
-	desktop.loadedForm = v.getObject();
-	d->getForm()->deserializeForm(designer, v);*/
-   }catch(Exception e){
-   }
-
-
-   ShowWindow(grid, SW_SHOW);
-   ShowWindow(designer, SW_SHOW);
+	d->getForm()->setDelegate(&desktop);
+   
+   
+	ShowWindow(grid, SW_SHOW);
+	ShowWindow(designer, SW_SHOW);
 
 	LoadViews(tree);
   
 
-   ShowWindow(tree, SW_SHOW);
-   SizeWindows(hWnd);
+	ShowWindow(tree, SW_SHOW);
+	SizeWindows(hWnd);
 
-   DWORD threadId;
-   CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	DWORD threadId;
+	CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
-   db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
+	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
 #endif 
    return TRUE;
 }
@@ -412,7 +391,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			Connection conn;
 			Database db = conn.getDatabase(DATABASE);
-			Object r = db.viewResults("all-objects", "by-label", Value(), 100);
+			Object r = db.viewResults("all-objects", "by-label", 100);
 			Array rows = r["rows"].getArray();
 			unsigned int i = 0;
 			for(; i<rows.size(); i++){
@@ -569,7 +548,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		Connection conn;
 		Database db = conn.getDatabase(DATABASE);
-		Object r = db.viewResults("all-objects", "by-label", Value(), 100);
+		Object r = db.viewResults("all-objects", "by-label", 100);
 	
 		vector<string>* ids = new vector<string>();
 
@@ -834,9 +813,11 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			string sfname = ws2s(fname);
 			string sflabel = ws2s(flabel);
 
+
 			Object definition = Object();
 			definition["name"] = sname;
 			definition["label"] = slabel;
+			definition["plural"] = splurallabel;
 			definition["cinch_type"] = "object-definition";
 
 			

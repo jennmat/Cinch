@@ -33,7 +33,7 @@ void CouchViewDelegate::loadViewResults(){
 	s = s.substr(ix);
 
 
-	viewResults = db.viewResults(s, ws2s(view), Value(""), 25);
+	viewResults = db.viewResults(s, ws2s(view), 25);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wchar_t*[rowCount];

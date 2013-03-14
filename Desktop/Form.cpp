@@ -183,7 +183,7 @@ Object Form::serializeFormToObject(Object obj){
 	obj["fields"] = fields;
 
 	obj["tabs"] = detail.serializeUIElements();
-
+	obj["cinch_type"] = "template";
 	return obj;
 }
 

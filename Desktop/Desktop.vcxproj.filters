@@ -89,6 +89,12 @@
     <ClInclude Include="ReadOnlyDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DetailViewDelegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -137,6 +143,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ReadOnlyDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DetailViewDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -87,7 +87,7 @@ Object Database::listViews(){
 
 }
 
-Object Database::viewResults(const string& design, const string& view, Value& startKey, int limit=25){
+Object Database::viewResults(const string& design, const string& view, int limit=25){
 	stringstream s;
 	s << "/" << name << "/_design/";
 	s << design;
@@ -100,6 +100,23 @@ Object Database::viewResults(const string& design, const string& view, Value& st
 
 	return var.getObject();
 }
+
+Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey){
+	stringstream s;
+	s << "/" << name << "/_design/";
+	s << design;
+	s << "/_view/";
+	s << view;
+	s << "?start_key=";
+	s << startKey;
+	s << "&end_key=";
+	s << endKey;
+
+	Value var = comm.getData(s.str());
+
+	return var.getObject();
+}
+
 
 Object Database::viewResulsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit)
 {

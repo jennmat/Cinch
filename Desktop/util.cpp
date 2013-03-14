@@ -37,3 +37,16 @@ void UnixTimeToFileTime(time_t t, LPFILETIME pft)
 }
 
 
+
+string CreateUUID(){
+	UUID uuid;
+	UuidCreate(&uuid);
+	char* buffer;
+	UuidToStringA(&uuid, (RPC_CSTR*)&buffer);
+	
+	string rc = string(buffer);
+
+	RpcStringFreeA((RPC_CSTR*)&buffer);
+
+	return rc;
+}

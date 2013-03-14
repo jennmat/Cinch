@@ -27,6 +27,8 @@ class Form;
 class FormDelegate;
 class FormField;
 
+#include "Constants.h"
+#include "Resource.h"
 
 #include "Toolbar.h"
 #include "CinchGrid.h"
@@ -55,6 +57,7 @@ class FormField;
 #include "MaskEdit.h"
 #include "NotifyParent.h"
 #include "CinchDesigner.h"
+#include "DetailViewDelegate.h"
 
 #define ROW_HEIGHT 25
 #define LABEL_WIDTH 150

@@ -56,7 +56,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -90,9 +90,11 @@
     <ClInclude Include="BlankDelegate.h" />
     <ClInclude Include="CinchDesigner.h" />
     <ClInclude Include="ConditionManager.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="CouchViewDelegate.h" />
     <ClInclude Include="Desktop.h" />
     <ClInclude Include="Detail.h" />
+    <ClInclude Include="DetailViewDelegate.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="FormDelegate.h" />
     <ClInclude Include="FormField.h" />
@@ -115,6 +117,7 @@
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
     <ClCompile Include="Detail.cpp" />
+    <ClCompile Include="DetailViewDelegate.cpp" />
     <ClCompile Include="Form.cpp" />
     <ClCompile Include="FormField.cpp" />
     <ClCompile Include="FormLayout.cpp" />

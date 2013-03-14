@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-
+#include <sstream>
 
 #define MAX_LOADSTRING 100
 
@@ -419,7 +419,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		Connection conn;
 		Database d = conn.getDatabase(DATABASE);
-		Object obj = d.viewResults("all-objects", "by-label", Value(), 10);
+		Object obj = d.viewResults("all-objects", "by-label", 10);
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
 			for(unsigned int i=0; i<results.size(); i++){
@@ -597,11 +597,66 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HWND combo = GetDlgItem(hDlg, IDC_CONTENT_COMBO);
 			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Text");
+			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Related Documents");
+
 		}
 	case WM_COMMAND:
 		wmEvent = HIWORD(wParam);
 		wmId = LOWORD(wParam);
+
 		switch(wmId){
+		case IDC_CONTENT_COMBO:
+			{
+				if ( wmEvent == CBN_SELCHANGE ){
+					HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
+					ComboBox_ResetContent(relcombo);
+					Connection conn;
+					Database db = conn.getDatabase(DATABASE);
+					Object results = db.viewResults("all-relationships", "by-destination-document-type", Value(self->getType()), Value(self->getType()));
+				
+					vector<string>* ids = new vector<string>();
+
+					if( results["rows"].isArray() ){
+						Array rows = results["rows"].getArray();
+
+						for(unsigned i=0; i<rows.size(); i++){
+							Object o = rows[i].getObject();
+							string id = o["id"].getString();
+							
+							Document doc = db.getDocument(id);
+							Object obj = doc.getData().getObject();
+							//string label = obj["label"].getString();
+							string source_document_type = obj["source_document_type"].getString();
+
+							stringstream label;
+
+							Object objectResults = db.viewResults("all-objects", "by-name", Value(source_document_type), Value(source_document_type));
+							if ( objectResults["rows"].isArray() ){
+								Array rows = objectResults["rows"].getArray();
+								if ( rows.size() > 0 ){
+									Object o = rows[0].getObject();
+									string id = o["id"].getString();
+									Document doc = db.getDocument(id);
+									Object data = doc.getData().getObject();
+									label << data["plural"].getString();
+									label << ": ";
+
+								}
+							}
+
+							label << obj["label"].getString();
+
+							wstring w = s2ws(label.str());
+							SendMessage(relcombo, CB_ADDSTRING, 0, (LPARAM)w.c_str());
+							ids->push_back(id);
+
+						}
+					}
+
+					SetWindowLong(relcombo, GWL_USERDATA, (ULONG_PTR)ids);
+				}
+			}
+			break;
 		case IDOK:
 			{
 
@@ -618,7 +673,69 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Object newTab = Object();
 			newTab["name"] =ws2s(tabname);
 			newTab["label"] =ws2s(tablabel);
-			newTab["content"] = "Text";
+
+			HWND contentCombo = GetDlgItem(hDlg, IDC_CONTENT_COMBO);
+			int idx = ComboBox_GetCurSel(contentCombo);
+			if ( idx == 0 ){
+				newTab["content"] = "Text";
+			} else if ( idx == 1 ){
+
+				Connection conn;
+				Database db = conn.getDatabase(DATABASE);
+
+				HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
+				vector<string>* ids = (vector<string>*)GetWindowLong(relcombo, GWL_USERDATA);
+				int relidx = ComboBox_GetCurSel(relcombo);
+
+				string id = (*ids)[relidx];
+				Document doc = db.getDocument(id);
+				Object obj = doc.getData().getObject();
+
+
+				/* Create a default view */
+				char map[1024];
+				memset(map, 0, 1024);
+
+				sprintf_s(map, 1024, 
+					"function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", 
+					obj["source_document_type"].getString().c_str(),
+					obj["source_document_property"].getString().c_str());	
+
+				Object design = Object();
+				design["language"] = "javascript";
+				Object view = Object();
+				
+				
+				Object v = Object();
+				v["map"] = map;
+
+				string vname = CreateUUID();
+				view[vname] = v;
+			
+				stringstream labelstream;
+				design["views"] = view;
+
+				stringstream design_id;
+				design_id << "_design/";
+				
+				string design_uuid = CreateUUID();
+				design_id << design_uuid;
+				
+				string design_id_str = design_id.str();
+				
+				db.createDocument(Value(design), design_id_str);
+				
+				newTab["content"] = "View";
+				Object config = Object();
+				config["design"] = design_uuid;
+				config["view"] = vname;
+				config["startkey_with_value_of"] = "_id";
+                config["endkey_with_value_of"] = "_id";
+           
+				newTab["config"] = config;
+			}
+
+
 			self->tabsForUpdate.push_back(newTab);
 
 			HWND visibleTabs = GetDlgItem(GetParent(hDlg), IDC_VISIBLE_TABS);
