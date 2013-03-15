@@ -11,18 +11,16 @@ DetailViewDelegate::DetailViewDelegate(){
 	obj = NULL;
 }
 
-DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _startkey_from, string _endkey_from){
+DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _startkey_from, string _endkey_from, string _docs_of_type){
 	obj = NULL;
 
 	design = _design;
 	view = _view;
 	startkey_from = _startkey_from;
 	endkey_from = _endkey_from;
+	shows_docs_of_type = _docs_of_type;
 
-	Connection conn;
-	Database db = conn.getDatabase(database);
-
-	//obj = db.viewResults(design, view, startkey, endkey);
+	
 }
 
 int DetailViewDelegate::totalRows()
@@ -83,7 +81,7 @@ const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 			string id = r["id"].getString();
 
 			Connection conn;
-			Database d = conn.getDatabase("bugs");
+			Database d = conn.getDatabase(DATABASE);
 			Document doc = d.getDocument(id);
 			Object data = doc.getData().getObject();
 
@@ -262,7 +260,7 @@ Object DetailViewDelegate::serializeUIElements(){
 	o["view"] = view;
 	o["startkey_with_value_of"] = startkey_from;
 	o["endkey_with_value_of"] = endkey_from;
-
+	o["shows_docs_of_type"] = shows_docs_of_type;
 	return o;
 
 }

@@ -59,10 +59,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg) && !IsDialogMessage(designer, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		try {
+			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg) && !IsDialogMessage(designer, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}catch(CouchDB::Exception ex){
+			wstring m = s2ws(ex.what());
+			MessageBox(msg.hwnd, m.c_str(), L"", 0);
 		}
 	}
 
@@ -215,13 +220,9 @@ void LoadViews(HWND hwnd){
 
 				int dlen = id.length() + sizeof(wchar_t);
 				ViewPair* v = new ViewPair;
-				v->design = new wchar_t[dlen];
-				wcscpy_s(v->design, dlen, id.c_str());
-
-				int vlen = view.length() + sizeof(wchar_t);
-				v->view = new wchar_t[vlen];
-				wcscpy_s(v->view, vlen, view.c_str());
-				
+				v->design = row["id"].getString();
+				v->view = p.first;
+				v->emitsDocsWithType = o["emits_docs_with_type"].getString();
 				AddItemToTree(hwnd, str, (LPARAM)v, 2);
 		
 		   }
@@ -361,7 +362,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if ( tvitem.lParam != NULL ){
 					ViewPair * v = (ViewPair *)tvitem.lParam;
 			
-					delegate->setView(v->design, v->view);
+					delegate->setView(s2ws(v->design), s2ws(v->view));
 					CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 					gridcontrol->reloadData();
 				}
@@ -729,6 +730,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Object v = Object();
 			v["label"] = viewlabelstream.str();
 			v["map"] = map;
+			v["emits_docs_with_type"] = type.c_str();
 
 			view[viewname.str()] = v;
 			
@@ -818,6 +820,8 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			definition["name"] = sname;
 			definition["label"] = slabel;
 			definition["plural"] = splurallabel;
+			definition["first_field_name"] = sfname;
+			definition["first_field_label"] = sflabel;
 			definition["cinch_type"] = "object-definition";
 
 			
@@ -841,6 +845,7 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			Object v = Object();
 			v["label"] = viewlabelstream.str();
 			v["map"] = map;
+			v["emits_docs_with_type"] = sname.c_str();
 
 			view[viewname.str()] = v;
 			
@@ -878,7 +883,7 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 
 			fields.push_back(field);
 			_template["fields"] = fields;
-
+			_template["cinch_type"] = "template";
 
 			Connection conn;
 			Database db = conn.getDatabase(DATABASE);

@@ -15,6 +15,7 @@ private:
 	string view;
 	string startkey_from;
 	string endkey_from;
+	string shows_docs_of_type;
 	Object* obj;
 	vector<vector<wstring> > data;
 	vector<string> fields;
@@ -24,7 +25,7 @@ private:
 	vector<int> widths;
 	int fieldId;
 public:
-	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from);
+	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from, string docs_of_type);
 	void LoadDocument(string database, Object obj);
 	void addColumn(string field, wstring label, string editorType);
 

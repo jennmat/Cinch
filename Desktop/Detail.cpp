@@ -118,8 +118,27 @@ void Detail::deserializeUIElements(Object obj)
 			string view = config["view"].getString();
 			string startkey_from = config["startkey_with_value_of"].getString();
 			string endkey_from = config["endkey_with_value_of"].getString();
-			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from);
-			del->addColumn("title", L"Title", EDIT);
+			string docs_of_type = config["shows_docs_of_type"].getString();
+
+			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
+			if ( !config["columns"].isArray() ){
+				Connection conn;
+				Database db = conn.getDatabase(DATABASE);
+				Object results = db.viewResults("all-objects", "by-name", Value(docs_of_type), Value(docs_of_type));
+				if ( results["rows"].isArray() ){
+					Array rows = results["rows"].getArray();
+					if ( rows.size() > 0 ){
+						Object row = rows[0].getObject();
+						string id = row["id"].getString();
+						Document doc  = db.getDocument(id);
+						Object obj = doc.getData().getObject();
+						del->addColumn(obj["first_field_name"].getString(), s2ws(obj["first_field_label"].getString()), EDIT);
+					}
+				}
+			}
+
+			del->deserializeUIElements(config);
+			//del->addColumn("title", L"Title", EDIT);
 			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
 
 		} else if( content.compare("Table") == 0 ){

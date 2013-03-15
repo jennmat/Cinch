@@ -21,11 +21,21 @@
 
 
 #include <CommCtrl.h>
+#include <string>
 
+using namespace std;
 
 class Form;
 class FormDelegate;
 class FormField;
+
+struct ViewPair {
+	string emitsDocsWithType;
+	string design;
+	string view;
+};
+
+
 
 #include "Constants.h"
 #include "Resource.h"
@@ -71,7 +81,7 @@ class FormField;
 #define IDM_TABULAR		34009
 #define IDM_TEXTAREA	34010
 
-#define DATABASE "bugs"
+#define DATABASE "patients"
 
 
 #define DATEPICKER "DatePicker"

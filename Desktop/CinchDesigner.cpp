@@ -552,17 +552,36 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						TreeView_GetItem(tree, &tvitem);
 
 						if ( tvitem.lParam != NULL ){
-							DViewPair * v = (DViewPair *)tvitem.lParam;
+							ViewPair * v = (ViewPair *)tvitem.lParam;
 							Object config;
 							Object pickFrom;
-							string design =ws2s(v->design);
+							string design = v->design;
 							string d = design.substr(design.find("/")+1);
 							pickFrom["design"] = d;
-							pickFrom["view"] =ws2s(v->view);
+							pickFrom["view"] = v->view;
 							config["pick_from"] = pickFrom;
 
 							field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value(config));
 					
+							/* Create a relationship */
+							Object rel = Object();
+							rel["cinch_type"] = "relationship";
+							
+							CinchDesigner* self = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+							rel["source_document_type"] = self->getType();
+
+							rel["destination_document_type"] = v->emitsDocsWithType;
+
+							string name = ws2s(szNewFieldName);
+							string label = ws2s(szNewFieldLabel);
+
+							rel["name"] = name;
+							rel["label"] = label;
+							rel["source_document_property"] = name;
+
+							Connection conn;
+							Database db = conn.getDatabase(DATABASE);
+							db.createDocument(Value(rel));
 						}
 						
 					}
@@ -731,7 +750,7 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				config["view"] = vname;
 				config["startkey_with_value_of"] = "_id";
                 config["endkey_with_value_of"] = "_id";
-           
+				config["shows_docs_of_type"] = obj["source_document_type"].getString();
 				newTab["config"] = config;
 			}
 

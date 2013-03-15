@@ -30,14 +30,14 @@ FONT 8, "Segoe UI"
     LTEXT           "Label", IDC_STATIC, 19, 38, 18, 8, SS_LEFT
     EDITTEXT        IDC_ADD_DOCUMENT_TYPE_NAME, 66, 14, 121, 14, ES_AUTOHSCROLL
     EDITTEXT        IDC_ADD_DOCUMENT_TYPE_LABEL, 66, 35, 121, 14, ES_AUTOHSCROLL
+    LTEXT           "Plural Label", IDC_STATIC, 19, 60, 40, 8, SS_LEFT
+    EDITTEXT        IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL, 66, 57, 121, 14, ES_AUTOHSCROLL
     LTEXT           "Add A Field", IDC_STATIC, 19, 90, 40, 8, SS_LEFT
     LTEXT           "Add a field which is describes the entity and is generally unique.  This might be a name or a short title.", IDC_STATIC, 19, 104, 199, 22, SS_LEFT
     LTEXT           "Field Name", IDC_STATIC, 19, 137, 39, 8, SS_LEFT
     LTEXT           "Field Label", IDC_STATIC, 19, 162, 38, 8, SS_LEFT
     EDITTEXT        IDC_ADD_DOCUMENT_FIRST_FIELD_NAME, 66, 134, 121, 14, ES_AUTOHSCROLL
     EDITTEXT        IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL, 66, 159, 121, 14, ES_AUTOHSCROLL
-    LTEXT           "Plural Label", IDC_STATIC, 19, 60, 40, 8, SS_LEFT
-    EDITTEXT        IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL, 66, 57, 121, 14, ES_AUTOHSCROLL
     LTEXT           "Field Type", IDC_STATIC, 20, 187, 35, 8, SS_LEFT
     COMBOBOX        IDC_FIELD_TYPE_COMBO, 66, 184, 121, 14, CBS_DROPDOWNLIST | CBS_HASSTRINGS
 }

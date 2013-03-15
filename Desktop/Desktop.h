@@ -27,8 +27,3 @@ CouchDB::Connection conn;
 
 DWORD WINAPI ChangesListener(LPVOID lParam);
 
-struct ViewPair {
-	wchar_t* design;
-	wchar_t* view;
-};
-

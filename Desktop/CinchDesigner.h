@@ -52,9 +52,3 @@ INT_PTR CALLBACK	EditTabs(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK    EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
-
-
-struct DViewPair {
-	wchar_t* design;
-	wchar_t* view;
-};
