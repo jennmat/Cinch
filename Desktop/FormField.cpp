@@ -77,7 +77,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 	vector<string>* ids = new vector<string>();
 
 
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
@@ -421,16 +421,22 @@ string DatePickerField::serializeForJS(){
 void NumberField::loadValue(Object obj){
 	const wchar_t* name = getName();
 	string n =ws2s(name);
-	if ( obj[n.c_str()].isInteger() ){
+	if ( obj[n.c_str()].isDouble() ){
 		double val = obj[n.c_str()].getDouble();
 		int decimal, sign;
-		char* buffer = new char[100];
-		memset(buffer, 0, 100);
-		int precision = 30;
-		_ecvt_s(buffer, 100, val, precision, &decimal, &sign);
+		char* buffer = new char[_CVTBUFSIZE];
+		int precision = 2;
+		_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
 		wstring w =s2ws(string(buffer));
-
+		w.insert(decimal, L".");
 		SetWindowText(getControl(), w.c_str());
+	} else if ( obj[n.c_str()].isInteger() ){
+		int val = obj[n.c_str()].getInt();
+		wchar_t* buf = new wchar_t[100];
+		memset(buf, 0, 100);
+		_itow_s(val, buf, 100, 10);
+
+		SetWindowText(getControl(), buf);
 	}
 }
 

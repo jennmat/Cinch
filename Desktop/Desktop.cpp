@@ -203,27 +203,42 @@ void LoadViews(HWND hwnd){
 		   LPWSTR str = new wchar_t[80];
 		   wcscpy_s(str, 80, name.c_str());
 
-		   AddItemToTree(hwnd, str, NULL, 1);
-	
+		   bool hasCinchView = false;
+
 		   Object views = doc["views"].getObject();
 		   Object::const_iterator it = views.begin();
+
 		   for(it=views.begin(); it != views.end(); it++){
 				pair<string, Value> p = *it;
+				Object o = p.second.getObject();
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+					hasCinchView = true;
+				}
+		   }
+
+		   if ( hasCinchView ){
+				AddItemToTree(hwnd, str, NULL, 1);
+		   }
+	
+		   for(it=views.begin(); it != views.end(); it++){
+			   pair<string, Value> p = *it;
 				wstring view = s2ws(p.first);
 				wstring name = s2ws(p.first);
 				Object o = p.second.getObject();
-				if ( o["label"].isString() ){
-					name = s2ws(o["label"].getString());
-				}
-				LPWSTR str = new wchar_t[80];
-				wcscpy_s(str, 80, name.c_str());
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+					if ( o["label"].isString() ){
+						name = s2ws(o["label"].getString());
+					}
+					LPWSTR str = new wchar_t[80];
+					wcscpy_s(str, 80, name.c_str());
 
-				int dlen = id.length() + sizeof(wchar_t);
-				ViewPair* v = new ViewPair;
-				v->design = row["id"].getString();
-				v->view = p.first;
-				v->emitsDocsWithType = o["emits_docs_with_type"].getString();
-				AddItemToTree(hwnd, str, (LPARAM)v, 2);
+					int dlen = id.length() + sizeof(wchar_t);
+					ViewPair* v = new ViewPair;
+					v->design = row["id"].getString();
+					v->view = p.first;
+					v->emitsDocsWithType = o["emits_docs_with_type"].getString();
+					AddItemToTree(hwnd, str, (LPARAM)v, 2);
+				}
 		
 		   }
 		   //for(unsigned int j = 0; j<views.size(); j++){
@@ -730,6 +745,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Object v = Object();
 			v["label"] = viewlabelstream.str();
 			v["map"] = map;
+			v["cinch_view"] = true;
 			v["emits_docs_with_type"] = type.c_str();
 
 			view[viewname.str()] = v;
@@ -845,6 +861,7 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			Object v = Object();
 			v["label"] = viewlabelstream.str();
 			v["map"] = map;
+			v["cinch_view"] = true;
 			v["emits_docs_with_type"] = sname.c_str();
 
 			view[viewname.str()] = v;

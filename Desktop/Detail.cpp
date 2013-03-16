@@ -132,7 +132,15 @@ void Detail::deserializeUIElements(Object obj)
 						string id = row["id"].getString();
 						Document doc  = db.getDocument(id);
 						Object obj = doc.getData().getObject();
-						del->addColumn(obj["first_field_name"].getString(), s2ws(obj["first_field_label"].getString()), EDIT);
+						Array columns = Array();
+						Object column = Object();
+						column["name"] = obj["first_field_name"].getString();
+						column["label"] = obj["first_field_label"].getString();
+						column["width"] = 250;
+						column["editor"] = EDIT;
+						columns.push_back(column);
+						config["columns"] = columns;
+						//del->addColumn(obj["first_field_name"].getString(), s2ws(obj["first_field_label"].getString()), EDIT);
 					}
 				}
 			}

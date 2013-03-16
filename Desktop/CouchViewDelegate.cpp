@@ -82,7 +82,8 @@ wchar_t* CouchViewDelegate::headerContent(int col)
 const wchar_t* CouchViewDelegate::cellContent(int row, int col)
 {
 	if( data[row] != NULL ){
-		return data[row];
+		wchar_t * val = data[row];
+		return val;
 	} else {
 		/* Load some more documents 
 		Object obj = db.viewResulsFromStartDocId("friends", "by-name", lastRead["key"], lastRead["id"].getString(), 25);

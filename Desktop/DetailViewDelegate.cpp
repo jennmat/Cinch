@@ -112,7 +112,7 @@ bool DetailViewDelegate::drawVerticalGridlines(){
 }
 
 bool DetailViewDelegate::rowSelection(){
-	return false;
+	return true;
 }
 
 
@@ -146,12 +146,12 @@ void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col){
 }
 
 bool DetailViewDelegate::allowEditing(int col){
-	return true;
+	return false;
 }
 
 
 bool DetailViewDelegate::allowHeaderTitleEditing(int col){
-	return true;
+	return false;
 }
 
 HWND DetailViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
