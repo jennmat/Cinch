@@ -81,7 +81,7 @@ struct ViewPair {
 #define IDM_TABULAR		34009
 #define IDM_TEXTAREA	34010
 
-#define DATABASE "property"
+#define DATABASE "bugs"
 
 
 #define DATEPICKER "DatePicker"
