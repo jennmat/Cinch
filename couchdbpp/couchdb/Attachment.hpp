@@ -42,6 +42,8 @@ class Attachment{
 
       std::string getData();
 
+	  void saveToDirectory(std::string directory);
+
    private:
       Communication &comm;
       std::string   db;

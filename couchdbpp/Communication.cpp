@@ -48,6 +48,13 @@ static int writer(char *data, size_t size, size_t nmemb, string *dest){
    return written;
 }
 
+static size_t write_file_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    size_t written;
+    written = fwrite(ptr, size, nmemb, stream);
+    return written;
+}
+
+
 static size_t reader(void *ptr, size_t size, size_t nmemb, string *stream){
    int actual  = (int)stream->size();
    int written = size * nmemb;
@@ -206,4 +213,30 @@ void Communication::getRawData(const string &_url, const string &method,
    cout << "Response code: " << responseCode << endl;
    cout << "Raw buffer: " << buffer;
 #endif
+}
+
+
+void Communication::saveRawData(string _url, string filename){
+	string url = baseURL + _url;
+	string method = "GET";
+#ifdef COUCH_DB_DEBUG
+   cout << "Getting data: " << url << " [" << method << "]" << endl;
+#endif
+
+	CURL* dcurl = curl_easy_init();
+
+	curl_easy_setopt( dcurl, CURLOPT_URL, url.c_str() ) ;
+
+	FILE* file;
+	fopen_s(&file, filename.c_str(), "wb");
+
+	curl_easy_setopt( dcurl, CURLOPT_WRITEDATA, file) ;
+	curl_easy_setopt( dcurl, CURLOPT_WRITEFUNCTION, write_file_data);
+
+	curl_easy_perform( dcurl );
+	
+	curl_easy_cleanup( dcurl );
+
+	fclose(file);   
+   
 }

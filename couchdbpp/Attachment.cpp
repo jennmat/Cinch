@@ -94,9 +94,20 @@ string Attachment::getData(){
    return data;
 }
 
+
+void Attachment::saveToDirectory(string directory){
+	string url = "/" + db + "/" + document + "/" + id;
+	if(revision.size() > 0)
+		url += "?rev=" + revision;
+	
+	comm.saveRawData(url, directory + "\\" + id);
+}
+
 ostream& operator<<(ostream &out, const CouchDB::Attachment &attachment){
    return out << "{id: " << attachment.getID()
               << ", rev: " << attachment.getRevision()
               << ", content-type: " << attachment.getContentType()
               << "}";
 }
+
+

@@ -53,6 +53,10 @@ struct ViewPair {
 #include "JsonBox.h"
 #include "util.h"
 
+
+#include <objbase.h>
+#include <shlobj.h>             // shell stuff
+
 // TODO: reference additional headers your program requires here
 
 #include "FormField.h"

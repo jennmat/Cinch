@@ -41,11 +41,15 @@ Detail::Detail() {
 	for(int i=0; i<MAX_DETAIL_PAGES; i++){
 		detailPages[i] = NULL;
 	}
+	memset(initialized, 0, MAX_DETAIL_PAGES);
 }
 
 
 
 void Detail::ShowPage(int i){
+	if ( initialized[i] == 0 ){
+		InitializePage(i);
+	}
 	RECT tabs;
 	RECT tabControlClient;
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
@@ -74,7 +78,7 @@ void Detail::CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegat
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
 	wcscpy_s(fieldName[i], len, label);
-
+	initialized[i] = 1;
 	ShowPage(i);
 }
 
@@ -89,9 +93,45 @@ void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 
 	HFONT hFont=DEFAULT_FONT;
 	SendMessage(detailPages[i], WM_SETFONT,(WPARAM)hFont,0);	
-	
+	initialized[i] = 1;
 	ShowPage(i);
 }
+
+void Detail::CreateAttachmentsForPage(int i){
+	detailPages[i] = CreateWindowEx(0, L"STATIC", L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, detail, 0, GetModuleHandle(0), NULL);
+	contentType[i] = ATTACHMENTS;
+	initialized[i] = 0;
+
+
+}
+
+
+void Detail::InitializePage(int i){
+	if ( contentType[i] == ATTACHMENTS ){
+		RECT rc;
+		GetClientRect(detail, &rc);
+	
+		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+		if (SUCCEEDED(hr))
+		{
+			HRESULT hr = CoCreateInstance(CLSID_ExplorerBrowser, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&_peb));
+			if (SUCCEEDED(hr)){
+				FOLDERSETTINGS fs = {};
+				fs.ViewMode = FVM_DETAILS;
+				fs.fFlags = 0;
+
+				HRESULT hr = _peb->Initialize(detailPages[i], &rc, &fs);
+
+				if ( hasLoadedDocument == true ){
+					LoadAttachments();
+				}
+			}
+			
+		}
+		initialized[i] = 1;
+	}
+}
+
 
 HWND Detail::GetDetailPage(int i){
 	return detailPages[i];
@@ -155,10 +195,20 @@ void Detail::deserializeUIElements(Object obj)
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
 		} else if ( content.compare("Text") == 0 ){
 			CreateTextareaForPage(s2ws(name).c_str(), i);
+		} else if ( content.compare("Attachments") == 0 ){
+			CreateAttachmentsForPage(i);
 		}
-		ShowPage(i);
-		ShowWindow(detail, SW_SHOW);
 	}
+
+	
+	
+	ShowWindow(detail, SW_SHOW);
+	ShowWindow(tabControl, SW_SHOW);
+
+	if ( getDetailPageCount() > 0 ){
+		ShowPage(0);
+	}
+
 }
 
 
@@ -270,7 +320,8 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			}
 
 			if ( self->detailPages[nTabItem] != NULL ){
-				ShowWindow(self->detailPages[nTabItem], SW_SHOW);
+				self->ShowPage(nTabItem);
+				//ShowWindow(self->detailPages[nTabItem], SW_SHOW);
 			}
             
 		}
@@ -464,7 +515,7 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 
 		tabControl = CreateWindow(WC_TABCONTROL, L"", 
 			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, 
-			0, 0, 100, 100, detail, NULL, hInst, NULL); 
+			0, 0, 0, 0, detail, NULL, hInst, NULL); 
     
 		//grid = CinchGrid::CreateCinchGrid(parent, new ReferenceDelegate());
 	
@@ -526,14 +577,40 @@ Form * Detail::getForm(){
 	return form;
 }
 
+void Detail::LoadAttachments(){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Document doc = db.getDocument(_id, _rev);
+
+	string dir = "C:\\temp\\" + _id;
+	wstring wdir = s2ws(dir);
+	CreateDirectory(wdir.c_str(), NULL);
+			
+	try {
+		vector<Attachment> attachments = doc.getAllAttachments();
+		for(unsigned i=0; i<attachments.size(); i++){
+			Attachment a = attachments[i];
+			a.saveToDirectory(dir);
+		}
+	}catch(Exception e){
+	}
+	IShellItem *psi;
+	HRESULT hr = SHCreateItemFromParsingName(wdir.c_str(), 0, IID_PPV_ARGS(&psi)); 
+    if (SUCCEEDED(hr)){
+		_peb->BrowseToObject(psi, 0);
+	}
+}
+
 void Detail::LoadDocument(Object obj){
+	hasLoadedDocument = true;
+	_id = obj["_id"].getString();
+	_rev = obj["_rev"].getString();
+
 	for(int i=0; i<getDetailPageCount(); i++){
 		HWND detail = GetDetailPage(i);
-		wchar_t* field = fieldName[i];
-		string f = ws2s(field);
-		const char* cfieldname = f.c_str();
 		if ( contentType[i] == VIEW_CONTENT) {
 			
+
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			DetailViewDelegate * d = (DetailViewDelegate *)gridcontrol->getDelegate();
 			
@@ -543,7 +620,10 @@ void Detail::LoadDocument(Object obj){
 
 		} else if ( contentType[i] == TABLE_CONTENT ){ 
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
-			
+			wchar_t* field = fieldName[i];
+			string f = ws2s(field);
+			const char* cfieldname = f.c_str();
+		
 			Array a = obj[cfieldname].getArray();
 
 			/*ArrayOfObjectsDelegate* d = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
@@ -555,7 +635,11 @@ void Detail::LoadDocument(Object obj){
 			d->setData(obj[cfieldname].getArray());
 
 			gridcontrol->reloadData();
-		} else {
+		} else if ( contentType[i] == TEXTAREA_CONTENT ) {
+			wchar_t* field = fieldName[i];
+			string f = ws2s(field);
+			const char* cfieldname = f.c_str();
+		
 			if ( obj[cfieldname].isString() ){
 				string val = obj[cfieldname].getString();
 				wstring valw =s2ws(val);
@@ -563,6 +647,10 @@ void Detail::LoadDocument(Object obj){
 				SetWindowText(detailPages[i], r);
 			} else {
 				SetWindowText(detailPages[i], L"");
+			}
+		} else if ( contentType[i] == ATTACHMENTS ){
+			if ( initialized[i] == 1 ){
+				LoadAttachments();
 			}
 		}
 	}

@@ -473,7 +473,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Database db = conn.getDatabase(DATABASE);
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->LoadDocument(DATABASE, d.getID(), v.getObject());
+		designercontrol->LoadDocument(DATABASE, d.getID(), d, v.getObject());
 		break;
 		}
 	case WM_MENUCOMMAND:

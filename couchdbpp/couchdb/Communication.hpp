@@ -59,6 +59,9 @@ class Communication{
 	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
 
       std::string getRawData(const std::string&);
+
+	  void saveRawData(std::string url, std::string filename);
+
    private:
       void init(const std::string&);
       Value getData(const std::string&, const std::string&,
