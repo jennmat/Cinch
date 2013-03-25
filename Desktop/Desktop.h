@@ -19,8 +19,11 @@ HWND tree;
 HWND designer;
 HWND toolbar;
 
+vector<Object> objectTypes;
+
 Desktop desktop;
 
 CouchDB::Connection conn;
 
 DWORD WINAPI ChangesListener(LPVOID lParam);
+

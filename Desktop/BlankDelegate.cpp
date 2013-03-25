@@ -89,7 +89,6 @@ void BlankDelegate::editingFinished(HWND editor, int row, int col)
 {
 	data[row][col] = (wchar_t *)malloc(100*sizeof(TCHAR));
 	GetWindowText(editor, data[row][col], 100);
-	
 }
 
 void BlankDelegate::willLoseFocus(){

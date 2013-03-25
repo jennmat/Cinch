@@ -5,22 +5,32 @@
 
 using namespace CouchDB;
 
-class CouchViewDelegate : public GridDelegate {
+class DetailViewDelegate: public GridDelegate {
 
 private:
-	Connection& conn;
+	DetailViewDelegate();
 	int rowCount;
-	wchar_t** data;
-	wstring view;
-	wstring design;
-	bool viewInitialized;
-	Object lastRead;
-	Object viewResults;
+	string database;
+	string design;
+	string view;
+	string startkey_from;
+	string endkey_from;
+	string shows_docs_of_type;
+	Object* obj;
+	vector<vector<wstring> > data;
+	vector<string> fields;
+	vector<wstring> titles;
+	vector<HWND> editors;
+	vector<string> editorTypes;
+	vector<int> widths;
+	int fieldId;
 public:
-	CouchViewDelegate(Connection&);
+	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from, string docs_of_type);
+	void LoadDocument(string database, Object obj);
+	void addColumn(string field, wstring label, string editorType);
+
 	int totalRows();
 	int totalColumns();
-	string getDocumentIdForRow(int);
 	int columnWidth(int column);
 	int rowHeight();
 
@@ -48,8 +58,10 @@ public:
 	HFONT getFont();
 	HFONT getEditFont();
 
-	void headerContextClick(HWND hwnd, int x, int y);
+	Array storeValuesToArray(Array obj);
 
-	void setView(const wstring&, const wstring&);
-	void loadViewResults();
+	void headerContextClick(HWND grid, int x, int y);
+
+	void deserializeUIElements(Object obj);
+	Object serializeUIElements();
 };

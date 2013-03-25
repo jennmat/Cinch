@@ -18,8 +18,9 @@ public:
 	Form();
 	void setDelegate(FormDelegate *);
 	FormDelegate* getDelegate();
-	void NewDocument();
+	void NewDocument(string type);
 	void LoadDocument(string _id, Object obj);
+	void RefreshValues();
 	void SaveDocument(int changedFieldId);
 	void addField(FormField* field);
 	void addDetail(LPWSTR title);

@@ -56,7 +56,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -76,17 +76,32 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Desktop.ico" />
+    <None Include="LIST.BMP" />
     <None Include="New.ico" />
     <None Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArrayOfObjectsDelegate.h" />
+    <ClInclude Include="BlankDelegate.h" />
+    <ClInclude Include="CinchDesigner.h" />
+    <ClInclude Include="ConditionManager.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="CouchViewDelegate.h" />
     <ClInclude Include="Desktop.h" />
+    <ClInclude Include="Detail.h" />
+    <ClInclude Include="DetailViewDelegate.h" />
+    <ClInclude Include="Form.h" />
+    <ClInclude Include="FormDelegate.h" />
+    <ClInclude Include="FormField.h" />
+    <ClInclude Include="FormLayout.h" />
+    <ClInclude Include="MaskEdit.h" />
+    <ClInclude Include="NotifyParent.h" />
+    <ClInclude Include="ReadOnlyDelegate.h" />
     <ClInclude Include="Replication.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -95,8 +110,20 @@
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ArrayOfObjectsDelegate.cpp" />
+    <ClCompile Include="BlankDelegate.cpp" />
+    <ClCompile Include="CinchDesigner.cpp" />
+    <ClCompile Include="ConditionManager.cpp" />
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
+    <ClCompile Include="Detail.cpp" />
+    <ClCompile Include="DetailViewDelegate.cpp" />
+    <ClCompile Include="Form.cpp" />
+    <ClCompile Include="FormField.cpp" />
+    <ClCompile Include="FormLayout.cpp" />
+    <ClCompile Include="MaskEdit.cpp" />
+    <ClCompile Include="NotifyParent.cpp" />
+    <ClCompile Include="ReadOnlyDelegate.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -108,9 +135,6 @@
     <ResourceCompile Include="Desktop.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CinchDesigner\Designer2\Designer2.vcxproj">
-      <Project>{71d0deeb-2417-490e-a78d-da6bc67a40e1}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\CinchGrid\CinchGrid\CinchGrid.vcxproj">
       <Project>{34961205-8c12-4ef6-9c89-2392b57d6e89}</Project>
     </ProjectReference>

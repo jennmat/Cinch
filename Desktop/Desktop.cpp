@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Desktop.h"
+#include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -26,6 +27,9 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	NewView(HWND, UINT, WPARAM, LPARAM);
+
+INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -55,10 +59,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg) && !IsDialogMessage(designer, &msg))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		try {
+			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg) && !IsDialogMessage(designer, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}catch(CouchDB::Exception ex){
+			wstring m = s2ws(ex.what());
+			MessageBox(msg.hwnd, m.c_str(), L"", 0);
 		}
 	}
 
@@ -110,7 +119,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 // g_nClosed, and g_nDocument - global indexes of the images.
 
-HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
+HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
 { 
     TVITEM tvi; 
     TVINSERTSTRUCT tvins; 
@@ -119,24 +128,18 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
     static HTREEITEM hPrevLev2Item = NULL; 
     HTREEITEM hti; 
 
-    tvi.mask = TVIF_TEXT | TVIF_IMAGE 
-               | TVIF_SELECTEDIMAGE | TVIF_PARAM; 
+	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 
     // Set the text of the item. 
     tvi.pszText = lpszItem; 
     tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-
-    // Assume the item is not a parent item, so give it a 
-    // document image. 
-    //tvi.iImage = g_nDocument; 
-    //tvi.iSelectedImage = g_nDocument; 
-
-    // Save the heading level in the item's application-defined 
-    // data area. 
-    tvi.lParam = (LPARAM)nLevel; 
+	tvi.iImage = 2;
+	tvi.iSelectedImage = 2;
+   
+	tvi.lParam = data;
     tvins.item = tvi; 
     tvins.hInsertAfter = hPrev; 
-
+	
     // Set the parent item based on the specified level. 
     if (nLevel == 1) 
         tvins.hParent = TVI_ROOT; 
@@ -163,15 +166,89 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, int nLevel)
     if (nLevel > 1)
     { 
         hti = TreeView_GetParent(hwndTV, hPrev); 
-        tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE; 
+	    tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
         tvi.hItem = hti; 
-        //tvi.iImage = g_nClosed; 
-        //tvi.iSelectedImage = g_nClosed; 
+		tvi.iImage = 0; 
+        tvi.iSelectedImage = 0;
         TreeView_SetItem(hwndTV, &tvi); 
     } 
 
     return hPrev; 
 } 
+
+void LoadViews(HWND hwnd){
+
+	TreeView_DeleteAllItems(hwnd);
+
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Object views = db.listViews();
+
+   if ( views["total_rows"].getInt() > 0 ){
+	   Array rows = views["rows"].getArray();
+	   for(unsigned int i=0; i<rows.size(); i++){
+		   Object row = rows[i].getObject();
+			
+		   Object doc = row["doc"].getObject();
+		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
+			   continue;
+		   }
+		   wstring name;
+		   wstring id = s2ws(row["id"].getString());
+		   if ( doc["label"].isString() ){
+				name = s2ws(doc["label"].getString());
+		   } else {
+				name = s2ws(row["id"].getString());
+		   }
+		   LPWSTR str = new wchar_t[80];
+		   wcscpy_s(str, 80, name.c_str());
+
+		   bool hasCinchView = false;
+
+		   Object views = doc["views"].getObject();
+		   Object::const_iterator it = views.begin();
+
+		   for(it=views.begin(); it != views.end(); it++){
+				pair<string, Value> p = *it;
+				Object o = p.second.getObject();
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+					hasCinchView = true;
+				}
+		   }
+
+		   if ( hasCinchView ){
+				AddItemToTree(hwnd, str, NULL, 1);
+		   }
+	
+		   for(it=views.begin(); it != views.end(); it++){
+			   pair<string, Value> p = *it;
+				wstring view = s2ws(p.first);
+				wstring name = s2ws(p.first);
+				Object o = p.second.getObject();
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+					if ( o["label"].isString() ){
+						name = s2ws(o["label"].getString());
+					}
+					LPWSTR str = new wchar_t[80];
+					wcscpy_s(str, 80, name.c_str());
+
+					int dlen = id.length() + sizeof(wchar_t);
+					ViewPair* v = new ViewPair;
+					v->design = row["id"].getString();
+					v->view = p.first;
+					v->emitsDocsWithType = o["emits_docs_with_type"].getString();
+					AddItemToTree(hwnd, str, (LPARAM)v, 2);
+				}
+		
+		   }
+		   //for(unsigned int j = 0; j<views.size(); j++){
+			 //  Object view = views[j].getObject();
+			  // int a = 1;
+			//}
+
+	   }
+   }
+}
 
 void SizeWindows(HWND hWnd);
 
@@ -203,95 +280,52 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    InitCommonControls();
 
-   tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"), WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES,
+   tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"),
+	   WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
 	   0, 0, TREE_WIDTH, client.bottom,
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
-  
-   toolbar = CreateCinchToolbar(hWnd);
-   ShowWindow(toolbar, SW_SHOW);
-   UpdateWindow(toolbar);
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   delegate = new CouchViewDelegate(conn);
-   //delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
-
-   grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
-   designer = CinchDesigner::CreateCinchDesigner(hWnd);
-   
-   Database db = conn.getDatabase("property");
-   
-   CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-   
-   d->getForm()->setDelegate(&desktop);
-   /*d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("nickname")));
-   d->getForm()->addField(FormField::createEditField(designer, hInst, TEXT("address")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("price")));
-   d->getForm()->addField(FormField::createDatePicker(designer, hInst, TEXT("datePurchased")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("purchaseAmount")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("lastAppraisedValue")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("mortgagePayment")));
-   d->getForm()->addField(FormField::createNumberField(designer, hInst, TEXT("minimumRent")));
-   d->getForm()->addField(FormField::createYesNoField(designer, hInst, TEXT("occupied")));
-   d->getForm()->addDetail(TEXT("Notes"));
-   d->getForm()->addDetail(TEXT("Inspections"));
-   d->getForm()->getDetail()->CreateTextareaForPage(L"notes", 0);
-   d->getForm()->getDetail()->CreateTableForPage(L"inspections", 1);*/
-
-   try {
-	Document doc = db.getDocument("template/property");
-	Value v = doc.getData();
-	desktop.loadedForm = v.getObject();
-	d->getForm()->deserializeForm(designer, v);
-   }catch(Exception e){
-   }
-
-   ShowWindow(grid, SW_SHOW);
-   ShowWindow(designer, SW_SHOW);
-
- 
-   Object views = db.listViews();
-
-   if ( views["total_rows"].getInt() > 0 ){
-	   Array rows = views["rows"].getArray();
-	   for(unsigned int i=0; i<rows.size(); i++){
-		   Object row = rows[i].getObject();
-		
-		   wstring name = s2ws(row["id"].getString());
-		   LPWSTR str = new wchar_t[80];
-		   wcscpy_s(str, 80, name.c_str());
-
-		   AddItemToTree(tree, str, 1);
+	HIMAGELIST hImageList=ImageList_Create(16,16,ILC_COLOR16,3,10);					  // Macro: 16x16:16bit with 2 pics [array]
+	HBITMAP hBitMap=LoadBitmap(hInst,MAKEINTRESOURCE(IDB_TREE));					  // load the picture from the resource
 	
-		   Object doc = row["doc"].getObject();
-		   Object views = doc["views"].getObject();
-		   Object::const_iterator it = views.begin();
-		   for(it=views.begin(); it != views.end(); it++){
-				pair<string, Value> p = *it;
-				wstring name = s2ws(p.first);
-				LPWSTR str = new wchar_t[80];
-				wcscpy_s(str, 80, name.c_str());
+	ImageList_Add(hImageList,hBitMap,NULL);								      // Macro: Attach the image, to the image list
+	DeleteObject(hBitMap);													  // no need it after loading the bitmap
+	//SendMessage(hWnd,IDC_TREE1,TVM_SETIMAGELIST,0,(LPARAM)hImageList); // put it onto the tree control
+	//TreeView_SetImageList(tree, hImageList, 0);
+  
+	toolbar = CreateCinchToolbar(hWnd);
+	ShowWindow(toolbar, SW_SHOW);
+	UpdateWindow(toolbar);
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
-				AddItemToTree(tree, str, 2);
-		
-		   }
-		   //for(unsigned int j = 0; j<views.size(); j++){
-			 //  Object view = views[j].getObject();
-			  // int a = 1;
-			//}
+	delegate = new CouchViewDelegate(conn);
+	//delegate->setView(s2ws(string("_design/properties")), s2ws(string("by-nickname")));
 
-	   }
-   }
+	grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
+	designer = CinchDesigner::CreateCinchDesigner(hWnd);
+   
+	Database db = conn.getDatabase(DATABASE);
+   
+	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+   
+	d->getForm()->setDelegate(&desktop);
+   
+   
+	ShowWindow(grid, SW_SHOW);
+	ShowWindow(designer, SW_SHOW);
 
-   ShowWindow(tree, SW_SHOW);
-   SizeWindows(hWnd);
+	LoadViews(tree);
+  
 
-   DWORD threadId;
-   CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	ShowWindow(tree, SW_SHOW);
+	SizeWindows(hWnd);
+
+	DWORD threadId;
+	CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
-   db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
+	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
 #endif 
    return TRUE;
 }
@@ -326,38 +360,101 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_NOTIFY:
 		{
-
 		LPNMHDR pnmhdr = (LPNMHDR)lParam;
-		if  (pnmhdr->idFrom == IDC_VIEW_TREE && pnmhdr->code == TVN_SELCHANGED ){
+		LPNMTOOLBAR lpnmTB = (LPNMTOOLBAR)lParam;
+
+		switch(pnmhdr->code){
+		case TVN_SELCHANGED:
+			if  (pnmhdr->idFrom == IDC_VIEW_TREE && pnmhdr->code == TVN_SELCHANGED ){
+				HTREEITEM item = ((LPNM_TREEVIEW)pnmhdr)->itemNew.hItem;
+
+				TVITEM tvitem;
+
+				tvitem.hItem = item;
+				tvitem.mask = TVIF_PARAM;
+				TreeView_GetItem(tree, &tvitem);
+
+				if ( tvitem.lParam != NULL ){
+					ViewPair * v = (ViewPair *)tvitem.lParam;
 			
-			HTREEITEM item = ((LPNM_TREEVIEW)pnmhdr)->itemNew.hItem;
-
-			TVITEM tvitem;
-
-			tvitem.hItem = item;
-			tvitem.mask = TVIF_TEXT;
-			tvitem.cchTextMax = 80;
-			wchar_t text[80];
-			memset(text, 0, 80);
-			tvitem.pszText = text;
-			if( item != TreeView_GetRoot(tree) ){
-				TreeView_GetItem(tree, &tvitem);
-				wstring s(text);
-
-				HTREEITEM parent = TreeView_GetParent(tree, item);
-				tvitem.hItem = parent;
-				TreeView_GetItem(tree, &tvitem);
-				wstring design(text);
-
-				delegate->setView(design, s);
-
-				CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-				
-				gridcontrol->reloadData();
+					delegate->setView(s2ws(v->design), s2ws(v->view));
+					CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+					gridcontrol->reloadData();
+				}
 
 			}
 
+
+			break;
+		case TBN_DROPDOWN:
+			// Get the coordinates of the button.
+            RECT rc;
+            SendMessage(lpnmTB->hdr.hwndFrom, TB_GETRECT, (WPARAM)lpnmTB->iItem, (LPARAM)&rc);
+
+            // Convert to screen coordinates.            
+            MapWindowPoints(lpnmTB->hdr.hwndFrom, HWND_DESKTOP, (LPPOINT)&rc, 2);                         
+        
+            // Get the menu.
+			//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(0), MAKEINTRESOURCE(IDR_POPUP)); 
+         
+            // Get the submenu for the first menu item.
+            //HMENU hPopupMenu = GetSubMenu(hMenuLoaded, 0);
+
+
+			HMENU hPopupMenu = CreatePopupMenu();
+
+			objectTypes.clear();
+
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+			Object r = db.viewResults("all-objects", "by-label", 100);
+			Array rows = r["rows"].getArray();
+			unsigned int i = 0;
+			for(; i<rows.size(); i++){
+				Object row = rows[i].getObject();
+				string key = row["key"].getString();
+				wstring wkey = s2ws(key);
+				
+				Document doc = db.getDocument(row["id"].getString());
+
+				objectTypes.push_back(doc.getData().getObject());
+
+				InsertMenu(hPopupMenu, i, MF_BYPOSITION | MF_STRING, IDD_ADD_OBJECT, wkey.c_str());
+            }
+			
+
+			InsertMenu(hPopupMenu, i+1, MF_BYPOSITION | MF_STRING, IDC_ADD_DOCUMENT_TYPE, L"Document Type");
+
+			MENUINFO mi;
+			memset(&mi, 0, sizeof(mi));
+			mi.cbSize = sizeof(mi);
+			mi.fMask = MIM_STYLE;
+			mi.dwStyle = MNS_NOTIFYBYPOS;
+			SetMenuInfo(hPopupMenu, &mi);
+
+            // Set up the pop-up menu.
+            // In case the toolbar is too close to the bottom of the screen, 
+            // set rcExclude equal to the button rectangle and the menu will appear above 
+            // the button, and not below it.
+         
+            TPMPARAMS tpm;
+         
+            tpm.cbSize    = sizeof(TPMPARAMS);
+            tpm.rcExclude = rc;
+         
+            // Show the menu and wait for input. 
+            // If the user selects an item, its WM_COMMAND is sent.
+         
+            TrackPopupMenuEx(hPopupMenu, 
+                             TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, 
+                             rc.left, rc.bottom, hWnd, &tpm);
+
+            DestroyMenu(hPopupMenu);
+         
+        return (FALSE);
+			break;
 		}
+		
 		break;
 		}
 	case WM_NEW_DATA_ARRIVED:
@@ -373,12 +470,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase("property");
+		Database db = conn.getDatabase(DATABASE);
 		Document d = db.getDocument(str);
 		Value v = d.getData();
-		designercontrol->getForm()->LoadDocument(d.getID(), v.getObject());
+		designercontrol->LoadDocument(DATABASE, d.getID(), v.getObject());
 		break;
 		}
+	case WM_MENUCOMMAND:
+		{
+		unsigned int idx = wParam;
+		if ( idx >= objectTypes.size() ){
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
+		} else {
+			Object objectDefinition = objectTypes[idx];
+			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
+			designercontrol->NewDocument(DATABASE, objectDefinition["name"].getString());
+		}
+		
+		}
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -388,19 +498,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		switch (wmId)
 		{
+		case IDM_NEW_VIEW:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_VIEW), hWnd, NewView);
+			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
-		case IDM_NEW_DOCUMENT:
-			{
-			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-			designercontrol->getForm()->NewDocument();
-			break;
-			}
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
-			break;
-		case IDM_EDIT_FIELDS:
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -443,6 +548,387 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	int wmId;
+	int wmEvent;
+
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+		
+
+		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+		
+		Connection conn;
+		Database db = conn.getDatabase(DATABASE);
+		Object r = db.viewResults("all-objects", "by-label", 100);
+	
+		vector<string>* ids = new vector<string>();
+
+		Array rows = r["rows"].getArray();
+		unsigned int i = 0;
+		for(; i<rows.size(); i++){
+			Object row = rows[i].getObject();
+			string key = row["key"].getString();
+			wstring wkey = s2ws(key);
+			Document doc = db.getDocument(row["id"].getString());
+			Object obj = doc.getData().getObject();
+			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
+			ids->push_back(obj["name"].getString());
+
+        }
+
+		SetWindowLong(typeCombo, GWL_USERDATA, (ULONG_PTR)ids);
+		
+		ConditionManager* manager = new ConditionManager();
+		SetWindowLong(hDlg, GWL_USERDATA, (ULONG_PTR)manager);
+		
+
+		return (INT_PTR)TRUE;
+
+		}
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		switch( wmEvent ){
+		case CBN_SELCHANGE:
+			{
+				if ( wmId == IDC_ADD_VIEW_DOC_TYPE ){
+
+					HWND fieldCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_FIELD);
+					HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
+					ComboBox_ResetContent(fieldCombo);
+					ComboBox_ResetContent(sortCombo);
+
+					HWND typeCombo = GetDlgItem(hDlg, wmId);
+					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+					int idx = ComboBox_GetCurSel(typeCombo);
+					string type = (*ids)[idx];
+
+				
+					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+						
+					manager->addEmptyCondition(type, hDlg);
+					manager->arrangeWindowsInParent(hDlg, 35, 75);
+
+
+					/* Setup the sort combo */
+
+					stringstream template_id;
+					template_id << "template/" << type;
+					Connection conn;
+					Database db = conn.getDatabase(DATABASE);
+
+					Document doc = db.getDocument(template_id.str());
+					Value v = doc.getData();
+					if ( v.isObject() ){
+						Object templ = v.getObject();
+						if ( templ["fields"].isArray() ){
+							Array fields = templ["fields"].getArray();
+
+							vector<Object>* fieldsVector = new vector<Object>();
+
+							for(unsigned i=0; i<fields.size(); i++){
+								Object field = fields[i].getObject();
+								string name = field["name"].getString();
+								string label = field["label"].getString();
+
+								wstring wlabel = s2ws(label);
+
+								fieldsVector->push_back(field);
+
+								SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+				
+								SetWindowLong(sortCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+
+							}
+						}
+					}
+						
+				}
+				else if ( wmId == IDC_ADD_VIEW_FIELD ){
+
+					HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+					int idx = ComboBox_GetCurSel(typeCombo);
+					string type = (*ids)[idx];
+
+					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+					manager->updateConditions(type, hDlg);
+					manager->arrangeWindowsInParent(hDlg, 35, 75);
+				}
+			}
+			break;
+		}
+		if ( wmId == IDOK ){
+			/* Create the view */
+			HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
+			HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
+			HWND newViewNameEdit = GetDlgItem(hDlg, IDC_NEW_VIEW_NAME);
+
+			char map[1024];
+			memset(map, 0, 1024);
+			vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
+			int idx = ComboBox_GetCurSel(typeCombo);
+			string type = (*ids)[idx];
+
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+			
+
+			int sortIdx = ComboBox_GetCurSel(sortCombo);
+			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
+			Object sortFields = (*sortFieldsVector)[sortIdx];
+
+			string sortby = sortFields["name"].getString();
+			string sortbylabel = sortFields["label"].getString();
+
+			int namelen = GetWindowTextLength(newViewNameEdit) + 1;
+			wchar_t* wname = new wchar_t[namelen];
+			GetWindowText(newViewNameEdit, wname, namelen);
+
+			string name = ws2s(wname);
+
+			string viewnamesanitized = name;
+			for(unsigned i=0; i<viewnamesanitized.size(); i++){
+				viewnamesanitized[i] = tolower(viewnamesanitized[i]);
+				if ( viewnamesanitized[i] == ' ' ){
+					viewnamesanitized[i] = '-';
+				}
+			}
+
+
+			stringstream conditionsStream;
+
+			ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
+			vector<Condition*>* conditions = manager->getConditions();
+			for(unsigned i=0; i<conditions->size(); i++){
+				Condition* c = (*conditions)[i];
+				if ( c->value != NULL ){
+				
+					int fieldIdx = ComboBox_GetCurSel(c->fieldCombo);
+					vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
+					Object field = (*fieldsVector)[fieldIdx];
+
+					string fieldforcomparison = field["name"].getString();
+
+					vector<string>* operatorVector = (vector<string>*)GetWindowLong(c->compareCombo, GWL_USERDATA);
+					int compareIdx = ComboBox_GetCurSel(c->compareCombo);
+					string comparison = (*operatorVector)[compareIdx];
+
+					conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
+					conditionsStream << c->value->serializeForJS().c_str();
+				}
+			}
+
+
+			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.%s, null); }", 
+				type.c_str(), conditionsStream.str().c_str(), sortby.c_str());	
+
+
+			
+
+			Object design = Object();
+			design["language"] = "javascript";
+			Object view = Object();
+			stringstream viewname;
+			viewname << "by-";
+			viewname << sortby;
+
+			stringstream viewlabelstream;
+			viewlabelstream << "By ";
+			viewlabelstream << sortbylabel;
+
+			Object v = Object();
+			v["label"] = viewlabelstream.str();
+			v["map"] = map;
+			v["cinch_view"] = true;
+			v["emits_docs_with_type"] = type.c_str();
+
+			view[viewname.str()] = v;
+			
+			stringstream labelstream;
+			labelstream << name;
+			design["label"] = labelstream.str();
+			design["views"] = view;
+
+			stringstream design_id;
+			design_id << "_design/";
+			design_id << viewnamesanitized;
+
+			db.createDocument(Value(design), design_id.str());
+
+			LoadViews(tree);
+
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		else if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+
+
+// Message handler for about box.
+INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+		HWND combo = GetDlgItem(hDlg, IDC_FIELD_TYPE_COMBO);
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Text");
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
+		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
+
+		ComboBox_SetCurSel(combo, 0);
+
+		return (INT_PTR)TRUE;
+		}
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK ){
+			int len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL)) + 1;
+			wchar_t * label = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_LABEL), label, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL)) + 1;
+			wchar_t * plurallabel = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_PLURAL_LABEL), plurallabel, len);
+
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME)) + 1;
+			wchar_t * name = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_TYPE_NAME), name, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_NAME)) + 1;
+			wchar_t * fname = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_NAME), fname, len);
+
+			len = GetWindowTextLength(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL)) + 1;
+			wchar_t * flabel = new wchar_t[len];
+
+			GetWindowText(GetDlgItem(hDlg, IDC_ADD_DOCUMENT_FIRST_FIELD_LABEL), flabel, len);
+
+
+			string sname = ws2s(name);
+			string slabel = ws2s(label);
+			string splurallabel = ws2s(plurallabel);
+
+			string sfname = ws2s(fname);
+			string sflabel = ws2s(flabel);
+
+
+			Object definition = Object();
+			definition["name"] = sname;
+			definition["label"] = slabel;
+			definition["plural"] = splurallabel;
+			definition["first_field_name"] = sfname;
+			definition["first_field_label"] = sflabel;
+			definition["cinch_type"] = "object-definition";
+
+			
+			/* Create a default view */
+			char map[1024];
+			memset(map, 0, 1024);
+
+			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", sname.c_str(), sfname.c_str());	
+
+			Object design = Object();
+			design["language"] = "javascript";
+			Object view = Object();
+			stringstream viewname;
+			viewname << "by-";
+			viewname << sfname;
+
+			stringstream viewlabelstream;
+			viewlabelstream << "By ";
+			viewlabelstream << sflabel;
+
+			Object v = Object();
+			v["label"] = viewlabelstream.str();
+			v["map"] = map;
+			v["cinch_view"] = true;
+			v["emits_docs_with_type"] = sname.c_str();
+
+			view[viewname.str()] = v;
+			
+			stringstream labelstream;
+			labelstream << "All ";
+			labelstream << splurallabel;
+			design["label"] = labelstream.str();
+			design["views"] = view;
+
+			stringstream id;
+			id << "_design/";
+			id << sname;
+
+
+			/* Create a starter template */
+			Object _template = Object();
+			Array fields = Array();
+			Object field = Object();
+
+			field["name"] = sfname;
+			field["label"] = sflabel;
+			HWND combo = GetDlgItem(hDlg, IDC_FIELD_TYPE_COMBO);
+			int idx = ComboBox_GetCurSel(combo);
+			switch(idx){
+			case 0:
+				field["cinch_type"] = EDIT;
+				break;
+			case 1:
+				field["cinch_type"] = DATEPICKER;
+				break;
+			case 2:
+				field["cinch_type"] = NUMBER;
+				break;
+			}
+
+			fields.push_back(field);
+			_template["fields"] = fields;
+			_template["cinch_type"] = "template";
+
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+
+			db.createDocument(Value(definition));
+
+			db.createDocument(Value(design), id.str());
+
+			stringstream template_id;
+			template_id << "template/";
+			template_id << sname;
+
+			db.createDocument(Value(_template), template_id.str());
+
+			LoadViews(tree);
+		}
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+
+
 void changesArrived(){
 	PostMessage(hWnd, WM_NEW_DATA_ARRIVED, 0, 0);
 }
@@ -450,7 +936,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
-	Database db = conn.getDatabase("property");
+	Database db = conn.getDatabase(DATABASE);
 	db.listenForChanges(changesArrived);
 
 	return 0;
@@ -462,8 +948,7 @@ void Desktop::formModified(){
 	Object o = d->getForm()->serializeFormToObject(loadedForm);
 
 	Connection conn;
-	Database db = conn.getDatabase("property");
+	Database db = conn.getDatabase(DATABASE);
 
 	db.createDocument(Value(o), "template/property");
 }
-

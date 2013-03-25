@@ -26,14 +26,14 @@ void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	Database db = conn.getDatabase("property");
+	Database db = conn.getDatabase(DATABASE);
 
 	string s = ws2s(design);
 	int ix = s.find("/");
 	s = s.substr(ix);
 
 
-	viewResults = db.viewResults(s, ws2s(view), Value(""), 25);
+	viewResults = db.viewResults(s, ws2s(view), 25);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wchar_t*[rowCount];
@@ -82,7 +82,8 @@ wchar_t* CouchViewDelegate::headerContent(int col)
 const wchar_t* CouchViewDelegate::cellContent(int row, int col)
 {
 	if( data[row] != NULL ){
-		return data[row];
+		wchar_t * val = data[row];
+		return val;
 	} else {
 		/* Load some more documents 
 		Object obj = db.viewResulsFromStartDocId("friends", "by-name", lastRead["key"], lastRead["id"].getString(), 25);
@@ -157,12 +158,12 @@ void CouchViewDelegate::prepareNewRow(int row){
 }
 
 HFONT CouchViewDelegate::getFont(){
-	HFONT hFont=CreateFont(17,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 
 HFONT CouchViewDelegate::getEditFont(){
-	HFONT hFont=CreateFont(18,0,0,0,0,0,0,0,0,0,0,0,0,TEXT("MS Shell Dlg"));
+	HFONT hFont=DEFAULT_FONT;
 	return hFont;
 }
 
@@ -178,3 +179,6 @@ string CouchViewDelegate::getDocumentIdForRow(int row){
 	return "";
 }
 
+
+void CouchViewDelegate::headerContextClick(HWND grid, int x, int y){
+}

@@ -94,33 +94,58 @@ void Form::open(HWND parent, wchar_t* filename)
 }
 
 void Form::deserializeForm(HWND parent, Value v){
+	
+	removeAllDetailPages();
+	removeAllFields();
+
 	Object o = v.getObject();
 	Array fields = o["fields"].getArray();
 
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object field = fields[i].getObject();
-		string label = field["name"].getString();
+		string label;
+		if( field["label"].isString() ){
+			label = field["label"].getString();
+		} else {
+			label = field["name"].getString();
+		}
 		string name = field["name"].getString();
-		wstring wlabel = Designer::s2ws(label);
-		wstring wname = Designer::s2ws(name);
-		string type = field["type"].getString();
-
+		wstring wlabel =s2ws(label);
+		wstring wname =s2ws(name);
+		string type = field["cinch_type"].getString();
+		Value config;
+		if ( field["config"].isObject() ){
+			config = field["config"].getObject();
+		}
 		wchar_t* wcname = new wchar_t[name.length()+sizeof(wchar_t)];
 		memset(wcname, 0, name.length() + sizeof(wchar_t));
 		wcscpy_s(wcname, name.length()+sizeof(wchar_t), wname.c_str());
 
+		wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
+		memset(wclabel, 0, label.length() + sizeof(wchar_t));
+		wcscpy_s(wclabel, label.length()+sizeof(wchar_t), wlabel.c_str());
+
+
 		FormField* formField;
 
-		if ( type.compare("DatePicker") == 0 ){
-			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname);
-		} else if ( type.compare("Radio") == 0 ){
-			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname);
-		} else if ( type.compare("Number") == 0 ){
-			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname);
-		} else if ( type.compare("YesNo") == 0 ){
-			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname);
+		if ( type.compare(DATEPICKER) == 0 ){
+			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(RADIO) == 0 ){
+			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(NUMBER) == 0 ){
+			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(YESNO) == 0 ){
+			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(MULTILINE) == 0 ){
+			formField = FormField::createMultilineText(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(EDIT) == 0 ){
+			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
+		} else if ( type.compare(COMBO) == 0 ){
+			formField = FormField::createComboBox(parent, GetModuleHandle(0), wcname, wclabel, config);
+		} else if ( type.compare(REFERENCE) == 0 ){
+			formField = FormField::createReferenceField(parent, GetModuleHandle(0), wcname, wclabel, config);
 		} else {
-			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname);
+			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
 		}
 
 		addField(formField);
@@ -145,15 +170,20 @@ Object Form::serializeFormToObject(Object obj){
 		size_t t;
 		wcstombs_s(&t, label, wlab, 80);
 
-		f["name"] = Value(label);
-		f["type"] = Value(fld->getControlType());
+		char name[80];
+		wcstombs_s(&t, name, fld->getName(), 80);
+		
+		f["label"] = Value(label);
+		f["cinch_type"] = Value(fld->getControlType());
+		f["name"] = Value(name);
+		f["config"] = fld->getConfig();
 		fields.push_back(f);
 	}
 
 	obj["fields"] = fields;
 
 	obj["tabs"] = detail.serializeUIElements();
-
+	obj["cinch_type"] = "template";
 	return obj;
 }
 
@@ -168,7 +198,7 @@ void Form::save(wchar_t* filename){
 	v.writeToFile(cfilename);
 }
 
-void Form::NewDocument(){
+void Form::NewDocument(string type){
 	Object * obj = new Object();
 	LoadDocument("", *obj);
 }
@@ -181,37 +211,45 @@ FormDelegate* Form::getDelegate(){
 	return delegate;
 }
 
+void Form::RefreshValues(){
+	if ( hasDocument ){
+		
+
+		for(int i=0; i<layout.getFieldCount(); i++){
+			FormField* field = layout.getField(i);
+			field->clearValue();
+			field->loadValue(obj);
+		}
+	
+		detail.LoadDocument(obj);
+
+	}
+}
+
 void Form::LoadDocument(string _id, Object _obj){
 	id = _id;
 	obj = _obj;
-	for(int i=0; i<layout.getFieldCount(); i++){
-		FormField* field = layout.getField(i);
-		field->clearValue();
-		field->loadValue(obj);
-	}
-	string nickname = obj["nickname"].getString();
-	const wchar_t* nicknamew = Designer::s2ws(nickname).c_str();
-
-	detail.LoadDocument(obj);
 
 	hasDocument = true;
+
+	RefreshValues();
 }
 
 void Form::SaveDocument(int changedFieldId){
 	if ( hasDocument == false ) return; 
-
+	
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
-		if ( field->controlChildId == changedFieldId ){
+		//if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
-		}
+		//}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase("property");
+	Database db2 = conn.getDatabase(DATABASE);
 	Document updatedDoc = db2.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();
