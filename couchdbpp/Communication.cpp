@@ -23,7 +23,7 @@ using namespace std;
 using namespace CouchDB;
 using namespace JsonBox;
 
-#define DEFAULT_COUCHDB_URL "http://localhost:5984"
+#define DEFAULT_COUCHDB_URL "http://admin:yuri567@localhost:5984"
 
 
 static Value parseData(const string &buffer){
