@@ -42,25 +42,29 @@ Detail::Detail() {
 		detailPages[i] = NULL;
 	}
 	memset(initialized, 0, MAX_DETAIL_PAGES);
+	pageCount = 0;
 }
 
 
 
 void Detail::ShowPage(int i){
-	if ( initialized[i] == 0 ){
-		InitializePage(i);
-	}
 	RECT tabs;
 	RECT tabControlClient;
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
 	GetClientRect(tabControl, &tabControlClient);
 	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom, 0);
 	ShowWindow(detailPages[i], SW_SHOW);
+
+	if ( initialized[i] == 0 ){
+		InitializePage(i);
+	}
+
 }
 
 void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, int i){
 	detailPages[i] = CinchGrid::CreateCinchGrid(detail, delegate);
 	contentType[i] = TABLE_CONTENT;
+	pageCount++;
 	int len = wcslen(field) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
@@ -73,7 +77,7 @@ void Detail::CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegat
     HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
 	detailPages[i] = wnd;
 	contentType[i] = VIEW_CONTENT;
-	
+	pageCount++;
 	int len = wcslen(label) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
@@ -86,6 +90,7 @@ void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 						0, 0, CONTROL_WIDTH, 200, detail, (HMENU)(i+DETAIL_START_ID), GetModuleHandle(0), NULL);
 	contentType[i] = TEXTAREA_CONTENT;
+	pageCount++;
 	int len = wcslen(field) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
@@ -98,37 +103,18 @@ void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 }
 
 void Detail::CreateAttachmentsForPage(int i){
-	detailPages[i] = CreateWindowEx(0, L"STATIC", L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, detail, 0, GetModuleHandle(0), NULL);
+	RegisterAttachmentViewer();
+	pageCount++;
+	detailPages[i] = CreateWindowEx(0, L"CinchAttachments", L"", WS_CHILD, 0, 0, CONTROL_WIDTH, 200, detail, NULL, GetModuleHandle(0), this);
 	contentType[i] = ATTACHMENTS;
 	initialized[i] = 0;
-
-
 }
 
 
 void Detail::InitializePage(int i){
 	if ( contentType[i] == ATTACHMENTS ){
-		RECT rc;
-		GetClientRect(detail, &rc);
-	
-		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-		if (SUCCEEDED(hr))
-		{
-			HRESULT hr = CoCreateInstance(CLSID_ExplorerBrowser, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&_peb));
-			if (SUCCEEDED(hr)){
-				FOLDERSETTINGS fs = {};
-				fs.ViewMode = FVM_DETAILS;
-				fs.fFlags = 0;
-
-				HRESULT hr = _peb->Initialize(detailPages[i], &rc, &fs);
-
-				if ( hasLoadedDocument == true ){
-					LoadAttachments();
-				}
-			}
-			
-		}
-		initialized[i] = 1;
+		AttachmentViewer* viewer = (AttachmentViewer *)GetWindowLong(detailPages[i], GWL_USERDATA);
+		viewer->initialize();
 	}
 }
 
@@ -490,7 +476,7 @@ void Detail::addDetailPage(LPWSTR title){
 
 
 int Detail::getDetailPageCount(){
-	return TabCtrl_GetItemCount(tabControl);
+	return pageCount;
 }
 
 void Detail::getDetailPageTitle(int page, wchar_t* buffer){
@@ -649,9 +635,8 @@ void Detail::LoadDocument(Object obj){
 				SetWindowText(detailPages[i], L"");
 			}
 		} else if ( contentType[i] == ATTACHMENTS ){
-			if ( initialized[i] == 1 ){
-				LoadAttachments();
-			}
+			AttachmentViewer* viewer = (AttachmentViewer *)GetWindowLong(detailPages[i], GWL_USERDATA);
+			viewer->LoadDocument(obj);
 		}
 	}
 }
@@ -659,7 +644,7 @@ void Detail::LoadDocument(Object obj){
 
 Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
 	int page = DETAIL_START_ID - changedFieldId;
-	if ( page >= 0 && page < getDetailPageCount() ){
+	if ( page >= 0 && page < getDetailPageCount() && contentType[page] != ATTACHMENTS ){
 		wchar_t* field = fieldName[page];
 		string f = ws2s(field);
 		const char* cfieldname = f.c_str();

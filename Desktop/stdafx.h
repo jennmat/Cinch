@@ -73,6 +73,8 @@ struct ViewPair {
 #include "CinchDesigner.h"
 #include "DetailViewDelegate.h"
 
+#include "AttachmentViewer.h"
+
 #define ROW_HEIGHT 25
 #define LABEL_WIDTH 150
 #define LABEL_HEIGHT 25

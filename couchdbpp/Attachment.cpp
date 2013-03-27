@@ -96,10 +96,10 @@ string Attachment::getData(){
 
 
 void Attachment::saveToDirectory(string directory){
-	string url = "/" + db + "/" + document + "/" + id;
+	char* escaped = curl_easy_escape(comm.curl, id.c_str(), id.length());
+	string url = "/" + db + "/" + document + "/" + string(escaped);
 	if(revision.size() > 0)
 		url += "?rev=" + revision;
-	
 	comm.saveRawData(url, directory + "\\" + id);
 }
 

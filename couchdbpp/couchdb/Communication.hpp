@@ -43,6 +43,7 @@ Value createValue(T value){
 class Communication{
 	friend class Database;
 	friend class Document;
+	friend class Attachment;
    public:
       typedef std::map<std::string, std::string> HeaderMap;
 

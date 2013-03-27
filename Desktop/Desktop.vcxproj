@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArrayOfObjectsDelegate.h" />
+    <ClInclude Include="AttachmentViewer.h" />
     <ClInclude Include="BlankDelegate.h" />
     <ClInclude Include="CinchDesigner.h" />
     <ClInclude Include="ConditionManager.h" />
@@ -111,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArrayOfObjectsDelegate.cpp" />
+    <ClCompile Include="AttachmentViewer.cpp" />
     <ClCompile Include="BlankDelegate.cpp" />
     <ClCompile Include="CinchDesigner.cpp" />
     <ClCompile Include="ConditionManager.cpp" />
