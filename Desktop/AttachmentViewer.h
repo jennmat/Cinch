@@ -9,12 +9,13 @@ class AttachmentViewer {
 private:
 	
 	HWND wnd;
+	HWND detail;
 	string _id;
 	string _rev;
 	bool initialized;
 	bool hasLoadedDocument;
 	
-
+	FileWatchController* fileWatchController;
 public:
 	IExplorerBrowser *_peb;
 
@@ -34,4 +35,3 @@ public:
 };
 
 void RegisterAttachmentViewer();
-

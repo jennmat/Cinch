@@ -286,6 +286,11 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, hWnd, NULL);
 		}
 		break;
+	case WM_ATTACHMENTS_UPLOADED:
+		{
+			self->getForm()->ReloadDocument();
+			break;
+		}
 	case WM_NOTIFY:
 		{
 		LPNMHDR lpnmhdr = (LPNMHDR)lParam;

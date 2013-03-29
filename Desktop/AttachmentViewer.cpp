@@ -26,6 +26,7 @@ void RegisterAttachmentViewer()
 AttachmentViewer::AttachmentViewer(HWND _wnd){
 	initialized= false;	
 	wnd = _wnd;
+	fileWatchController = NULL;
 }
 
 void AttachmentViewer::initialize(){
@@ -58,14 +59,49 @@ void AttachmentViewer::initialize(){
 
 void AttachmentViewer::PrepareAttachments(){
 	if ( initialized == true ){
+		if ( fileWatchController != NULL ){
+			fileWatchController->pause = TRUE;  //Needs work but this is to prevent me from getting into an infinite loop
+		}
 		Connection conn;
 		Database db = conn.getDatabase(DATABASE);
 		Document doc = db.getDocument(_id, _rev);
 
-		string dir = "C:\\temp\\" + _id;
-		wstring wdir = s2ws(dir);
-		CreateDirectory(wdir.c_str(), NULL);
-			
+		wchar_t tempdir[MAX_PATH];
+		GetTempPath(MAX_PATH, tempdir);
+
+		StringCchCat(tempdir, MAX_PATH, L"cinch\\");
+		
+		CreateDirectory(tempdir, NULL);
+
+		StringCchCat(tempdir, MAX_PATH, s2ws(_id).c_str());
+		
+		CreateDirectory(tempdir, NULL);
+		
+		string dir = ws2s(tempdir);
+		string idfile = dir + "\\.id";
+		string revfile = dir + "\\.rev";
+		
+		SetFileAttributes(s2ws(idfile).c_str(), FILE_ATTRIBUTE_NORMAL);
+		SetFileAttributes(s2ws(revfile).c_str(), FILE_ATTRIBUTE_NORMAL);
+
+
+		FILE* f;
+		errno_t err = fopen_s(&f, idfile.c_str(), "w");
+		if (err == 0 ){
+			fwrite(_id.c_str(), sizeof(char), _id.length(), f);
+			fclose(f);
+		}
+
+		err = fopen_s(&f, revfile.c_str(), "w");
+		if ( err == 0 ){
+			fwrite(_rev.c_str(), sizeof(char), _rev.length(), f);
+			fclose(f);
+		}
+
+		SetFileAttributes(s2ws(idfile).c_str(), FILE_ATTRIBUTE_HIDDEN);
+		SetFileAttributes(s2ws(revfile).c_str(), FILE_ATTRIBUTE_HIDDEN);
+
+
 		try {
 			vector<Attachment> attachments = doc.getAllAttachments();
 			for(unsigned i=0; i<attachments.size(); i++){
@@ -74,10 +110,16 @@ void AttachmentViewer::PrepareAttachments(){
 			}
 		}catch(Exception e){
 		}
+		
 		IShellItem *psi;
-		HRESULT hr = SHCreateItemFromParsingName(wdir.c_str(), 0, IID_PPV_ARGS(&psi)); 
+		HRESULT hr = SHCreateItemFromParsingName(tempdir, 0, IID_PPV_ARGS(&psi)); 
 		if (SUCCEEDED(hr)){
-			_peb->BrowseToObject(psi, 0);
+			HRESULT hr = _peb->BrowseToObject(psi, 0);
+			OutputDebugString(L"zip");
+		}
+
+		if ( fileWatchController != NULL ){
+			fileWatchController->pause = FALSE;
 		}
 
 		WatchDirectory(s2ws(dir).c_str());
@@ -113,7 +155,6 @@ LRESULT CALLBACK AttachmentViewer::WndProc(HWND hWnd, UINT message, WPARAM wPara
 		break;
 		}
 	case WM_FILES_HAVE_CHANGED:
-		MessageBox(hWnd, L"Changed", L"Cinch", 0);
 		break;
 	case WM_SIZE:
 		{
@@ -137,61 +178,243 @@ void AttachmentViewer::WatchDirectory(LPCWSTR lpDir)
 {
 	DWORD threadId;
 	int len = wcslen(lpDir) + 2;
-	wchar_t* l = new wchar_t[len];
-	memset(l, 0, len);
-	wcscpy_s(l, len, lpDir);
-	CreateThread(NULL, 0, FileWatchWorker, (LPVOID)l, 0, &threadId); 
+	if ( fileWatchController == NULL ){
+		fileWatchController = new FileWatchController;
+		fileWatchController->exit = FALSE;
+		fileWatchController->pause = FALSE;
+
+		fileWatchController->directory = new wchar_t[len];
+		memset(fileWatchController->directory, 0, len);
+		wcscpy_s(fileWatchController->directory, len, lpDir);
+
+		CreateThread(NULL, 0, FileWatchWorker, (LPVOID)fileWatchController, 0, &threadId); 
+	} else {
+		delete fileWatchController->directory;
+
+		fileWatchController->directory = new wchar_t[len];
+		memset(fileWatchController->directory, 0, len);
+		wcscpy_s(fileWatchController->directory, len, lpDir);
+
+	}
+
 
 }
 
+char* md5file(wchar_t* file){
+	 DWORD dwStatus = 0;
+    BOOL bResult = FALSE;
+    HCRYPTPROV hProv = 0;
+    HCRYPTHASH hHash = 0;
+    HANDLE hFile = NULL;
+    BYTE rgbFile[BUFSIZE];
+    DWORD cbRead = 0;
+    BYTE rgbHash[MD5LEN];
+    DWORD cbHash = 0;
+    CHAR rgbDigits[] = "0123456789abcdef";
+    // Logic to check usage goes here.
+
+    hFile = CreateFile(file,
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_SEQUENTIAL_SCAN,
+        NULL);
+
+    if (INVALID_HANDLE_VALUE == hFile)
+    {
+        dwStatus = GetLastError();
+		return "";
+    }
+
+    // Get handle to the crypto provider
+    if (!CryptAcquireContext(&hProv,
+        NULL,
+        NULL,
+        PROV_RSA_FULL,
+        CRYPT_VERIFYCONTEXT))
+    {
+        dwStatus = GetLastError();
+        (hFile);
+		CloseHandle(file);
+        return "";
+    }
+
+    if (!CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash))
+    {
+        dwStatus = GetLastError();
+        CloseHandle(hFile);
+        CryptReleaseContext(hProv, 0);
+        return "";
+    }
+
+    while (bResult = ReadFile(hFile, rgbFile, BUFSIZE, 
+        &cbRead, NULL))
+    {
+        if (0 == cbRead)
+        {
+            break;
+        }
+
+        if (!CryptHashData(hHash, rgbFile, cbRead, 0))
+        {
+            dwStatus = GetLastError();
+            printf("CryptHashData failed: %d\n", dwStatus); 
+            CryptReleaseContext(hProv, 0);
+            CryptDestroyHash(hHash);
+            CloseHandle(hFile);
+            return "";
+        }
+    }
+
+    if (!bResult)
+    {
+        dwStatus = GetLastError();
+        printf("ReadFile failed: %d\n", dwStatus); 
+        CryptReleaseContext(hProv, 0);
+        CryptDestroyHash(hHash);
+        CloseHandle(hFile);
+        return "";
+    }
+
+    cbHash = MD5LEN;
+	char* rc = "";
+    if (CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0))
+    {
+     	size_t size;
+		rc = base64_encode((const unsigned char*)rgbHash, cbHash, &size);
+	}
+
+    CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
+    CloseHandle(hFile);
+
+	return rc;
+
+}
+
+string readSingleLine(const char *filename){
+	FILE *f;
+
+	long size;
+
+	errno_t err = fopen_s(&f, filename, "r");
+	if ( err == 0 ){
+		fseek(f, 0, SEEK_END);
+		size = ftell(f);
+		rewind(f);
+
+		char* c = new char[size+1];
+		memset(c, 0, size+1);
+		fread_s(c, size, sizeof(char), size, f);
+		fclose(f);
+		return string(c);
+
+	} else {
+		return "";
+	}
+
+}
+
+void ProcessChanges(wchar_t* dir){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATA ffd;
+	TCHAR szDir[MAX_PATH];
+
+	StringCchCopy(szDir, MAX_PATH, dir);
+    StringCchCat(szDir, MAX_PATH, TEXT("\\*"));
+
+	stringstream idfile;
+	idfile << ws2s(dir) << "\\.id";
+
+	stringstream revfile;
+	revfile << ws2s(dir) << "\\.rev";
+
+	
+	string id = readSingleLine(idfile.str().c_str());
+	string rev = readSingleLine(revfile.str().c_str());
+	
+	if ( id.length() == 0 ){
+		return;
+	}
+
+	hFind = FindFirstFile(szDir, &ffd);
+
+	bool hasUploadedAttachments = false;
+				
+
+	do
+    {
+		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+		}
+		else
+		{
+			if ( wcscmp(L".id", ffd.cFileName) != 0 && wcscmp(L".rev", ffd.cFileName) != 0 ){
+				wchar_t filename[MAX_PATH];
+				StringCchCopy(filename, MAX_PATH, dir);
+				StringCchCat(filename, MAX_PATH, L"\\");
+				StringCchCat(filename, MAX_PATH, ffd.cFileName);
+
+				char* c = md5file(filename);
+
+				/* Compare to content md5 of attachment in the db */
+				Document doc = db.getDocument(id, rev);
+				try {
+					Attachment a = doc.getAttachment(ws2s(ffd.cFileName));
+					string serverMD5 = a.getContentMD5();
+					const char* j = serverMD5.c_str();
+					int i = strcmp(c, j);
+					if ( i != 0 ) {
+						doc.updateAttachmentFromFile(a.getID(), ws2s(filename));
+						hasUploadedAttachments = true;
+					}
+				}catch(AttachmentNotFoundException e){
+					doc.addAttachmentFromFile(ws2s(ffd.cFileName), "", ws2s(filename));
+					hasUploadedAttachments = true;
+				}
+			}
+		}
+	}
+	while (FindNextFile(hFind, &ffd) != 0);
+
+	FindClose(hFind);
+
+	if ( hasUploadedAttachments ){
+		PostMessage(GetParent(attachmentsHwnd), WM_ATTACHMENTS_UPLOADED, 0, 0);
+	}
+
+}
 
 DWORD WINAPI FileWatchWorker(LPVOID param){
    DWORD dwWaitStatus; 
-   HANDLE dwChangeHandles[3]; 
-   TCHAR lpDrive[4];
-   TCHAR lpFile[_MAX_FNAME];
-   TCHAR lpExt[_MAX_EXT];
+   HANDLE dwChangeHandle; 
+   
+   FileWatchController* controller = (FileWatchController *)param;
 
-   LPCWSTR lpDir = (LPCWSTR)param;
-   _tsplitpath_s(lpDir, lpDrive, 4, NULL, 0, lpFile, _MAX_FNAME, lpExt, _MAX_EXT);
+   LPCWSTR lpDir = controller->directory;
 
-   lpDrive[2] = (TCHAR)'\\';
-   lpDrive[3] = (TCHAR)'\0';
- 
+
+   
 // Watch the directory for file creation and deletion. 
  
-   dwChangeHandles[0] = FindFirstChangeNotification(
-      lpDir,                         // directory to watch 
-      FALSE,                         // do not watch subtree 
-      FILE_NOTIFY_CHANGE_FILE_NAME); // watch file name changes 
- 
-   if (dwChangeHandles[0] == INVALID_HANDLE_VALUE) 
-   {
-	   PostMessage(attachmentsHwnd, WM_FILE_WATCH_FAILED, 0, 0);
-   }
- 
-// Watch the subtree for directory creation and deletion. 
- 
-   dwChangeHandles[1] = FindFirstChangeNotification( 
-      lpDir,                       // directory to watch 
-      TRUE,                          // watch the subtree 
-      FILE_NOTIFY_CHANGE_DIR_NAME);  // watch dir name changes 
- 
-   if (dwChangeHandles[1] == INVALID_HANDLE_VALUE) 
-   {
-	   PostMessage(attachmentsHwnd, WM_FILE_WATCH_FAILED, 0, 0);
-   }
- 
+   dwChangeHandle = FindFirstChangeNotification(lpDir, FALSE, 
+	   FILE_NOTIFY_CHANGE_FILE_NAME |
+	   FILE_NOTIFY_CHANGE_SIZE
+	  ); 
 
-   dwChangeHandles[2] = FindFirstChangeNotification(
-		lpDir,
-		TRUE,
-		FILE_NOTIFY_CHANGE_SIZE);
+
+   wchar_t* watchedDir = new wchar_t[MAX_PATH];
+   memset(watchedDir, 0, MAX_PATH);
+   wcscpy_s(watchedDir, MAX_PATH, controller->directory);
 
 
 // Make a final validation check on our handles.
 
-   if ((dwChangeHandles[0] == NULL) || (dwChangeHandles[1] == NULL) || (dwChangeHandles[2] == NULL))
+   if ((dwChangeHandle == NULL))
    {
 	   PostMessage(attachmentsHwnd, WM_FILE_WATCH_FAILED, 0, 0);
    }
@@ -199,13 +422,12 @@ DWORD WINAPI FileWatchWorker(LPVOID param){
 // Change notification is set. Now wait on both notification 
 // handles and refresh accordingly. 
  
-   while (TRUE) 
+   while (!controller->exit) 
    { 
    // Wait for notification.
  
-     dwWaitStatus = WaitForMultipleObjects(3, dwChangeHandles, 
-         FALSE, INFINITE); 
- 
+	   dwWaitStatus = WaitForSingleObject(dwChangeHandle, 100);
+
       switch (dwWaitStatus) 
       { 
          case WAIT_OBJECT_0: 
@@ -213,42 +435,36 @@ DWORD WINAPI FileWatchWorker(LPVOID param){
          // A file was created, renamed, or deleted in the directory.
          // Refresh this directory and restart the notification.
  
-			 PostMessage(attachmentsHwnd, WM_FILES_HAVE_CHANGED, 0, 0);
-             if ( FindNextChangeNotification(dwChangeHandles[0]) == FALSE )
-             {
-             }
-             break; 
- 
-         case WAIT_OBJECT_0 + 1: 
- 
-         // A directory was created, renamed, or deleted.
-         // Refresh the tree and restart the notification.
-			 PostMessage(attachmentsHwnd, WM_FILES_HAVE_CHANGED, 0, 0);
-             if (FindNextChangeNotification(dwChangeHandles[1]) == FALSE )
-             {
+			 if ( controller->pause == FALSE ){
+				ProcessChanges(watchedDir);
 			 }
-             break; 
-		 case WAIT_OBJECT_0 + 2:
-			 PostMessage(attachmentsHwnd, WM_FILES_HAVE_CHANGED, 0, 0);
-			if (FindNextChangeNotification(dwChangeHandles[2]) == FALSE )
+
+			 if ( FindNextChangeNotification(dwChangeHandle) == FALSE )
              {
              }
              break; 
-
-
-			break;
-
-         case WAIT_TIMEOUT:
-
-         // A timeout occurred, this would happen if some value other 
-         // than INFINITE is used in the Wait call and no changes occur.
-         // In a single-threaded environment you might not want an
-         // INFINITE wait.
  
+         case WAIT_TIMEOUT:
+			 /* See if the controller wants me to switch to watching a different directory
+			  * This corresponds to the user accessing a different document */
+
+         
+			if ( wcscmp(controller->directory, watchedDir) != 0 ){
+				memset(watchedDir, 0, MAX_PATH);
+				wcscpy_s(watchedDir, MAX_PATH, controller->directory);
+				dwChangeHandle = FindFirstChangeNotification(watchedDir, FALSE, 
+					FILE_NOTIFY_CHANGE_FILE_NAME |
+					FILE_NOTIFY_CHANGE_SIZE
+				); 
+
+			}
+
             break;
 
          default: 
 			break;
       }
    }
+
+   return 0;
 }

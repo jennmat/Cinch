@@ -30,6 +30,20 @@ class Exception : public std::exception{
       std::string message;
 };
 
+
+class AttachmentNotFoundException : public std::exception{
+   public:
+      AttachmentNotFoundException(const std::string&);
+      virtual ~AttachmentNotFoundException() throw();
+      virtual const char* what() const throw();
+
+   private:
+      std::string message;
+};
+
+
 }
+
+
 
 #endif

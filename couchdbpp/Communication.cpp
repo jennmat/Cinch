@@ -38,7 +38,20 @@ static Value parseData(const string &buffer){
    return value;
 }
 
+
+
 static int writer(char *data, size_t size, size_t nmemb, string *dest){
+   int written = 0;
+   if(dest != NULL){
+      written = size * nmemb;
+      dest->append(data, written);
+   }
+
+   return written;
+}
+
+
+static int headerwriter(char *data, size_t size, size_t nmemb, string *dest){
    int written = 0;
    if(dest != NULL){
       written = size * nmemb;
@@ -239,4 +252,111 @@ void Communication::saveRawData(string _url, string filename){
 
 	fclose(file);   
    
+}
+
+string Communication::getHead(string _url){
+	string url = baseURL + _url;
+
+	buffer.clear();
+	
+	if(curl_easy_setopt(curl, CURLOPT_URL, url.c_str()) != CURLE_OK)
+		throw Exception("Unable to set URL: " + url);
+
+	if(curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerwriter) != CURLE_OK)
+      throw Exception("Unable to set writer function");
+
+	if(curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &buffer) != CURLE_OK)
+      throw Exception("Unable to set write buffer");
+
+	if(curl_easy_setopt(curl, CURLOPT_NOBODY, 1) != CURLE_OK)
+		throw Exception("Unable to set HTTP method to HEAD");
+
+
+	if(curl_easy_perform(curl) != CURLE_OK)
+      throw Exception("Unable to load URL: " + url);
+
+
+	if(curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, NULL) != CURLE_OK)
+      throw Exception("Unable to set writer function");
+
+	if(curl_easy_setopt(curl, CURLOPT_WRITEHEADER, NULL) != CURLE_OK)
+      throw Exception("Unable to set write buffer");
+
+	if(curl_easy_setopt(curl, CURLOPT_NOBODY, 0) != CURLE_OK)
+      throw Exception("Unable to set write buffer");
+
+
+
+
+	return string(buffer);
+}
+
+wstring s2ws(const string& s);
+
+Value Communication::uploadData(const std::string& _url, 
+								const HeaderMap&, 
+								const std::string &filename) {
+
+	string url = baseURL + _url;
+
+	CURL* ucurl = curl_easy_init();
+
+	/* get the file size of the local file */ 
+	
+	HANDLE hFile = CreateFile(s2ws(filename).c_str(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_SEQUENTIAL_SCAN,
+        NULL);
+
+	LARGE_INTEGER size;
+	GetFileSizeEx(hFile, &size);
+
+	CloseHandle(hFile);
+
+  /* get a FILE * of the same file, could also be made with
+     fdopen() from the previous descriptor, but hey this is just
+     an example! */ 
+	FILE *hd_src;
+	fopen_s(&hd_src, filename.c_str(), "rb");
+ 
+  
+  /* get a curl handle */ 
+  if(ucurl) {
+    
+    /* enable uploading */ 
+    curl_easy_setopt(ucurl, CURLOPT_UPLOAD, 1L);
+ 
+    /* HTTP PUT please */ 
+    curl_easy_setopt(ucurl, CURLOPT_PUT, 1L);
+ 
+    /* specify target URL, and note that this URL should include a file
+       name, not only a directory */ 
+	curl_easy_setopt(ucurl, CURLOPT_URL, url.c_str());
+ 
+    /* now specify which file to upload */ 
+    curl_easy_setopt(ucurl, CURLOPT_READDATA, hd_src);
+ 
+    /* provide the size of the upload, we specicially typecast the value
+       to curl_off_t since we must be sure to use the correct data size */ 
+    curl_easy_setopt(ucurl, CURLOPT_INFILESIZE_LARGE,
+		(curl_off_t)size.QuadPart);
+ 
+    /* Now run off and do what you've been told! */ 
+    CURLcode res = curl_easy_perform(ucurl);
+    /* Check for errors */ 
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+ 
+    /* always cleanup */ 
+    curl_easy_cleanup(ucurl);
+  }
+
+  fclose(hd_src); /* close the local file */ 
+
+  return Value();
+
 }
