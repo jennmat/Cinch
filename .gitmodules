@@ -1,6 +1,6 @@
-[submodule "CinchGrid"]
-	path = CinchGrid
-	url = https://github.com/jennmat/CinchGrid.git
 [submodule "JsonBox"]
 	path = JsonBox
 	url = https://github.com/anhero/JsonBox.git
+[submodule "CinchGrid"]
+	path = CinchGrid
+	url = https://github.com/jennmat/CinchGrid.git

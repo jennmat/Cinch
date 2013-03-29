@@ -176,7 +176,7 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
     return hPrev; 
 } 
 
-void LoadViews(HWND hwnd){
+void LoadViews(HWND hwnd, string emitsDocumentsOfType = ""){
 
 	TreeView_DeleteAllItems(hwnd);
 
@@ -211,7 +211,7 @@ void LoadViews(HWND hwnd){
 		   for(it=views.begin(); it != views.end(); it++){
 				pair<string, Value> p = *it;
 				Object o = p.second.getObject();
-				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
 					hasCinchView = true;
 				}
 		   }
@@ -225,7 +225,7 @@ void LoadViews(HWND hwnd){
 				wstring view = s2ws(p.first);
 				wstring name = s2ws(p.first);
 				Object o = p.second.getObject();
-				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true ){
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
 					if ( o["label"].isString() ){
 						name = s2ws(o["label"].getString());
 					}
@@ -952,6 +952,3 @@ void Desktop::formModified(){
 
 	db.createDocument(Value(o), "template/property");
 }
-
-
-

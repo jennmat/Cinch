@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Desktop", "Desktop\Desktop.vcxproj", "{F4462DAB-ABB6-4C91-9EEF-384AFBACCC20}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CinchGrid", "CinchGrid\CinchGrid\CinchGrid.vcxproj", "{34961205-8C12-4EF6-9C89-2392B57D6E89}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "couchdbpp", "couchdbpp\couchdbpp.vcxproj", "{3050C19D-1CC3-40F0-9AD8-DFDB7CCDE53F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JsonBox", "Projects\JsonBox\JsonBox.vcxproj", "{27EBA2B9-38B9-4A45-B78D-ADE07725FBA3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcurl", "curl\lib\libcurl.vcxproj", "{87EE9DA4-DE1E-4448-8324-183C98DCA588}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CinchGrid", "Projects\CinchGrid\CinchGrid.vcxproj", "{10BBBCE6-FDC9-4561-8A0C-89A2E8B15ABB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{F4462DAB-ABB6-4C91-9EEF-384AFBACCC20}.Debug|Win32.Build.0 = Debug|Win32
 		{F4462DAB-ABB6-4C91-9EEF-384AFBACCC20}.Release|Win32.ActiveCfg = Release|Win32
 		{F4462DAB-ABB6-4C91-9EEF-384AFBACCC20}.Release|Win32.Build.0 = Release|Win32
-		{34961205-8C12-4EF6-9C89-2392B57D6E89}.Debug|Win32.ActiveCfg = Debug|Win32
-		{34961205-8C12-4EF6-9C89-2392B57D6E89}.Debug|Win32.Build.0 = Debug|Win32
-		{34961205-8C12-4EF6-9C89-2392B57D6E89}.Release|Win32.ActiveCfg = Release|Win32
-		{34961205-8C12-4EF6-9C89-2392B57D6E89}.Release|Win32.Build.0 = Release|Win32
 		{3050C19D-1CC3-40F0-9AD8-DFDB7CCDE53F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3050C19D-1CC3-40F0-9AD8-DFDB7CCDE53F}.Debug|Win32.Build.0 = Debug|Win32
 		{3050C19D-1CC3-40F0-9AD8-DFDB7CCDE53F}.Release|Win32.ActiveCfg = Release|Win32
@@ -37,6 +33,10 @@ Global
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Debug|Win32.Build.0 = Debug|Win32
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Release|Win32.ActiveCfg = Release|Win32
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Release|Win32.Build.0 = Release|Win32
+		{10BBBCE6-FDC9-4561-8A0C-89A2E8B15ABB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{10BBBCE6-FDC9-4561-8A0C-89A2E8B15ABB}.Debug|Win32.Build.0 = Debug|Win32
+		{10BBBCE6-FDC9-4561-8A0C-89A2E8B15ABB}.Release|Win32.ActiveCfg = Release|Win32
+		{10BBBCE6-FDC9-4561-8A0C-89A2E8B15ABB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

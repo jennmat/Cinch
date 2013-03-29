@@ -392,8 +392,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	return (INT_PTR)FALSE;
 }
 
-void LoadViews(HWND hwnd);
-
+void LoadViews(HWND hwnd, string emitsDocumentsOfType = "");
 
 INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -405,6 +404,8 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 		{
+
+		vector<string>* v = new vector<string>();
 		HWND combo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Short Text");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Medium Text");
@@ -415,7 +416,6 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
-		LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE));
 
 		Connection conn;
 		Database d = conn.getDatabase(DATABASE);
@@ -426,9 +426,18 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				Object row = results[i].getObject();
 				string key = row["key"].getString();
 				wstring wkey =s2ws(key);
+				Document doc = d.getDocument(row["id"].getString());
+				Object obj = doc.getData().getObject();
+				if ( obj["name"].isString() ){
+					v->push_back(obj["name"].getString());
+				} else {
+					v->push_back("");
+				}
 				SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
 			}
 		}
+
+		SetWindowLong(combo, GWL_USERDATA, (ULONG_PTR)v);
 
 		Edit_SetCueBannerText(GetDlgItem(hDlg, IDC_NEW_FIELD_NEW_OPTION), L"Add A New Option");
 	
@@ -457,6 +466,12 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			if ( type > 7 ){
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_SHOW);
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_SHOW);
+				
+				HWND combo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
+				vector<string>* v = (vector<string>*)GetWindowLong(combo, GWL_USERDATA);
+				
+				LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), (*v)[type-8]);
+
 			} else {
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_HIDE);
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_CHOOSE_FROM_LABEL), SW_HIDE);
