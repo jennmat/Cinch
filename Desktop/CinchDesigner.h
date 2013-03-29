@@ -34,7 +34,7 @@ public:
 	void SetupDetail(HWND);
 	
 	void NewDocument(string database, string type);
-	void LoadDocument(string database, string _id, Object obj);
+	void LoadDocument(string database, string _id, Document doc, Object obj);
 	
 	Object getLoadedForm();
 	void setLoadedForm(Object obj);

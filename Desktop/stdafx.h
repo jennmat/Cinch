@@ -17,11 +17,17 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <stdint.h>
+
 #include "Windowsx.h"
 
+#include <strsafe.h>
 
 #include <CommCtrl.h>
 #include <string>
+
+#include <Wincrypt.h>
+
 
 using namespace std;
 
@@ -35,7 +41,11 @@ struct ViewPair {
 	string view;
 };
 
-
+struct FileWatchController {
+	wchar_t* directory;
+	bool pause;
+	bool exit;
+};
 
 #include "Constants.h"
 #include "Resource.h"
@@ -53,8 +63,13 @@ struct ViewPair {
 #include "JsonBox.h"
 #include "util.h"
 
-// TODO: reference additional headers your program requires here
 
+#include <objbase.h>
+#include <shlobj.h>             // shell stuff
+#include <sstream>
+
+// TODO: reference additional headers your program requires here
+#include "base64.h"
 #include "FormField.h"
 #include "FormLayout.h"
 #include "FormDelegate.h"
@@ -68,6 +83,8 @@ struct ViewPair {
 #include "NotifyParent.h"
 #include "CinchDesigner.h"
 #include "DetailViewDelegate.h"
+
+#include "AttachmentViewer.h"
 
 #define ROW_HEIGHT 25
 #define LABEL_WIDTH 150
@@ -93,4 +110,12 @@ struct ViewPair {
 #define REFERENCE "Reference"
 #define COMBO "Combo"
 
+#define WM_NEW_DATA_ARRIVED WM_USER+140
+#define WM_ATTACHMENTS_UPLOADED WM_USER+141
+
+
 #define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))
+
+
+#define BUFSIZE 1024
+#define MD5LEN  16

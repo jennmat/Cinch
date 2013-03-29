@@ -2,7 +2,6 @@
 
 #include "resource.h"
 
-#define WM_NEW_DATA_ARRIVED WM_USER+140
 
 CouchViewDelegate* delegate;
 

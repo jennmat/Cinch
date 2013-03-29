@@ -259,3 +259,10 @@ void Form::SaveDocument(int changedFieldId){
 }
 
 
+
+void Form::ReloadDocument(){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Document d = db.getDocument(id);
+	LoadDocument(id, d.getData().getObject());
+}

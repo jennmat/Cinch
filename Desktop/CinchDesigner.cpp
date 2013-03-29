@@ -952,7 +952,7 @@ void CinchDesigner::NewDocument(string database, string type){
 	form->LoadDocument("", *obj);
 }
 
-void CinchDesigner::LoadDocument(string database, string _id, Object obj){
+void CinchDesigner::LoadDocument(string database, string _id, Document doc, Object obj){
 	/* First load the template for this doc */
 	if ( obj["cinch_type"].isString() ){
 		string t = obj["cinch_type"].getString();

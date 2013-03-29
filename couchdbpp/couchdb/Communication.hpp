@@ -43,6 +43,7 @@ Value createValue(T value){
 class Communication{
 	friend class Database;
 	friend class Document;
+	friend class Attachment;
    public:
       typedef std::map<std::string, std::string> HeaderMap;
 
@@ -56,15 +57,23 @@ class Communication{
                       const std::string &method = "GET",
                       const std::string &data = "");
 
+	  Value uploadData(const std::string&, const HeaderMap&,
+                      const std::string &filename);
+
 	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
 
       std::string getRawData(const std::string&);
+
+	  void saveRawData(std::string url, std::string filename);
+
    private:
       void init(const std::string&);
       Value getData(const std::string&, const std::string&,
                       std::string, const HeaderMap&);
       void getRawData(const std::string&, const std::string&,
                       std::string, const HeaderMap&);
+
+	  std::string getHead(std::string url);
 
       CURL        *curl;
       std::string baseURL;

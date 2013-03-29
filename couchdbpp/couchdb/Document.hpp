@@ -58,6 +58,9 @@ class Document{
       std::vector<Attachment> getAllAttachments();
       bool removeAttachment(const std::string&);
 
+	  bool updateAttachmentFromFile(std::string name, std::string filename);
+	  bool addAttachmentFromFile(std::string name, std::string contentType, std::string filename);
+
       Document copy(const std::string&, const std::string &rev = "");
       bool remove();
 

@@ -42,6 +42,10 @@ class Attachment{
 
       std::string getData();
 
+	  std::string getContentMD5();
+
+	  void saveToDirectory(std::string directory);
+
    private:
       Communication &comm;
       std::string   db;

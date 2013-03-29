@@ -28,3 +28,15 @@ Exception::~Exception() throw(){
 const char* Exception::what() const throw(){
    return message.c_str();
 }
+
+
+AttachmentNotFoundException::AttachmentNotFoundException(const string &_message){
+   message = _message;
+}
+
+AttachmentNotFoundException::~AttachmentNotFoundException() throw(){
+}
+
+const char* AttachmentNotFoundException::what() const throw(){
+   return message.c_str();
+}

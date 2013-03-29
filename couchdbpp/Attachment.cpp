@@ -17,6 +17,8 @@
 #include "couchdb/Exception.hpp"
 #include "JsonBox.h"
 
+#include <curl/curl.h>
+
 using namespace JsonBox;
 
 using namespace std;
@@ -68,6 +70,28 @@ const string& Attachment::getContentType() const{
    return contentType;
 }
 
+string Attachment::getContentMD5(){
+	char * ed = curl_easy_escape(comm.curl, document.c_str(), document.length());
+	char * eid = curl_easy_escape(comm.curl, id.c_str(), id.length());
+	string url = "/" + db + "/" + ed + "/" + eid;
+    if(revision.size() > 0)
+		url += "?rev=" + revision;
+    
+	string headers = comm.getHead(url);
+
+	int pos = headers.find("Content-MD5: ");
+	if ( pos >= 0 ){
+		pos += 13;
+		int end = headers.find("\n", pos);
+		return headers.substr(pos, end-pos-1);
+	}
+
+	return "";
+	
+}
+
+
+
 string Attachment::getData(){
    string data;
 
@@ -94,9 +118,20 @@ string Attachment::getData(){
    return data;
 }
 
+
+void Attachment::saveToDirectory(string directory){
+	char* escaped = curl_easy_escape(comm.curl, id.c_str(), id.length());
+	string url = "/" + db + "/" + document + "/" + string(escaped);
+	if(revision.size() > 0)
+		url += "?rev=" + revision;
+	comm.saveRawData(url, directory + "\\" + id);
+}
+
 ostream& operator<<(ostream &out, const CouchDB::Attachment &attachment){
    return out << "{id: " << attachment.getID()
               << ", rev: " << attachment.getRevision()
               << ", content-type: " << attachment.getContentType()
               << "}";
 }
+
+

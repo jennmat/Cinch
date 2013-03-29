@@ -119,33 +119,59 @@ Value Document::getData(){
 bool Document::addAttachment(const string &attachmentId,
                              const string &contentType,
                              const string &data){
-   string url = getURL(false) + "/" + attachmentId;
-   if(revision.size() > 0)
-      url += "?rev=" + revision;
 
-   Communication::HeaderMap headers;
-   headers["Content-Type"] = contentType;
+	string url = getURL(false) + "/" + attachmentId;
+	if(revision.size() > 0)
+		url += "?rev=" + revision;
 
-   Value var = comm.getData(url, headers, "PUT", data);
-   Object  obj = var.getObject();
+	Communication::HeaderMap headers;
+	headers["Content-Type"] = contentType;
 
-   if(obj.find("error") != obj.end() && obj.find("reason") != obj.end())
-	   throw Exception("Could not create attachment '" + attachmentId + "': " + obj["reason"].getString());
+	Value var = comm.getData(url, headers, "PUT", data);
+	Object  obj = var.getObject();
 
-   revision = obj["rev"].getString();
+	if(obj.find("error") != obj.end() && obj.find("reason") != obj.end())
+		throw Exception("Could not create attachment '" + attachmentId + "': " + obj["reason"].getString());
 
-   return obj["ok"].getBoolean();
+	revision = obj["rev"].getString();
+
+	return obj["ok"].getBoolean();
 }
+
+bool Document::updateAttachmentFromFile(std::string name, std::string filename) {
+	char* escaped = curl_easy_escape(comm.curl, name.c_str(), name.length());
+	string url = getURL(false) + "/" + escaped;
+	if(revision.size() > 0)
+		url += "?rev=" + revision;
+	
+	Communication::HeaderMap headers;
+	comm.uploadData(url, headers, filename);
+	return true;
+}
+
+bool Document::addAttachmentFromFile(std::string name, std::string contentType, std::string filename) {
+	char* escaped = curl_easy_escape(comm.curl, name.c_str(), name.length());
+	string url = getURL(false) + "/" + escaped;
+	if(revision.size() > 0)
+		url += "?rev=" + revision;
+	
+	Communication::HeaderMap headers;
+	comm.uploadData(url, headers, filename);
+	return true;
+}
+
+
+
 
 Attachment Document::getAttachment(const string &attachmentId){
 	Object data = getData().getObject();
 
    if(data.find("_attachments") == data.end())
-      throw Exception("No attachments");
+      throw AttachmentNotFoundException("Attachment not found");
 
    Object attachments = data["_attachments"].getObject();
    if(attachments.find(attachmentId) == attachments.end())
-      throw Exception("No attachment found with id '" + attachmentId + "'");
+	   throw AttachmentNotFoundException("Attachment not found");
 
    Object attachment = attachments[attachmentId].getObject();
 
