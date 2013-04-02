@@ -107,10 +107,12 @@ LRESULT CALLBACK ToolbarProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	//PAINTSTRUCT ps;
 	//HDC hdc;
 
-	//switch (message)
-	//{
-	//default:
+	switch (message)
+	{
+	case WM_ERASEBKGND:
+		return 1;
+	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
-	//}
-	//return 0;
+	}
+	
 }

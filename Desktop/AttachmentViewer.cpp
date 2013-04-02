@@ -44,10 +44,14 @@ void AttachmentViewer::initialize(){
 			fs.ViewMode = FVM_DETAILS;
 			fs.fFlags = 0;
 
+			
 			HRESULT hr = _peb->Initialize(wnd, &rc, &fs);
+
+
 			initialized = true;
 
 			if ( SUCCEEDED(hr) ){
+
 				if ( hasLoadedDocument == true ){
 					PrepareAttachments();
 				}
@@ -114,8 +118,7 @@ void AttachmentViewer::PrepareAttachments(){
 		IShellItem *psi;
 		HRESULT hr = SHCreateItemFromParsingName(tempdir, 0, IID_PPV_ARGS(&psi)); 
 		if (SUCCEEDED(hr)){
-			HRESULT hr = _peb->BrowseToObject(psi, 0);
-			OutputDebugString(L"zip");
+			HRESULT hr = _peb->BrowseToObject(psi, EBF_NONE);
 		}
 
 		if ( fileWatchController != NULL ){

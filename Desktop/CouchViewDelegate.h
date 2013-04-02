@@ -11,11 +11,15 @@ private:
 	Connection& conn;
 	int rowCount;
 	wchar_t** data;
+	string* docids;
+	int* rownums;
 	wstring view;
 	wstring design;
 	bool viewInitialized;
-	Object lastRead;
 	Object viewResults;
+	
+	/* Data is stored in limited buffers, so a "page fault" is fulfilled by loading up a new chunk of data into the buffers */
+	void loadPage(int);
 public:
 	CouchViewDelegate(Connection&);
 	int totalRows();

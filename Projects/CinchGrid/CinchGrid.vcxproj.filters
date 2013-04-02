@@ -44,9 +44,6 @@
     <ClCompile Include="..\..\CinchGrid\CinchGrid\GridColumn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\CinchGrid\CinchGrid\Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\CinchGrid\CinchGrid\ReferenceDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -568,29 +568,7 @@ Form * Detail::getForm(){
 	return form;
 }
 
-void Detail::LoadAttachments(){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
-	Document doc = db.getDocument(_id, _rev);
 
-	string dir = "C:\\temp\\" + _id;
-	wstring wdir = s2ws(dir);
-	CreateDirectory(wdir.c_str(), NULL);
-			
-	try {
-		vector<Attachment> attachments = doc.getAllAttachments();
-		for(unsigned i=0; i<attachments.size(); i++){
-			Attachment a = attachments[i];
-			a.saveToDirectory(dir);
-		}
-	}catch(Exception e){
-	}
-	IShellItem *psi;
-	HRESULT hr = SHCreateItemFromParsingName(wdir.c_str(), 0, IID_PPV_ARGS(&psi)); 
-    if (SUCCEEDED(hr)){
-		_peb->BrowseToObject(psi, 0);
-	}
-}
 
 void Detail::LoadDocument(Object obj){
 	hasLoadedDocument = true;

@@ -21,10 +21,10 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -53,6 +53,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -72,7 +73,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\CinchGrid\CinchGrid\CinchGrid.cpp" />
     <ClCompile Include="..\..\CinchGrid\CinchGrid\GridColumn.cpp" />
-    <ClCompile Include="..\..\CinchGrid\CinchGrid\Main.cpp" />
     <ClCompile Include="..\..\CinchGrid\CinchGrid\ReferenceDelegate.cpp" />
     <ClCompile Include="..\..\CinchGrid\CinchGrid\ReferenceEditableDelegate.cpp" />
     <ClCompile Include="..\..\CinchGrid\CinchGrid\stdafx.cpp" />

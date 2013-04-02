@@ -54,6 +54,8 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
+	NotifyParentOfEnterKey(field->control);
+
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
 	return field;

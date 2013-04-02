@@ -159,7 +159,10 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 	switch (message)
 	{
 	case WM_KEYUP:
-		OutputDebugStringW(TEXT("Key pressed"));
+		if ( wParam == VK_RETURN ){
+			_this->getForm()->SaveDocument(-1);
+			_this->NewDocument(DATABASE, _this->getType());
+		}
 		break;
 	case WM_KILLFOCUS:
 		OutputDebugStringW(TEXT("lost focus\n"));

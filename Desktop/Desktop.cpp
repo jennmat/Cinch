@@ -457,6 +457,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		break;
 		}
+	case WM_ERASEBKGND:
+		return 1;
 	case WM_NEW_DATA_ARRIVED:
 		{
 		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
