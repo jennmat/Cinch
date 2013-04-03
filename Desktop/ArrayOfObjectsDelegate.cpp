@@ -280,3 +280,15 @@ void ArrayOfObjectsDelegate::headerContextClick(HWND grid, int x, int y){
     ClientToScreen(grid, &point);
 	TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, detail->getDetailHwnd(), NULL);
 }
+
+void ArrayOfObjectsDelegate::willReloadData(){
+}
+
+void ArrayOfObjectsDelegate::didReloadData(){
+}
+
+void ArrayOfObjectsDelegate::didSelectRow(int){
+}
+
+void ArrayOfObjectsDelegate::setGrid(CinchGrid*){
+}

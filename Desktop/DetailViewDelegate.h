@@ -64,4 +64,11 @@ public:
 
 	void deserializeUIElements(Object obj);
 	Object serializeUIElements();
+
+	void willReloadData();
+	void didReloadData();
+
+	void didSelectRow(int row);
+
+	void setGrid(CinchGrid*);
 };

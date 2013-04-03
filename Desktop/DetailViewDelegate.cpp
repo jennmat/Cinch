@@ -274,3 +274,16 @@ void DetailViewDelegate::headerContextClick(HWND grid, int x, int y){
     ClientToScreen(grid, &point);
 	//TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, detail->getDetailHwnd(), NULL);
 }
+
+
+void DetailViewDelegate::willReloadData(){
+}
+
+void DetailViewDelegate::didReloadData(){
+}
+
+void DetailViewDelegate::didSelectRow(int row){
+}
+
+void DetailViewDelegate::setGrid(CinchGrid *){
+}

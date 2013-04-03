@@ -17,6 +17,9 @@ private:
 	wstring design;
 	bool viewInitialized;
 	Object viewResults;
+
+	string selectedDocId;
+	CinchGrid* grid;
 	
 	/* Data is stored in limited buffers, so a "page fault" is fulfilled by loading up a new chunk of data into the buffers */
 	void loadPage(int);
@@ -45,6 +48,11 @@ public:
 	void editingFinished(HWND editor, int row, int col);
 	void willLoseFocus();
 
+	void willReloadData();
+	void didReloadData();
+
+	void didSelectRow(int);
+
 	bool allowNewRows();
 	bool allowNewColumns();
 	void prepareNewRow(int row);
@@ -56,4 +64,6 @@ public:
 
 	void setView(const wstring&, const wstring&);
 	void loadViewResults();
+
+	void setGrid(CinchGrid*);
 };

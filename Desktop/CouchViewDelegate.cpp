@@ -140,7 +140,7 @@ const wchar_t* CouchViewDelegate::cellContent(int row, int col)
 }
 
 bool CouchViewDelegate::stickyHeaders(){
-	return false;
+	return true;
 }
 
 bool CouchViewDelegate::drawHorizontalGridlines(){
@@ -216,4 +216,32 @@ string CouchViewDelegate::getDocumentIdForRow(int row){
 
 
 void CouchViewDelegate::headerContextClick(HWND grid, int x, int y){
+}
+
+
+void CouchViewDelegate::willReloadData(){
+}
+
+void CouchViewDelegate::didReloadData(){
+	if ( viewInitialized == false ) return;
+	if ( selectedDocId.length() == 0 ) return;
+
+	for(int i=0; i<PAGESIZE; i++){
+		if ( docids[i].compare(selectedDocId) == 0 ){
+			grid->SetActiveRow(i+1);
+			grid->ScrollRowIntoView(i+1);
+		}
+	}
+}
+
+void CouchViewDelegate::didSelectRow(int row){
+	if ( rownums[row % PAGESIZE] != row ){
+		loadPage(row);
+	}
+	selectedDocId = docids[row];
+}
+
+
+void CouchViewDelegate::setGrid(CinchGrid* g){
+	grid = g;
 }
