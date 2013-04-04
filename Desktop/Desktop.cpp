@@ -651,7 +651,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 						
 				}
-				else if ( wmId == IDC_ADD_VIEW_FIELD ){
+				else if ( wmId == IDC_ADD_VIEW_FIELD || IDC_ADD_VIEW_SORT ){
 
 					HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 					vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
@@ -721,8 +721,13 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					int compareIdx = ComboBox_GetCurSel(c->compareCombo);
 					string comparison = (*operatorVector)[compareIdx];
 
-					conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
-					conditionsStream << c->value->serializeForJS().c_str();
+					if ( compareIdx == 0 ){
+						//corresponds to the is empty condition
+						conditionsStream << " && ( !doc." << fieldforcomparison.c_str() << " || doc." << fieldforcomparison.c_str() << " == null ) ";
+					} else {
+						conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
+						conditionsStream << c->value->serializeForJS().c_str();
+					}
 				}
 			}
 

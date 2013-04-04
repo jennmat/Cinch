@@ -212,21 +212,24 @@ Array Detail::serializeUIElements()
 		wcstombs_s(&t, ctitle, 80, title, 80);
 
 		Object tab;
-		tab["name"] = ws2s(fieldName[i]);
 		tab["label"] = labels[i];
 		if ( contentType[i] == TABLE_CONTENT ){
+			tab["name"] = ws2s(fieldName[i]);
 			tab["content"] = Value("Table");
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
 			tab["config"] = delegate->serializeUIElements();
 
 		} else if (contentType[i] == TEXTAREA_CONTENT ){
+			tab["name"] = ws2s(fieldName[i]);
 			tab["content"] = Value("Text");
 		} else if ( contentType[i] == VIEW_CONTENT ){
 			tab["content"] = "View";
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
 			tab["config"] = delegate->serializeUIElements();
+		} else if ( contentType[i] == ATTACHMENTS ){
+			tab["content"] = "Attachments";
 		}
 		tabs.push_back(tab);
 

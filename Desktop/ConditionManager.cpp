@@ -28,7 +28,9 @@ void ConditionManager::arrangeWindowsInParent(HWND parent, int startX, int start
 		ShowWindow(c->fieldCombo, SW_SHOW);
 		ShowWindow(c->compareCombo, SW_SHOW);
 		
-		if ( c->value ) {
+		int idx = ComboBox_GetCurSel(c->compareCombo);
+		
+		if ( idx > 0 && c->value ) {
 			SetWindowPos(c->value->getControl(), HWND_TOP, x+CONDITION_FIELD_WIDTH+CONDITION_MARGIN+CONDITION_COMPARE_WIDTH+CONDITION_MARGIN, y, CONDITION_VALUE_WIDTH, CONDITION_EDITOR_HEIGHT, 0);
 			ShowWindow(c->value->getControl(), SW_SHOW);
 		}
@@ -45,8 +47,9 @@ void ConditionManager::updateConditions(string type, HWND parent){
 		Condition* c = (*conditions)[i];
 
 		int fieldIdx = ComboBox_GetCurSel(c->fieldCombo);
+		int compareIdx = ComboBox_GetCurSel(c->compareCombo);
 		
-		if ( fieldIdx < 0 ) hasEmptyCondition = true;
+		if ( compareIdx < 0 ) hasEmptyCondition = true;
 
 		if ( fieldIdx >= 0 ){
 			vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
@@ -90,6 +93,8 @@ void ConditionManager::updateConditions(string type, HWND parent){
 					formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
 				}
 
+				ShowWindow(formField->getControl(), SW_HIDE);
+
 				c->value = formField;
 				c->setupForField = field["name"].getString();
 
@@ -121,7 +126,7 @@ void ConditionManager::addEmptyCondition(string type, HWND parent){
 				0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_FIELD, GetModuleHandle(0), NULL);
 
 			HWND compareCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-				0, 0, 0, 0, parent, NULL, GetModuleHandle(0), NULL);
+				0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_SORT, GetModuleHandle(0), NULL);
 
 			ShowWindow(fieldCombo, SW_HIDE);
 			ShowWindow(compareCombo, SW_HIDE);
@@ -144,6 +149,8 @@ void ConditionManager::addEmptyCondition(string type, HWND parent){
 			}
 
 			vector<string>* compareOperators = new vector<string>();
+			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is empty");
+			compareOperators->push_back("empty");
 			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
 			compareOperators->push_back("==");
 			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
