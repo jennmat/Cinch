@@ -234,8 +234,10 @@ void CouchViewDelegate::didReloadData(){
 		}
 	}
 	if ( !found ){
-		grid->SetActiveRow(1);
-		grid->ScrollRowIntoView(1);
+		if ( rowCount > 0 ){
+			grid->SetActiveRow(1);
+			grid->ScrollRowIntoView(1);
+		}
 	}
 }
 
