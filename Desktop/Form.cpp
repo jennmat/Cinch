@@ -200,7 +200,7 @@ void Form::save(wchar_t* filename){
 
 void Form::NewDocument(string type){
 	Object * obj = new Object();
-	LoadDocument("", *obj);
+	LoadDocument("", *obj, false);
 }
 
 void Form::setDelegate(FormDelegate *_delegate){
@@ -226,13 +226,15 @@ void Form::RefreshValues(){
 	}
 }
 
-void Form::LoadDocument(string _id, Object _obj){
+void Form::LoadDocument(string _id, Object _obj, bool skipRefresh){
 	id = _id;
 	obj = _obj;
 
 	hasDocument = true;
 
-	RefreshValues();
+	if ( !skipRefresh ){
+		RefreshValues();
+	}
 }
 
 void Form::SaveDocument(int changedFieldId){
@@ -240,21 +242,21 @@ void Form::SaveDocument(int changedFieldId){
 	
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
-		//if ( field->controlChildId == changedFieldId ){
+		if ( field->controlChildId == changedFieldId ){
 			obj = field->storeValue(obj);
-		//}
+		}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
 	obj = detail.StoreValuesToDocument(13, obj);
 	Connection conn;
 	
-	Database db2 = conn.getDatabase(DATABASE);
-	Document updatedDoc = db2.createDocument(Value(obj), id);
+	Database db = conn.getDatabase(DATABASE);
+	Document updatedDoc = db.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();
 
-	LoadDocument(id, v.getObject());
+	LoadDocument(id, v.getObject(), true);
 
 }
 
@@ -264,5 +266,5 @@ void Form::ReloadDocument(){
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
 	Document d = db.getDocument(id);
-	LoadDocument(id, d.getData().getObject());
+	LoadDocument(id, d.getData().getObject(),  false);
 }

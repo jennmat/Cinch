@@ -228,14 +228,14 @@ void CouchViewDelegate::didReloadData(){
 	bool found = false;
 	for(int i=0; i<PAGESIZE; i++){
 		if ( docids[i].compare(selectedDocId) == 0 ){
-			grid->SetActiveRow(i+1);
+			grid->SetActiveRow(i+1, true);
 			grid->ScrollRowIntoView(i+1);
 			found = true;
 		}
 	}
 	if ( !found ){
 		if ( rowCount > 0 ){
-			grid->SetActiveRow(1);
+			grid->SetActiveRow(1, true);
 			grid->ScrollRowIntoView(1);
 		}
 	}

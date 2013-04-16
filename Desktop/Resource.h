@@ -3,7 +3,6 @@
 #endif
 
 #define IDD_EDIT_TABS                           101
-#define IDD_ABOUTBOX                            103
 #define IDM_ABOUT                               104
 #define IDI_DESKTOP                             107
 #define IDI_SMALL                               108
@@ -18,7 +17,9 @@
 #define IDD_ADD_DOCUMENT_TYPE                   298
 #define IDC_ADD_FIELD_CHOOSE_FROM_LABEL         1000
 #define IDC_RELATIONSHIP_COMBO                  1001
+#define IDC_RELATIONSHIP_LABEL                  1002
 #define IDC_STATIC1                             1002
+#define IDC_CONDITIONS_LABEL                    1003
 #define IDC_ADD_DOCUMENT_TYPE_NAME              1004
 #define IDC_ADD_DOCUMENT_TYPE_LABEL             1005
 #define IDC_ADD_VIEW_DOC_TYPE                   1006
@@ -33,8 +34,8 @@
 #define IDC_REMOVE_FROM_VISIBLE_TABS            1014
 #define IDC_NEW_VIEW_SORT_BY                    1019
 #define IDC_NEW_VIEW_NAME                       1020
-#define IDC_DESKTOP                             8109
 #define IDB_TREE                                9482
+#define IDC_DESKTOP                             40000
 #define IDC_VISIBLE_UP                          40002
 #define IDC_VISIBLE_DOWN                        40003
 #define IDC_VISIBLE_FIELDS                      40003

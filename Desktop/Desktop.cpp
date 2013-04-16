@@ -15,7 +15,7 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
-#define TOOLBAR_HEIGHT 54
+#define TOOLBAR_HEIGHT 53
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -659,7 +659,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					string type = (*ids)[idx];
 
 					ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
-					manager->updateConditions(type, hDlg);
+					manager->updateConditions(hDlg);
 					manager->arrangeWindowsInParent(hDlg, 35, 75);
 				}
 			}
@@ -703,37 +703,12 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 
-			stringstream conditionsStream;
-
 			ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
-			vector<Condition*>* conditions = manager->getConditions();
-			for(unsigned i=0; i<conditions->size(); i++){
-				Condition* c = (*conditions)[i];
-				if ( c->value != NULL ){
-				
-					int fieldIdx = ComboBox_GetCurSel(c->fieldCombo);
-					vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
-					Object field = (*fieldsVector)[fieldIdx];
-
-					string fieldforcomparison = field["name"].getString();
-
-					vector<string>* operatorVector = (vector<string>*)GetWindowLong(c->compareCombo, GWL_USERDATA);
-					int compareIdx = ComboBox_GetCurSel(c->compareCombo);
-					string comparison = (*operatorVector)[compareIdx];
-
-					if ( compareIdx == 0 ){
-						//corresponds to the is empty condition
-						conditionsStream << " && ( !doc." << fieldforcomparison.c_str() << " || doc." << fieldforcomparison.c_str() << " == null ) ";
-					} else {
-						conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
-						conditionsStream << c->value->serializeForJS().c_str();
-					}
-				}
-			}
+			string conditionsJs = manager->getJavascript();
 
 
 			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.%s, null); }", 
-				type.c_str(), conditionsStream.str().c_str(), sortby.c_str());	
+				type.c_str(), conditionsJs.c_str(), sortby.c_str());	
 
 
 			

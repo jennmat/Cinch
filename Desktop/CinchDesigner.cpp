@@ -117,6 +117,8 @@ HWND CinchDesigner::CreateCinchDesigner(HWND parent){
 
 void loadTabLabels(Array tabs, HWND tabList){
 
+	ListBox_ResetContent(tabList);
+
 	for(unsigned i=0; i<tabs.size(); i++){
 		Object config = tabs[i].getObject();
 		string label = config["label"].getString();
@@ -153,15 +155,15 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 	PAINTSTRUCT ps;
 	HDC hdc;
 
-	CinchDesigner* _this = (CinchDesigner *)GetWindowLong(hWnd, GWL_USERDATA);
+	CinchDesigner* self = (CinchDesigner *)GetWindowLong(hWnd, GWL_USERDATA);
 
 
 	switch (message)
 	{
 	case WM_KEYUP:
 		if ( wParam == VK_RETURN ){
-			_this->getForm()->SaveDocument(-1);
-			_this->NewDocument(DATABASE, _this->getType());
+			self->getForm()->SaveDocument(-1);
+			self->NewDocument(DATABASE, self->getType());
 		}
 		break;
 	case WM_KILLFOCUS:
@@ -200,7 +202,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		switch (((LPNMHDR)lParam)->code)
         {
 		case DTN_DATETIMECHANGE:
-			_this->getForm()->SaveDocument(((LPNMHDR)lParam)->idFrom);
+			self->getForm()->SaveDocument(((LPNMHDR)lParam)->idFrom);
 			break;
 		}
 	case WM_COMMAND:
@@ -208,11 +210,20 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
 
-		if ( wmEvent == BN_CLICKED ){
-			_this->getForm()->SaveDocument(wmId);
+		//if ( wmEvent == BN_CLICKED ){
+		//	self->getForm()->SaveDocument(wmId);
+		//}
+		if ( wmEvent == CBN_SELCHANGE ){
+			HWND w = GetDlgItem(hWnd, wmId);
+			wchar_t name[80];
+			GetClassName(w, name, 80);
+			if ( wcscmp(name, TEXT("ComboBox")) == 0 ){
+				self->getForm()->SaveDocument(wmId);
+			}
 		}
-		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS || wmEvent == CBN_SELCHANGE ){
-			_this->getForm()->SaveDocument(wmId);
+
+		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
+			self->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)
 			{
@@ -239,7 +250,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		PostQuitMessage(0);
 		break;
 	case WM_SIZE:
-		_this->getForm()->show(hWnd, GetModuleHandle(0));
+		self->getForm()->show(hWnd, GetModuleHandle(0));
 		break;
 	case WM_CTLCOLORSTATIC:
         {
@@ -251,8 +262,8 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 	case WM_GETMINMAXINFO:
 		{
 		MINMAXINFO * info = (MINMAXINFO *)lParam;
-		info->ptMinTrackSize.x = _this->getForm()->minWidth();
-		info->ptMinTrackSize.y = _this->getForm()->minHeight();
+		info->ptMinTrackSize.x = self->getForm()->minWidth();
+		info->ptMinTrackSize.y = self->getForm()->minHeight();
 		return 0;
 		}
 	default:
@@ -646,6 +657,9 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if ( wmEvent == CBN_SELCHANGE ){
 					HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
+					ShowWindow(relcombo, SW_SHOW);
+					ShowWindow(GetDlgItem(hDlg, IDC_RELATIONSHIP_LABEL), SW_SHOW);
+					ShowWindow(GetDlgItem(hDlg, IDC_CONDITIONS_LABEL), SW_SHOW);
 					ComboBox_ResetContent(relcombo);
 					Connection conn;
 					Database db = conn.getDatabase(DATABASE);
@@ -691,9 +705,35 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 
 					SetWindowLong(relcombo, GWL_USERDATA, (ULONG_PTR)ids);
+
 				}
 			}
 			break;
+		case IDC_ADD_VIEW_SORT:
+		case IDC_ADD_VIEW_FIELD:
+			self->conditionManager->updateConditions(hDlg);
+			self->conditionManager->arrangeWindowsInParent(hDlg, 135, 220);
+			break;
+		case IDC_RELATIONSHIP_COMBO:
+			if ( wmEvent == CBN_SELCHANGE ){
+				int idx = ComboBox_GetCurSel( GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO));
+				vector<string>* ids = (vector<string>*)GetWindowLong(GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO), GWL_USERDATA);
+				if ( idx >= 0 ){
+					Connection conn;
+					Database db = conn.getDatabase(DATABASE);
+					Document d = db.getDocument((*ids)[idx]);
+					Object obj = d.getData().getObject();
+					string type = obj["source_document_type"].getString();
+					self->conditionManager = new ConditionManager();
+					//self->conditionManager->updateConditions("bug", hDlg);
+					self->conditionManager->addEmptyCondition(type, hDlg);
+					self->conditionManager->arrangeWindowsInParent(hDlg, 135, 220);
+				}
+				
+
+			}
+			break;
+
 		case IDOK:
 			{
 
@@ -708,8 +748,8 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			GetWindowText(GetDlgItem(hDlg, IDC_NEW_TAB_LABEL), tablabel, len);
 
 			Object newTab = Object();
-			newTab["name"] =ws2s(tabname);
-			newTab["label"] =ws2s(tablabel);
+			newTab["name"] = ws2s(tabname);
+			newTab["label"] = ws2s(tablabel);
 
 			HWND contentCombo = GetDlgItem(hDlg, IDC_CONTENT_COMBO);
 			int idx = ComboBox_GetCurSel(contentCombo);
@@ -733,16 +773,19 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				char map[1024];
 				memset(map, 0, 1024);
 
+				string conditions = self->conditionManager->getJavascript();
+
 				sprintf_s(map, 1024, 
-					"function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", 
+					"function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.%s, null); }", 
 					obj["source_document_type"].getString().c_str(),
+					conditions.c_str(),
 					obj["source_document_property"].getString().c_str());	
 
 				Object design = Object();
 				design["language"] = "javascript";
 				Object view = Object();
 				
-				
+					
 				Object v = Object();
 				v["map"] = map;
 
@@ -952,7 +995,7 @@ void CinchDesigner::NewDocument(string database, string type){
 	loadForm(database, type);
 	Object* obj = new Object();
 	(*obj)["cinch_type"] = Value(type);
-	form->LoadDocument("", *obj);
+	form->LoadDocument("", *obj, false);
 }
 
 void CinchDesigner::LoadDocument(string database, string _id, Document doc, Object obj){
@@ -963,7 +1006,7 @@ void CinchDesigner::LoadDocument(string database, string _id, Document doc, Obje
 		loadForm(database, t);
     }
 
-	form->LoadDocument(_id, obj);
+	form->LoadDocument(_id, obj, false);
 }
 
 Object CinchDesigner::getLoadedForm(){

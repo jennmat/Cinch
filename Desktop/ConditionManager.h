@@ -14,12 +14,14 @@ struct Condition {
 class ConditionManager {
 private:
 	vector<Condition *> *conditions;
+	string type;
 
 public:
 	ConditionManager();
 	~ConditionManager();
 	void arrangeWindowsInParent(HWND parent, int startX, int startY);
 	void addEmptyCondition(string type, HWND parent);
-	void updateConditions(string type, HWND parent);
+	void updateConditions(HWND parent);
 	vector<Condition *>* getConditions();
+	string getJavascript();
 };

@@ -30,17 +30,16 @@ void ConditionManager::arrangeWindowsInParent(HWND parent, int startX, int start
 		
 		int idx = ComboBox_GetCurSel(c->compareCombo);
 		
-		if ( idx > 0 && c->value ) {
+		if ( idx > 1 && c->value ) {
 			SetWindowPos(c->value->getControl(), HWND_TOP, x+CONDITION_FIELD_WIDTH+CONDITION_MARGIN+CONDITION_COMPARE_WIDTH+CONDITION_MARGIN, y, CONDITION_VALUE_WIDTH, CONDITION_EDITOR_HEIGHT, 0);
 			ShowWindow(c->value->getControl(), SW_SHOW);
 		}
 
 		y += CONDITION_ROW_HEIGHT;
-
 	}
 }
 
-void ConditionManager::updateConditions(string type, HWND parent){
+void ConditionManager::updateConditions(HWND parent){
 	bool hasEmptyCondition = false;
 
 	for(unsigned i=0; i<conditions->size(); i++){
@@ -57,7 +56,7 @@ void ConditionManager::updateConditions(string type, HWND parent){
 			string name = field["name"].getString();
 
 
-			if ( c->value == NULL || name.compare(c->setupForField) != 0 ){
+			if ( c->value == NULL || name.compare(c->setupForField) != 0){
 			
 				if ( c->value != NULL ){
 					DestroyWindow(c->value->getControl());
@@ -107,8 +106,8 @@ void ConditionManager::updateConditions(string type, HWND parent){
 	}
 }
 
-void ConditionManager::addEmptyCondition(string type, HWND parent){
-	
+void ConditionManager::addEmptyCondition(string _type, HWND parent){
+	type = _type;
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
 
@@ -151,6 +150,8 @@ void ConditionManager::addEmptyCondition(string type, HWND parent){
 			vector<string>* compareOperators = new vector<string>();
 			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is empty");
 			compareOperators->push_back("empty");
+			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not empty");
+			compareOperators->push_back("notempty");
 			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
 			compareOperators->push_back("==");
 			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
@@ -175,4 +176,40 @@ void ConditionManager::addEmptyCondition(string type, HWND parent){
 
 vector<Condition *>* ConditionManager::getConditions(){
 	return conditions;
+}
+
+
+string ConditionManager::getJavascript(){
+	stringstream conditionsStream;
+
+	vector<Condition*>* conditions = getConditions();
+	for(unsigned i=0; i<conditions->size(); i++){
+		Condition* c = (*conditions)[i];
+		if ( c->value != NULL ){
+			
+			int fieldIdx = ComboBox_GetCurSel(c->fieldCombo);
+			if ( fieldIdx >= 0){
+				vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
+				Object field = (*fieldsVector)[fieldIdx];
+
+				string fieldforcomparison = field["name"].getString();
+
+				vector<string>* operatorVector = (vector<string>*)GetWindowLong(c->compareCombo, GWL_USERDATA);
+				int compareIdx = ComboBox_GetCurSel(c->compareCombo);
+				string comparison = (*operatorVector)[compareIdx];
+
+				if ( compareIdx == 0 ){
+					//corresponds to the is empty condition
+					conditionsStream << " && ( !doc." << fieldforcomparison.c_str() << " || doc." << fieldforcomparison.c_str() << " == null ) ";
+				} else if ( compareIdx == 1 ){
+					conditionsStream << " && ( ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " != null ) ";
+				} else {
+					conditionsStream << " && ('"<< fieldforcomparison.c_str() << "' in doc) && doc." << fieldforcomparison.c_str() << " " << comparison.c_str() << " ";
+					conditionsStream << c->value->serializeForJS().c_str();
+				}
+			}
+		}
+	}
+	return conditionsStream.str();
+
 }

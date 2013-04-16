@@ -19,7 +19,7 @@ public:
 	void setDelegate(FormDelegate *);
 	FormDelegate* getDelegate();
 	void NewDocument(string type);
-	void LoadDocument(string _id, Object obj);
+	void LoadDocument(string _id, Object obj, bool skipRefresh);
 	void ReloadDocument();
 	void RefreshValues();
 	void SaveDocument(int changedFieldId);

@@ -125,6 +125,16 @@ HWND Detail::GetDetailPage(int i){
 
 void Detail::deserializeUIElements(Object obj)
 {
+	for(int i=0; i<getDetailPageCount(); i++){
+		detailPages[i] = NULL;
+		contentType[i] = 0;
+		initialized[i] = 0;
+		fieldName[i] = NULL;
+	}
+	labels.clear();
+
+	pageCount = 0;
+
 	configuration = obj;
 
 	Array tabs = obj["tabs"].getArray();

@@ -17,10 +17,11 @@ private:
 	Form* form;
 	Object loadedForm;
 	string type;
-
 	
+	Connection conn;
 	void loadForm(string database, string type);
 public:
+	ConditionManager* conditionManager;
 	Array tabsForUpdate;
 
 	CinchDesigner(HWND);

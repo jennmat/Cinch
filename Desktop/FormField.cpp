@@ -80,7 +80,7 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 
 
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 200, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
@@ -155,7 +155,11 @@ const wchar_t* FormField::getName(){
 
 FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config)
 {
+	static int fieldId = 651;
+
 	FormField* field = new ComboBoxField();
+
+	field->controlChildId = fieldId++;
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE | WS_TABSTOP,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -169,7 +173,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 	field->config = config;
 
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 200, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
@@ -287,7 +291,7 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 	field->name = name;
 	
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, 200, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 200, parent,  (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
