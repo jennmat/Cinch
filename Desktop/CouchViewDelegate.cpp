@@ -144,7 +144,7 @@ bool CouchViewDelegate::stickyHeaders(){
 }
 
 bool CouchViewDelegate::drawHorizontalGridlines(){
-	return true;
+	return false;
 }
 
 bool CouchViewDelegate::drawVerticalGridlines(){

@@ -8,20 +8,22 @@ using namespace CouchDB;
 class ArrayOfObjectsDelegate: public GridDelegate {
 
 private:
+	HWND parent;
 	int rowCount;
 	wstring view;
-	vector<vector<wstring> > data;
+	Array data;
 	vector<string> fields;
 	vector<wstring> titles;
-	vector<HWND> editors;
+	vector<FormField*> editors;
 	vector<string> editorTypes;
+	vector<Value> editorConfigs;
 	vector<int> widths;
 	Detail * detail;
 	int fieldId;
 public:
 	ArrayOfObjectsDelegate(Detail *, int);
 	void setData(Array array);
-	void addColumn(string field, wstring label, string editorType);
+	void addColumn(string field, wstring label, string editorType, Value config);
 
 	int totalRows();
 	int totalColumns();
@@ -56,7 +58,7 @@ public:
 
 	void headerContextClick(HWND grid, int x, int y);
 
-	void deserializeUIElements(Object obj);
+	void deserializeUIElements(HWND hwnd, Object obj);
 	Object serializeUIElements();
 
 	void willReloadData();

@@ -187,8 +187,9 @@ void Detail::deserializeUIElements(Object obj)
 
 		} else if( content.compare("Table") == 0 ){
 			ArrayOfObjectsDelegate* delegate = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
-			delegate->deserializeUIElements(tab["config"].getObject());
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
+			delegate->deserializeUIElements(detailPages[i], tab["config"].getObject());
+			
 		} else if ( content.compare("Text") == 0 ){
 			CreateTextareaForPage(s2ws(name).c_str(), i);
 		} else if ( content.compare("Attachments") == 0 ){
@@ -733,10 +734,10 @@ INT_PTR CALLBACK AddColumn(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 
 				switch(type){
 				case 0:
-					d->addColumn(ws2s(szNewFieldName), szNewFieldLabel, EDIT);
+					d->addColumn(ws2s(szNewFieldName), szNewFieldLabel, EDIT, Value());
 					break;
 				case 1:
-					d->addColumn(ws2s(szNewFieldName), szNewFieldLabel, DATEPICKER);
+					d->addColumn(ws2s(szNewFieldName), szNewFieldLabel, DATEPICKER, Value());
 					break;
 				default:
 					break;

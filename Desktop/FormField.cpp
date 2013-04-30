@@ -33,7 +33,7 @@ Value FormField::getConfig(){
 	return config;
 }
 
-FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 12002;
 
@@ -41,13 +41,16 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 
 	field->controlChildId = fieldId++;
 
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
-		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
-
 	HFONT hFont=DEFAULT_FONT;
-	SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
-	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+	
+	if ( !bare ){
+		field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_CENTERIMAGE,
+			0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+		SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
+		SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+	}
 
+	
 	field->controlType = "Edit";
 	field->name = name;
 	field->config = Value();
@@ -61,32 +64,8 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, const wchar_
 	return field;
 }
 
-FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config)
-{
-	static int fieldId = 9870;
-
-	FormField* field = new ReferenceField();
-
-	field->controlChildId = fieldId++;
-
-	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
-		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
-
-	HFONT hFont=DEFAULT_FONT;
-	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
-	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
-
+void ReferenceField::setupValues(){
 	vector<string>* ids = new vector<string>();
-
-
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-		0, 0, CONTROL_WIDTH, 200, parent, (HMENU)field->controlChildId, hInst, NULL);
-
-	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
-	
-	field->controlType = "Reference";
-	field->name = name;
-	field->config = config;
 
 	if ( config.isObject() ){
 		if ( config["pick_from"].isObject() ){
@@ -98,7 +77,9 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 			if ( design.length() > 0 && view.length() > 0 ){
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);
-				Object results = db.viewResults(design, view, 10);
+				Object results = db.viewResults(design, view, 50);
+
+				ComboBox_ResetContent(getControl());
 
 				Array rows = results["rows"].getArray();
 				for(unsigned int i=0; i<rows.size(); i++){
@@ -106,21 +87,49 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, const w
 					string key = row["key"].getString();
 
 					wstring wkey =s2ws(key);
-					SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)wkey.c_str()); 
+					SendMessage(getControl(),(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)wkey.c_str()); 
 					ids->push_back(row["id"].getString());
 				}
 			}
 		}
 	}
 
-	SetWindowLong(field->control, GWL_USERDATA, (ULONG_PTR)ids);
+	SetWindowLong(getControl(), GWL_USERDATA, (ULONG_PTR)ids);
 
+}
+
+FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare)
+{
+	static int fieldId = 9870;
+
+	ReferenceField* field = new ReferenceField();
+
+	field->controlChildId = fieldId++;
+
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
+		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+
+	HFONT hFont=DEFAULT_FONT;
+	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, 200, parent, (HMENU)field->controlChildId, hInst, NULL);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	field->controlType = "Reference";
+	field->name = name;
+	field->config = config;
+
+	field->setupValues();
+	
 	return field;
 }
 
 
 
-FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 13001;
 
@@ -148,12 +157,25 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, const wcha
 	return field;
 }
 
-const wchar_t* FormField::getName(){
+string FormField::getName(){
 	return name;
 }
 
+string FormField::toString(Object obj){
+	return obj[getName()].getString();
+}
 
-FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config)
+string ReferenceField::toString(Object obj){
+	string id = obj[getName()].getString();
+
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
+	Object o = db.getDocument(id).getData().getObject();
+	return o["label"].getString();
+}
+
+FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare)
 {
 	static int fieldId = 651;
 
@@ -194,7 +216,7 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, const wchar_t
 }
 
 
-FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 130010;
 	FormField* field = new DatePickerField();
@@ -219,7 +241,7 @@ FormField* FormField::createDatePicker(HWND parent, HINSTANCE hInst, const wchar
 }
 
 
-FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	FormField* field = new EditField();
 
@@ -243,7 +265,7 @@ FormField* FormField::createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t
 }
 
 
-FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	FormField* field = new EditField();
 
@@ -272,7 +294,7 @@ FormField* FormField::createRadioGroup(HWND parent, HINSTANCE hInst, const wchar
 }
 
 
-FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 7022;
 	
@@ -303,9 +325,13 @@ FormField* FormField::createYesNoField(HWND parent, HINSTANCE hInst, const wchar
 
 
 
-FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label)
+FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
+	static int fieldId = 62388;
+	
 	FormField* field = new EditField();
+	field->controlChildId = fieldId++;
+	field->config = Value();
 
 	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
 		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
@@ -319,7 +345,7 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 	field->config = Value();
 	
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
-		0, 0, CONTROL_WIDTH, 75, parent, NULL, hInst, NULL);
+		0, 0, CONTROL_WIDTH, 75, parent,  (HMENU)field->controlChildId, hInst, NULL);
 	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	return field;
@@ -327,8 +353,7 @@ FormField* FormField::createMultilineText(HWND parent, HINSTANCE hInst, const wc
 
 
 void EditField::loadValue(Object obj){
-	const wchar_t* name = getName();
-	string n =ws2s(name);
+	string n = getName();
 	if ( obj[n.c_str()].isString() ){
 		string val = obj[n.c_str()].getString();
 		wstring valw =s2ws(val);
@@ -346,7 +371,7 @@ Object EditField::storeValue(Object obj){
 	LPWSTR str = new wchar_t[len];
 	
 	GetWindowText(getControl(), str, len);
-	string key =ws2s(getName());
+	string key = getName();
 	string value =ws2s(str);
 	obj[key.c_str()] = value;	
 	return obj;
@@ -357,7 +382,7 @@ string EditField::serializeForJS(){
 	LPWSTR str = new wchar_t[len];
 	
 	GetWindowText(getControl(), str, len);
-	string key =ws2s(getName());
+	string key = getName();
 	string value =ws2s(str);
 	stringstream rc;
 	rc << "'" << value << "'";
@@ -369,8 +394,7 @@ string EditField::serializeForJS(){
 
 
 void DatePickerField::loadValue(Object obj){
-	const wchar_t* name = getName();
-	string n =ws2s(name);
+	string n = getName();
 	if ( obj[n.c_str()].isInteger() ){
 		int val = obj[n.c_str()].getInt();
 		FILETIME ft;
@@ -401,7 +425,7 @@ Object DatePickerField::storeValue(Object obj){
 	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
 
 	LPWSTR str = new wchar_t[80];
-	string key =ws2s(getName());
+	string key = getName();
 	string value =ws2s(date);
 	obj[key.c_str()] = value;	
 	return obj;
@@ -415,7 +439,7 @@ string DatePickerField::serializeForJS(){
 	GetDateFormat(LOCALE_INVARIANT, 0, &time, L"yyyy-MM-dd", date, 80);
 
 	LPWSTR str = new wchar_t[80];
-	string key =ws2s(getName());
+	string key = getName();
 	string value =ws2s(date);
 
 	stringstream rc;
@@ -425,8 +449,7 @@ string DatePickerField::serializeForJS(){
 
 
 void NumberField::loadValue(Object obj){
-	const wchar_t* name = getName();
-	string n =ws2s(name);
+	string n = getName();
 	if ( obj[n.c_str()].isDouble() ){
 		double val = obj[n.c_str()].getDouble();
 		int decimal, sign;
@@ -453,7 +476,7 @@ void NumberField::clearValue(){
 Object NumberField::storeValue(Object obj){
 	int len = GetWindowTextLength(getControl()) + 1;
 	LPWSTR str = new wchar_t[len];
-	string key =ws2s(getName());
+	string key = getName();
 	if ( GetWindowTextLength(getControl()) > 0 ){
 		GetWindowText(getControl(), str, len);
 		double val = _wtof(str);
@@ -485,8 +508,7 @@ string NumberField::serializeForJS(){
 
 
 void YesNoField::loadValue(Object obj){
-	const wchar_t* name = getName();
-	string n =ws2s(name);
+	string n = getName();
 	if ( obj[n.c_str()].isBoolean() ){
 		bool val = obj[n.c_str()].getBoolean();
 		if ( val ){
@@ -503,7 +525,7 @@ void YesNoField::clearValue(){
 
 Object YesNoField::storeValue(Object obj){
 	int idx = ComboBox_GetCurSel(getControl());
-	string key =ws2s(getName());
+	string key = getName();
 
 
 	if ( idx == 0 ){
@@ -534,7 +556,7 @@ Object ReferenceField::storeValue(Object obj){
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	int idx = ComboBox_GetCurSel(getControl());
 
-	string key = ws2s(getName());
+	string key = getName();
 
 	if ( idx >= 0 ){
 		string id = (*ids)[idx];
@@ -549,10 +571,11 @@ Object ReferenceField::storeValue(Object obj){
 
 void ReferenceField::loadValue(Object obj){
 
+	setupValues();
+
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	
-	const wchar_t* name = getName();
-	string n = ws2s(name);
+	string n = getName();
 
 	if ( obj[n.c_str()].isString() ){
 		string id = obj[n.c_str()].getString();
@@ -569,7 +592,7 @@ string ReferenceField::serializeForJS(){
 	vector<string>* ids = (vector<string>*)GetWindowLong(getControl(), GWL_USERDATA);
 	int idx = ComboBox_GetCurSel(getControl());
 
-	string key =ws2s(getName());
+	string key = getName();
 
 	if ( idx >= 0 ){
 		string id = (*ids)[idx];
@@ -596,7 +619,7 @@ Object ComboBoxField::storeValue(Object obj){
 
 	string value = ws2s(text);
 
-	string key = ws2s(getName());
+	string key = getName();
 
 	if ( idx >= 0 ){
 		obj[key.c_str()] = value;
@@ -628,8 +651,7 @@ string ComboBoxField::serializeForJS(){
 
 void ComboBoxField::loadValue(Object obj){
 
-	const wchar_t* name = getName();
-	string n = ws2s(name);
+	string n = getName();
 
 	if ( obj[n.c_str()].isString() ){
 		string value = obj[n.c_str()].getString();

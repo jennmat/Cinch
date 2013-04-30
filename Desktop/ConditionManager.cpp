@@ -73,23 +73,23 @@ void ConditionManager::updateConditions(HWND parent){
 				FormField* formField;
 					
 				if ( type.compare(DATEPICKER) == 0 ){
-					formField = FormField::createDatePicker(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createDatePicker(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(RADIO) == 0 ){
-					formField = FormField::createRadioGroup(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createRadioGroup(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(NUMBER) == 0 ){
-					formField = FormField::createNumberField(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createNumberField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(YESNO) == 0 ){
-					formField = FormField::createYesNoField(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createYesNoField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(MULTILINE) == 0 ){
-					formField = FormField::createMultilineText(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createMultilineText(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(EDIT) == 0 ){
-					formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createEditField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(COMBO) == 0 ){
-					formField = FormField::createComboBox(parent, GetModuleHandle(0), L"", L"", config);
+					formField = FormField::createComboBox(parent, GetModuleHandle(0), "", L"", config);
 				} else if ( type.compare(REFERENCE) == 0 ){
-					formField = FormField::createReferenceField(parent, GetModuleHandle(0), L"", L"", config);
+					formField = FormField::createReferenceField(parent, GetModuleHandle(0), "", L"", config);
 				} else {
-					formField = FormField::createEditField(parent, GetModuleHandle(0), L"", L"");
+					formField = FormField::createEditField(parent, GetModuleHandle(0), "", L"");
 				}
 
 				ShowWindow(formField->getControl(), SW_HIDE);

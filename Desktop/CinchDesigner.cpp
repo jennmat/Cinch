@@ -338,7 +338,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				ListBox_GetText(hiddenFields, selected, text);
 				
 				int pos = (int)SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM)text); 
-				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), text, text));
+				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), ws2s(text), text));
 				ListBox_DeleteString(hiddenFields, selected);
 
 			}
@@ -525,19 +525,19 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				FormField* field;
 				switch(type){
 				case 0:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
 					break;
 				case 1:
-					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createEditField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName),szNewFieldLabel);
 					break;
 				case 2:
-					field = FormField::createMultilineText(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createMultilineText(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName),szNewFieldLabel);
 					break;
 				case 3:
-					field = FormField::createYesNoField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createYesNoField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName),szNewFieldLabel);
 					break;
 				case 4:
-					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createRadioGroup(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName),szNewFieldLabel);
 					break;
 				case 5:
 					{
@@ -557,14 +557,14 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					config["pick_from_list"] = pickFromList;
 
-					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, config);
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel, config);
 					}
 					break;
 				case 6:
-					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
 					break;
 				case 7:
-					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel);
+					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
 					break;
 				default:
 					{
@@ -590,7 +590,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							pickFrom["view"] = v->view;
 							config["pick_from"] = pickFrom;
 
-							field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), szNewFieldName,szNewFieldLabel, Value(config));
+							field = FormField::createReferenceField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel, Value(config));
 					
 							/* Create a relationship */
 							Object rel = Object();
@@ -645,6 +645,7 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HWND combo = GetDlgItem(hDlg, IDC_CONTENT_COMBO);
 			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Text");
+			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Table");
 			SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Related Documents");
 
 		}
@@ -656,56 +657,58 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_CONTENT_COMBO:
 			{
 				if ( wmEvent == CBN_SELCHANGE ){
-					HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
-					ShowWindow(relcombo, SW_SHOW);
-					ShowWindow(GetDlgItem(hDlg, IDC_RELATIONSHIP_LABEL), SW_SHOW);
-					ShowWindow(GetDlgItem(hDlg, IDC_CONDITIONS_LABEL), SW_SHOW);
-					ComboBox_ResetContent(relcombo);
-					Connection conn;
-					Database db = conn.getDatabase(DATABASE);
-					Object results = db.viewResults("all-relationships", "by-destination-document-type", Value(self->getType()), Value(self->getType()));
+					int idx = ComboBox_GetCurSel(GetDlgItem(hDlg, IDC_CONTENT_COMBO));
+					if ( idx == 2 ){
+						HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
+						ShowWindow(relcombo, SW_SHOW);
+						ShowWindow(GetDlgItem(hDlg, IDC_RELATIONSHIP_LABEL), SW_SHOW);
+						ShowWindow(GetDlgItem(hDlg, IDC_CONDITIONS_LABEL), SW_SHOW);
+						ComboBox_ResetContent(relcombo);
+						Connection conn;
+						Database db = conn.getDatabase(DATABASE);
+						Object results = db.viewResults("all-relationships", "by-destination-document-type", Value(self->getType()), Value(self->getType()));
 				
-					vector<string>* ids = new vector<string>();
+						vector<string>* ids = new vector<string>();
 
-					if( results["rows"].isArray() ){
-						Array rows = results["rows"].getArray();
+						if( results["rows"].isArray() ){
+							Array rows = results["rows"].getArray();
 
-						for(unsigned i=0; i<rows.size(); i++){
-							Object o = rows[i].getObject();
-							string id = o["id"].getString();
+							for(unsigned i=0; i<rows.size(); i++){
+								Object o = rows[i].getObject();
+								string id = o["id"].getString();
 							
-							Document doc = db.getDocument(id);
-							Object obj = doc.getData().getObject();
-							//string label = obj["label"].getString();
-							string source_document_type = obj["source_document_type"].getString();
+								Document doc = db.getDocument(id);
+								Object obj = doc.getData().getObject();
+								//string label = obj["label"].getString();
+								string source_document_type = obj["source_document_type"].getString();
 
-							stringstream label;
+								stringstream label;
 
-							Object objectResults = db.viewResults("all-objects", "by-name", Value(source_document_type), Value(source_document_type));
-							if ( objectResults["rows"].isArray() ){
-								Array rows = objectResults["rows"].getArray();
-								if ( rows.size() > 0 ){
-									Object o = rows[0].getObject();
-									string id = o["id"].getString();
-									Document doc = db.getDocument(id);
-									Object data = doc.getData().getObject();
-									label << data["plural"].getString();
-									label << ": ";
+								Object objectResults = db.viewResults("all-objects", "by-name", Value(source_document_type), Value(source_document_type));
+								if ( objectResults["rows"].isArray() ){
+									Array rows = objectResults["rows"].getArray();
+									if ( rows.size() > 0 ){
+										Object o = rows[0].getObject();
+										string id = o["id"].getString();
+										Document doc = db.getDocument(id);
+										Object data = doc.getData().getObject();
+										label << data["plural"].getString();
+										label << ": ";
 
+									}
 								}
+
+								label << obj["label"].getString();
+
+								wstring w = s2ws(label.str());
+								SendMessage(relcombo, CB_ADDSTRING, 0, (LPARAM)w.c_str());
+								ids->push_back(id);
+
 							}
-
-							label << obj["label"].getString();
-
-							wstring w = s2ws(label.str());
-							SendMessage(relcombo, CB_ADDSTRING, 0, (LPARAM)w.c_str());
-							ids->push_back(id);
-
 						}
+
+						SetWindowLong(relcombo, GWL_USERDATA, (ULONG_PTR)ids);
 					}
-
-					SetWindowLong(relcombo, GWL_USERDATA, (ULONG_PTR)ids);
-
 				}
 			}
 			break;
@@ -755,7 +758,9 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			int idx = ComboBox_GetCurSel(contentCombo);
 			if ( idx == 0 ){
 				newTab["content"] = "Text";
-			} else if ( idx == 1 ){
+			} else if ( idx == 1  ){
+				newTab["content"] = "Table";
+			} else if ( idx == 2 ){
 
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);

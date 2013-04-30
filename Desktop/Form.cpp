@@ -111,15 +111,12 @@ void Form::deserializeForm(HWND parent, Value v){
 		}
 		string name = field["name"].getString();
 		wstring wlabel =s2ws(label);
-		wstring wname =s2ws(name);
 		string type = field["cinch_type"].getString();
 		Value config;
 		if ( field["config"].isObject() ){
 			config = field["config"].getObject();
 		}
-		wchar_t* wcname = new wchar_t[name.length()+sizeof(wchar_t)];
-		memset(wcname, 0, name.length() + sizeof(wchar_t));
-		wcscpy_s(wcname, name.length()+sizeof(wchar_t), wname.c_str());
+		
 
 		wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
 		memset(wclabel, 0, label.length() + sizeof(wchar_t));
@@ -129,23 +126,23 @@ void Form::deserializeForm(HWND parent, Value v){
 		FormField* formField;
 
 		if ( type.compare(DATEPICKER) == 0 ){
-			formField = FormField::createDatePicker(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(RADIO) == 0 ){
-			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(NUMBER) == 0 ){
-			formField = FormField::createNumberField(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createNumberField(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(YESNO) == 0 ){
-			formField = FormField::createYesNoField(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(MULTILINE) == 0 ){
-			formField = FormField::createMultilineText(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(EDIT) == 0 ){
-			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(COMBO) == 0 ){
-			formField = FormField::createComboBox(parent, GetModuleHandle(0), wcname, wclabel, config);
+			formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, config);
 		} else if ( type.compare(REFERENCE) == 0 ){
-			formField = FormField::createReferenceField(parent, GetModuleHandle(0), wcname, wclabel, config);
+			formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, config);
 		} else {
-			formField = FormField::createEditField(parent, GetModuleHandle(0), wcname, wclabel);
+			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
 		}
 
 		addField(formField);
@@ -170,12 +167,9 @@ Object Form::serializeFormToObject(Object obj){
 		size_t t;
 		wcstombs_s(&t, label, wlab, 80);
 
-		char name[80];
-		wcstombs_s(&t, name, fld->getName(), 80);
-		
 		f["label"] = Value(label);
 		f["cinch_type"] = Value(fld->getControlType());
-		f["name"] = Value(name);
+		f["name"] = Value(fld->getName());
 		f["config"] = fld->getConfig();
 		fields.push_back(f);
 	}

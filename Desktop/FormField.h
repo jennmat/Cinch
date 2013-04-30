@@ -17,7 +17,8 @@ private:
 	HWND label;
 	HWND control;
 	char* controlType;
-	const wchar_t* name;
+	string name;
+protected:
 	Value config;
 
 public:
@@ -26,7 +27,7 @@ public:
 	void setLabel(HWND label);
 	void setControl(HWND control);
 	char* getControlType();
-	const wchar_t* getName();
+	string getName();
 	HWND getLabel();
 	HWND getControl();
 
@@ -36,16 +37,17 @@ public:
 	virtual void clearValue() = 0;
 	virtual Object storeValue(Object obj) = 0;
 	virtual string serializeForJS() = 0;
+	virtual string toString(Object obj);
 
-	static FormField* createEditField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createNumberField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createComboBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config);
-	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label);
-	static FormField* createReferenceField(HWND parent, HINSTANCE hInst, const wchar_t* name, const wchar_t * label, Value config);
+	static FormField* createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare=false);
+	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createYesNoField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createMultilineText(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createReferenceField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare=false);
 };
 
 
@@ -91,6 +93,8 @@ public:
 	void clearValue();
 	Object storeValue(Object obj);
 	string serializeForJS();
+	string toString(Object obj);
+	void setupValues();
 };
 
 
