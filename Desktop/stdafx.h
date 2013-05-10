@@ -98,8 +98,10 @@ struct FileWatchController {
 #define IDM_TABULAR		34009
 #define IDM_TEXTAREA	34010
 
-#define DATABASE "cinch-business-starter"
-
+//#define DATABASE "cinch-customer-contact-plugin-starter"
+//#define DATABASE "cinch-business-starter"
+//#define DATABASE "cinch-starter"
+#define DATABASE "bugs2"
 
 #define DATEPICKER "DatePicker"
 #define NUMBER "Number"

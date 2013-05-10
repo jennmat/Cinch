@@ -17,18 +17,17 @@ private:
 	string endkey_from;
 	string shows_docs_of_type;
 	Object* obj;
+	bool includeDocs;
+	bool allowEdit;
 	vector<vector<wstring> > data;
-	vector<string> fields;
-	vector<wstring> titles;
 	vector<HWND> editors;
-	vector<string> editorTypes;
-	vector<int> widths;
+	Object config;
 	int fieldId;
 public:
 	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from, string docs_of_type);
 	void LoadDocument(string database, Object obj);
-	void addColumn(string field, wstring label, string editorType);
-
+	void setConfig(Object);
+	void setIncludeDocs(bool);
 	int totalRows();
 	int totalColumns();
 	int columnWidth(int column);

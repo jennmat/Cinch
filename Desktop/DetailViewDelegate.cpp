@@ -20,8 +20,14 @@ DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _sta
 	endkey_from = _endkey_from;
 	shows_docs_of_type = _docs_of_type;
 
-	
+	includeDocs = false;
+	allowEdit = false;
 }
+
+void DetailViewDelegate::setIncludeDocs(bool _includeDocs){
+	includeDocs = _includeDocs;
+}
+
 
 int DetailViewDelegate::totalRows()
 {
@@ -36,24 +42,22 @@ void DetailViewDelegate::LoadDocument(string database, Object o){
 	Value startkey = o[startkey_from];
 	Value endkey = o[endkey_from];
 
-	obj = new Object(db.viewResults(design, view, startkey, endkey));
+	obj = new Object(db.viewResults(design, view, startkey, endkey, includeDocs));
 	
 }
 
-void DetailViewDelegate::addColumn(std::string field, std::wstring title, string editorType){
-	fields.push_back(field);
-	titles.push_back(title);
-	widths.push_back(250);
-	editorTypes.push_back(editorType);
+void DetailViewDelegate::setConfig(Object _config){
+	config = _config;
 }
 
 
 int DetailViewDelegate::totalColumns(){
-	return fields.size();
+	return config["columns"].getArray().size();
 }
 
 int DetailViewDelegate::columnWidth(int col){
-	return widths[col];
+	Object c = config["columns"].getArray()[col].getObject();
+	return c["width"].getInt();
 }
 
 int DetailViewDelegate::rowHeight(){
@@ -64,7 +68,10 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 {
 	wchar_t* result;
 
-	wstring title = titles[col];
+	Object c = config["columns"].getArray()[col].getObject();
+	string t = c["label"].getString();
+	wstring title = s2ws(t);
+	
 	int size = title.size() + sizeof(wchar_t);
 	result = new wchar_t[size];
 	wcscpy_s(result, size, title.c_str());
@@ -73,26 +80,49 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 
 const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 {
-
+	Connection conn;
+	Database d = conn.getDatabase(DATABASE);
+			
 	if ( (*obj)["rows"].isArray() ){
 		Array rows = (*obj)["rows"].getArray();
 		if ( (unsigned)row < rows.size() ){
 			Object r = rows[row].getObject();
-			string id = r["id"].getString();
+			Object c = config["columns"].getArray()[col].getObject();
+				
+				
+			string value;
+			if ( includeDocs == true ){
+				Object data = r["doc"].getObject();
+				string name = c["name"].getString();
+				value = data[name].getString();
 
-			Connection conn;
-			Database d = conn.getDatabase(DATABASE);
-			Document doc = d.getDocument(id);
-			Object data = doc.getData().getObject();
+			} else {
+				string id = r["id"].getString();
 
-			string field = fields[col];
-			string value = data[field].getString();
+				Document doc = d.getDocument(id);
+				Object data = doc.getData().getObject();
 
+				string name = c["name"].getString();
+				
+				value = data[name].getString();
+
+				
+			}
+
+			if ( c["is_document_reference"].isBoolean() && c["is_document_reference"].getBoolean() == true ){
+				string fieldname = c["field_with_value"].getString();
+				Document doc = d.getDocument(value);
+
+				Object o = doc.getData().getObject();
+				value = o[fieldname].getString();
+			}
+		
 			wstring val = s2ws(value);
 			int size = val.size() + sizeof(wchar_t);
 			wchar_t* wval = new wchar_t[size];
 			wcscpy_s(wval, size, val.c_str());
 			return wval;
+
 		}
 	}
 	
@@ -108,7 +138,7 @@ bool DetailViewDelegate::drawHorizontalGridlines(){
 }
 
 bool DetailViewDelegate::drawVerticalGridlines(){
-	return true;
+	return false;
 }
 
 bool DetailViewDelegate::rowSelection(){
@@ -117,7 +147,7 @@ bool DetailViewDelegate::rowSelection(){
 
 
 void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col){
-	if ( row >= rowCount ){
+	/*if ( row >= rowCount ){
 		SetWindowText(editor, L"");
 	} else {
 		if (editorTypes[col].compare(DATEPICKER) == 0 ){
@@ -142,11 +172,11 @@ void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col){
 			const wchar_t* c = cellContent(row, col);
 			SetWindowText(editor, c);
 		}
-	}
+	}*/
 }
 
 bool DetailViewDelegate::allowEditing(int col){
-	return false;
+	return allowEdit;
 }
 
 
@@ -155,7 +185,7 @@ bool DetailViewDelegate::allowHeaderTitleEditing(int col){
 }
 
 HWND DetailViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
-	if ( editors[col] == NULL ){
+	/*if ( editors[col] == NULL ){
 		if ( editorTypes[col].compare(DATEPICKER) == 0 ){
 			editors[col] =  CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 				0, 0, 0, 0, parent, NULL, hInst, NULL);
@@ -165,11 +195,12 @@ HWND DetailViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
 				0, 0, 0, 0, parent, NULL, hInst, NULL);
 		}
 	}
-	return editors[col];
+	return editors[col];*/
+	return NULL;
 }
 
 void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
-	if ( row < 0 ) return;
+	/*if ( row < 0 ) return;
 	string field = fields[col];
 
 	if ( editorTypes[col].compare(DATEPICKER) == 0 ){
@@ -188,7 +219,7 @@ void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
 		wchar_t* text = new wchar_t[len];
 		GetWindowText(hwnd, text, len);
 		data[row][col] = text;
-	}
+	}*/
 }
 
 void DetailViewDelegate::willLoseFocus(){
@@ -203,12 +234,12 @@ bool DetailViewDelegate::allowNewColumns(){
 }
 
 void DetailViewDelegate::prepareNewRow(int row){
-	vector<wstring> rowData;
+	/*vector<wstring> rowData;
 	for(unsigned int i=0; i<fields.size(); i++){
 		rowData.push_back(L"");
 	}
 	data.push_back(rowData);
-	rowCount++;
+	rowCount++;*/
 }
 
 HFONT DetailViewDelegate::getFont(){
@@ -223,10 +254,8 @@ HFONT DetailViewDelegate::getEditFont(){
 
 
 void DetailViewDelegate::deserializeUIElements(Object obj){
-	fields.clear();
-	titles.clear();
-	widths.clear();
-	if( obj["columns"].isArray() ){
+	config = obj;
+	/*if( obj["columns"].isArray() ){
 		Array columns = obj["columns"].getArray();
 		for(unsigned int i=0; i<columns.size(); i++){
 			Object col = columns[i].getObject();
@@ -240,11 +269,11 @@ void DetailViewDelegate::deserializeUIElements(Object obj){
 				widths.push_back(250);
 			}
 		}
-	}
+	}*/
 }
 
 Object DetailViewDelegate::serializeUIElements(){
-	Object o;
+	/*Object o;
 	Array columns;
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
@@ -262,7 +291,8 @@ Object DetailViewDelegate::serializeUIElements(){
 	o["endkey_with_value_of"] = endkey_from;
 	o["shows_docs_of_type"] = shows_docs_of_type;
 	return o;
-
+	*/
+	return config;
 }
 
 void DetailViewDelegate::headerContextClick(HWND grid, int x, int y){

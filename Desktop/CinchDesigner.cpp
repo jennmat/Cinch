@@ -218,7 +218,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 			wchar_t name[80];
 			GetClassName(w, name, 80);
 			if ( wcscmp(name, TEXT("ComboBox")) == 0 ){
-				self->getForm()->SaveDocument(wmId);
+				//self->getForm()->SaveDocument(wmId);
 			}
 		}
 
@@ -433,7 +433,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		Connection conn;
 		Database d = conn.getDatabase(DATABASE);
-		Object obj = d.viewResults("all-objects", "by-label", 10);
+		Object obj = d.viewResults("all-objects", "by-label", 10, 0);
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
 			for(unsigned int i=0; i<results.size(); i++){

@@ -18,6 +18,10 @@ private:
 	bool viewInitialized;
 	Object viewResults;
 
+	Value highValue;
+	string highDocId;
+	int highIndex;
+
 	string selectedDocId;
 	CinchGrid* grid;
 	

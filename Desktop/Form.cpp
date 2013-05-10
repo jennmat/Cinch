@@ -237,19 +237,21 @@ void Form::SaveDocument(int changedFieldId){
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		if ( field->controlChildId == changedFieldId ){
-			obj = field->storeValue(obj);
+			//obj = field->storeValue(obj);
 		}
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
-	obj = detail.StoreValuesToDocument(13, obj);
-	Connection conn;
+	
+	
+	
 	
 	Database db = conn.getDatabase(DATABASE);
+	
 	Document updatedDoc = db.createDocument(Value(obj), id);
 
 	Value v = updatedDoc.getData();
-
+	
 	LoadDocument(id, v.getObject(), true);
 
 }

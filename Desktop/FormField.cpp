@@ -54,7 +54,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name,
 	field->controlType = "Edit";
 	field->name = name;
 	field->config = Value();
-	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	NotifyParentOfEnterKey(field->control);
@@ -77,7 +77,7 @@ void ReferenceField::setupValues(){
 			if ( design.length() > 0 && view.length() > 0 ){
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);
-				Object results = db.viewResults(design, view, 50);
+				Object results = db.viewResults(design, view, 50, 0);
 
 				ComboBox_ResetContent(getControl());
 

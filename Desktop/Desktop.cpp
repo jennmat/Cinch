@@ -407,7 +407,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			Connection conn;
 			Database db = conn.getDatabase(DATABASE);
-			Object r = db.viewResults("all-objects", "by-label", 100);
+			Object r = db.viewResults("all-objects", "by-label", 100, 0);
 			Array rows = r["rows"].getArray();
 			unsigned int i = 0;
 			for(; i<rows.size(); i++){
@@ -566,7 +566,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		Connection conn;
 		Database db = conn.getDatabase(DATABASE);
-		Object r = db.viewResults("all-objects", "by-label", 100);
+		Object r = db.viewResults("all-objects", "by-label", 100, 0);
 	
 		vector<string>* ids = new vector<string>();
 

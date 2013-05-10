@@ -25,14 +25,14 @@ Connection::Connection(){
 }
 
 Connection::Connection(const string &url) : comm(url){
-   getInfo();
+   //getInfo();
 }
 
 void Connection::getInfo(){
-   Value val = comm.getData("");
-   Object obj = val.getObject();
+   //Value val = comm.getData("");
+   //Object obj = val.getObject();
 
-   couchDBVersion = obj["version"].getString();
+   //couchDBVersion = obj["version"].getString();
 }
 
 Connection::~Connection(){

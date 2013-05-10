@@ -86,11 +86,11 @@ Object Database::listViews(){
 	return var.getObject();
 }
 
-Object Database::viewResults(const string& design, const string& view, int limit=25){
-	return viewResults(design, view, limit, 0);
+Object Database::viewResults(const string& design, const string& view, int limit=25, bool includeDocs=false){
+	return viewResults(design, view, limit, 0, includeDocs);
 }
 
-Object Database::viewResults(const string& design, const string& view, int limit=25, int skip=0){
+Object Database::viewResults(const string& design, const string& view, int limit=25, int skip=0, bool includeDocs=false){
 	stringstream s;
 	s << "/" << name << "/_design/";
 	s << design;
@@ -100,13 +100,16 @@ Object Database::viewResults(const string& design, const string& view, int limit
 	s << limit;
 	s << "&skip=";
 	s << skip;
+	if ( includeDocs == true ){
+		s << "&include_docs=true";
+	}
 
 	Value var = comm.getData(s.str());
 
 	return var.getObject();
 }
 
-Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey){
+Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs){
 	stringstream s;
 	s << "/" << name << "/_design/";
 	s << design;
@@ -116,6 +119,9 @@ Object Database::viewResults(const string& design, const string& view, Value& st
 	s << startKey;
 	s << "&end_key=";
 	s << endKey;
+	if ( includeDocs = true ){
+		s << "&include_docs=true";
+	}
 
 	Value var = comm.getData(s.str());
 

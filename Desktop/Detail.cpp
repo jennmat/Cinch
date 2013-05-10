@@ -10,6 +10,12 @@ TCHAR detailClassName[] = _T("CinchDetail");
 
 #define DETAIL_START_ID 14
 
+#define VIEW "View"
+#define VIEW_WITH_DOCUMENTS_DETAIL "ViewWithDocuments"
+#define TABLE "Table"
+#define TEXT_DETAIL "Text"
+#define ATTACHMENTS_DETAIL "Attachments"
+
 HWND detailHWnd;
 
 INT_PTR CALLBACK AddColumn(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -53,7 +59,7 @@ void Detail::ShowPage(int i){
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
 	GetClientRect(tabControl, &tabControlClient);
 	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom, 0);
-	ShowWindow(detailPages[i], SW_SHOW);
+	//ShowWindow(detailPages[i], SW_SHOW);
 
 	if ( initialized[i] == 0 ){
 		InitializePage(i);
@@ -69,7 +75,7 @@ void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, in
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
 	wcscpy_s(fieldName[i], len, field);
-
+	initialized[i] = 1;
 	ShowPage(i);
 }
 
@@ -77,6 +83,19 @@ void Detail::CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegat
     HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
 	detailPages[i] = wnd;
 	contentType[i] = VIEW_CONTENT;
+	pageCount++;
+	int len = wcslen(label) + sizeof(wchar_t);
+	fieldName[i] = new wchar_t[len];
+	memset(fieldName[i], 0, len);
+	wcscpy_s(fieldName[i], len, label);
+	initialized[i] = 1;
+	ShowPage(i);
+}
+
+void Detail::CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* delegate, int i){
+    HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
+	detailPages[i] = wnd;
+	contentType[i] = VIEW_WITH_DOCUMENTS_CONTENT;
 	pageCount++;
 	int len = wcslen(label) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
@@ -147,7 +166,20 @@ void Detail::deserializeUIElements(Object obj)
 		addDetailPage(LPWSTR(wtitle.c_str()));
 		labels.push_back(label);
 		string content = tab["content"].getString();
-		if ( content.compare("View") == 0 ){
+		if ( content.compare(VIEW_WITH_DOCUMENTS_DETAIL) == 0 ){
+			Object config = tab["config"].getObject();
+			string design = config["design"].getString();
+			string view = config["view"].getString();
+			string startkey_from = config["startkey_with_value_of"].getString();
+			string endkey_from = config["endkey_with_value_of"].getString();
+			string docs_of_type = config["shows_docs_of_type"].getString();
+
+			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
+			del->setIncludeDocs(true);
+			del->deserializeUIElements(config);
+			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
+		}
+		else if ( content.compare(VIEW) == 0 ){
 			
 			Object config = tab["config"].getObject();
 			string design = config["design"].getString();
@@ -185,14 +217,14 @@ void Detail::deserializeUIElements(Object obj)
 			//del->addColumn("title", L"Title", EDIT);
 			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
 
-		} else if( content.compare("Table") == 0 ){
+		} else if( content.compare(TABLE) == 0 ){
 			ArrayOfObjectsDelegate* delegate = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
 			delegate->deserializeUIElements(detailPages[i], tab["config"].getObject());
 			
-		} else if ( content.compare("Text") == 0 ){
+		} else if ( content.compare(TEXT_DETAIL) == 0 ){
 			CreateTextareaForPage(s2ws(name).c_str(), i);
-		} else if ( content.compare("Attachments") == 0 ){
+		} else if ( content.compare(ATTACHMENTS_DETAIL) == 0 ){
 			CreateAttachmentsForPage(i);
 		}
 	}
@@ -203,7 +235,7 @@ void Detail::deserializeUIElements(Object obj)
 	ShowWindow(tabControl, SW_SHOW);
 
 	if ( getDetailPageCount() > 0 ){
-		ShowPage(0);
+		ShowWindow(detailPages[0], SW_SHOW);
 	}
 
 }
@@ -226,21 +258,21 @@ Array Detail::serializeUIElements()
 		tab["label"] = labels[i];
 		if ( contentType[i] == TABLE_CONTENT ){
 			tab["name"] = ws2s(fieldName[i]);
-			tab["content"] = Value("Table");
+			tab["content"] = Value(TABLE);
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
 			tab["config"] = delegate->serializeUIElements();
 
 		} else if (contentType[i] == TEXTAREA_CONTENT ){
 			tab["name"] = ws2s(fieldName[i]);
-			tab["content"] = Value("Text");
+			tab["content"] = Value(TEXT_DETAIL);
 		} else if ( contentType[i] == VIEW_CONTENT ){
 			tab["content"] = "View";
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
 			tab["config"] = delegate->serializeUIElements();
 		} else if ( contentType[i] == ATTACHMENTS ){
-			tab["content"] = "Attachments";
+			tab["content"] = ATTACHMENTS_DETAIL;
 		}
 		tabs.push_back(tab);
 
@@ -325,7 +357,8 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			}
 
 			if ( self->detailPages[nTabItem] != NULL ){
-				self->ShowPage(nTabItem);
+				//self->ShowPage(nTabItem);
+				ShowWindow(self->detailPages[nTabItem], SW_SHOW);
 				//ShowWindow(self->detailPages[nTabItem], SW_SHOW);
 			}
             
@@ -640,7 +673,7 @@ void Detail::LoadDocument(Object obj){
 
 
 Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
-	int page = DETAIL_START_ID - changedFieldId;
+	int page = changedFieldId - DETAIL_START_ID;
 	if ( page >= 0 && page < getDetailPageCount() && contentType[page] != ATTACHMENTS ){
 		wchar_t* field = fieldName[page];
 		string f = ws2s(field);

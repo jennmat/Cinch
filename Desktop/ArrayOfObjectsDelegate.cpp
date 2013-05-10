@@ -185,11 +185,6 @@ bool ArrayOfObjectsDelegate::allowNewColumns(){
 }
 
 void ArrayOfObjectsDelegate::prepareNewRow(int row){
-	vector<wstring> rowData;
-	for(unsigned int i=0; i<fields.size(); i++){
-		rowData.push_back(L"");
-	}
-	//data.push_back(rowData);
 	data.push_back(Value());
 	rowCount++;
 }

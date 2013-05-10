@@ -44,9 +44,9 @@ class Database{
       vector<Document> listDocuments();
 	  Object listViews();
 	  
-	  Object viewResults(const string& design, const string& view, int limit);
-      Object viewResults(const string& design, const string& view, int limit, int skip);
-	  Object viewResults(const string& design, const string& view, Value& startKey, Value& endKey);
+	  Object viewResults(const string& design, const string& view, int limit, bool includeDocs);
+      Object viewResults(const string& design, const string& view, int limit, int skip, bool includeDocs);
+	  Object viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs=false);
       Object viewResultsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit, int skip);
 
 	  Document getDocument(const string&, const string &rev="");

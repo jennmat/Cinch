@@ -11,6 +11,7 @@ using namespace JsonBox;
 #define TABLE_CONTENT 2000
 #define TEXTAREA_CONTENT 2001
 #define VIEW_CONTENT 2002
+#define VIEW_WITH_DOCUMENTS_CONTENT 2004
 #define ATTACHMENTS 2003
 
 #define GRID_COLUMNS_CHANGED WM_USER + 10489
@@ -47,6 +48,7 @@ public:
 	void CreateTableForPage(const wchar_t*, GridDelegate* delegate, int i);
 	void CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegate, int i);
 	void CreateTextareaForPage(const wchar_t*, int i);
+	void CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* delegate, int i);
 	void CreateAttachmentsForPage(int i);
 	void InitializePage(int i);
 	HWND GetDetailPage(int i);
