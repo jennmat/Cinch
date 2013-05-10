@@ -41,7 +41,7 @@ void CouchViewDelegate::loadViewResults(){
 	rownums = new int[PAGESIZE];
 	docids = new string[PAGESIZE];
 
-	memset(data, NULL, rowCount);
+	memset(data, NULL, PAGESIZE);
 
 	int i = 0;
 	if ( viewResults["total_rows"].getInt() > 0 ){
