@@ -15,7 +15,6 @@ private:
 	HWND hWnd;
 	HBRUSH hbrBkgnd;
 	Form* form;
-	Object loadedForm;
 	string type;
 	
 	Connection conn;
@@ -23,7 +22,9 @@ private:
 public:
 	ConditionManager* conditionManager;
 	Array tabsForUpdate;
-
+	Object formWithUpdates;
+	Object loadedForm;
+	
 	CinchDesigner(HWND);
 
 	Form* getForm();

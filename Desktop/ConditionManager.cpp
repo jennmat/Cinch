@@ -111,67 +111,61 @@ void ConditionManager::addEmptyCondition(string _type, HWND parent){
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
 
-	stringstream template_id;
-	template_id << "template/" << type;
-	Document doc = db.getDocument(template_id.str());
-	Value v = doc.getData();
-	if ( v.isObject() ){
-		Object templ = v.getObject();
-		if ( templ["fields"].isArray() ){
-			Array fields = templ["fields"].getArray();
-			vector<Object>* fieldsVector = new vector<Object>();
+	vector<Object>* fieldsVector = new vector<Object>();
 
-			HWND fieldCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-				0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_FIELD, GetModuleHandle(0), NULL);
+	HWND fieldCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_FIELD, GetModuleHandle(0), NULL);
 
-			HWND compareCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
-				0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_SORT, GetModuleHandle(0), NULL);
+	HWND compareCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, 0, 0, parent, (HMENU)IDC_ADD_VIEW_SORT, GetModuleHandle(0), NULL);
 
-			ShowWindow(fieldCombo, SW_HIDE);
-			ShowWindow(compareCombo, SW_HIDE);
-			SetWindowFont(fieldCombo, DEFAULT_FONT, false);
-			SetWindowFont(compareCombo, DEFAULT_FONT, false);
+	ShowWindow(fieldCombo, SW_HIDE);
+	ShowWindow(compareCombo, SW_HIDE);
+	SetWindowFont(fieldCombo, DEFAULT_FONT, false);
+	SetWindowFont(compareCombo, DEFAULT_FONT, false);
+	
+	Object results = db.viewResults("all-attributes", "by-document-type", Value(_type), Value(_type), true);
+	Array rows = results["rows"].getArray();
+	for(unsigned i=0; i<rows.size(); i++){
+		Object row = rows[i].getObject();
+		Object doc = row["doc"].getObject();
 
-			for(unsigned i=0; i<fields.size(); i++){
-				Object field = fields[i].getObject();
-				string name = field["name"].getString();
-				string label = field["label"].getString();
+		string name = doc["_id"].getString();
+		string label = doc["label"].getString();
 
-				wstring wlabel = s2ws(label);
+		wstring wlabel = s2ws(label);
 
-				fieldsVector->push_back(field);
+		fieldsVector->push_back(doc);
 
-				SendMessage(fieldCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+		SendMessage(fieldCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
 				
-				SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+		SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
 
-			}
-
-			vector<string>* compareOperators = new vector<string>();
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is empty");
-			compareOperators->push_back("empty");
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not empty");
-			compareOperators->push_back("notempty");
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
-			compareOperators->push_back("==");
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
-			compareOperators->push_back("!=");
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is greater than");
-			compareOperators->push_back(">");
-			SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is less than");
-			compareOperators->push_back("<");
-		
-			SetWindowLong(compareCombo, GWL_USERDATA, (ULONG_PTR)compareOperators);
-
-			Condition* c = new Condition;
-			c->fieldCombo = fieldCombo;
-			c->compareCombo = compareCombo;
-			c->value = NULL;
-			int a = conditions->size();
-
-			conditions->push_back(c);
-		}
 	}
+
+	vector<string>* compareOperators = new vector<string>();
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is empty");
+	compareOperators->push_back("empty");
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not empty");
+	compareOperators->push_back("notempty");
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is equal to");
+	compareOperators->push_back("==");
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is not equal to");
+	compareOperators->push_back("!=");
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is greater than");
+	compareOperators->push_back(">");
+	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is less than");
+	compareOperators->push_back("<");
+		
+	SetWindowLong(compareCombo, GWL_USERDATA, (ULONG_PTR)compareOperators);
+
+	Condition* c = new Condition;
+	c->fieldCombo = fieldCombo;
+	c->compareCombo = compareCombo;
+	c->value = NULL;
+	int a = conditions->size();
+
+	conditions->push_back(c);
 }
 
 vector<Condition *>* ConditionManager::getConditions(){

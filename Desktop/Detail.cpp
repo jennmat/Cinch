@@ -192,7 +192,7 @@ void Detail::deserializeUIElements(Object obj)
 			if ( !config["columns"].isArray() ){
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);
-				Object results = db.viewResults("all-objects", "by-name", Value(docs_of_type), Value(docs_of_type));
+				Object results = db.viewResults("all-document-types", "by-name", Value(docs_of_type), Value(docs_of_type));
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
 					if ( rows.size() > 0 ){

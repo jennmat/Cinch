@@ -100,17 +100,20 @@ struct FileWatchController {
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
 //#define DATABASE "cinch-business-starter"
-//#define DATABASE "cinch-starter"
-#define DATABASE "bugs2"
+#define DATABASE "cinch-starter"
+//#define DATABASE "hvac"
 
 #define DATEPICKER "DatePicker"
 #define NUMBER "Number"
 #define YESNO "YesNo"
 #define RADIO "Radio"
-#define MULTILINE "Multiline"
 #define EDIT "Edit"
 #define REFERENCE "Reference"
 #define COMBO "Combo"
+
+#define MULTILINE "multiline"
+#define STRING "string"
+#define DOCUMENT "document"
 
 #define WM_NEW_DATA_ARRIVED WM_USER+140
 #define WM_ATTACHMENTS_UPLOADED WM_USER+141

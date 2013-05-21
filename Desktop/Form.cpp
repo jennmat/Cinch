@@ -101,23 +101,41 @@ void Form::deserializeForm(HWND parent, Value v){
 	Object o = v.getObject();
 	Array fields = o["fields"].getArray();
 
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
 	for(unsigned int i=0; i<fields.size(); i++){
-		Object field = fields[i].getObject();
+
+		string id = fields[i].getString();
+		Object field = db.getDocument(id).getData().getObject();
+		
 		string label;
 		if( field["label"].isString() ){
 			label = field["label"].getString();
 		} else {
 			label = field["name"].getString();
 		}
-		string name = field["name"].getString();
+		string name = field["_id"].getString();
+
+		if ( name.compare("id") == 0 ) name = "_id";
 		wstring wlabel =s2ws(label);
-		string type = field["cinch_type"].getString();
+		string type = field["type"].getString();
 		Value config;
 		if ( field["config"].isObject() ){
 			config = field["config"].getObject();
 		}
 		
+		/* Find the base type */
+		Object o = db.getDocument(type).getData().getObject();
+		string baseType= type;
+		while ( o["type"].getString().compare(baseType) != 0 ){
+			baseType = o["type"].getString();
+			o = db.getDocument(type).getData().getObject();
+		}
 
+		
+
+	
 		wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
 		memset(wclabel, 0, label.length() + sizeof(wchar_t));
 		wcscpy_s(wclabel, label.length()+sizeof(wchar_t), wlabel.c_str());
@@ -125,7 +143,32 @@ void Form::deserializeForm(HWND parent, Value v){
 
 		FormField* formField;
 
-		if ( type.compare(DATEPICKER) == 0 ){
+		if ( baseType.compare(STRING) == 0){
+			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
+		} else if ( baseType.compare(MULTILINE) == 0 ){
+			formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel);
+		} else if ( baseType.compare(DOCUMENT) == 0 ){
+			Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
+			Array rows = results["rows"].getArray();
+			if ( rows.size() > 0 ){
+				Object row = rows[0].getObject();
+				Object doc = row["doc"].getObject();
+				string design = doc["design_name"].getString();
+				string view = doc["view_name"].getString();
+
+				Object config;
+				Object pick;
+				pick["design"] = design;
+				pick["view"] = view;
+				config["pick_from"] = pick;
+
+				formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(config));
+			}
+
+			
+		}
+
+		/*if ( type.compare(DATEPICKER) == 0 ){
 			formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( type.compare(RADIO) == 0 ){
 			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), name, wclabel);
@@ -143,7 +186,7 @@ void Form::deserializeForm(HWND parent, Value v){
 			formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, config);
 		} else {
 			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
-		}
+		}*/
 
 		addField(formField);
 		int a = 1;
@@ -160,18 +203,12 @@ Object Form::serializeFormToObject(Object obj){
 	Array fields;
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* fld = layout.getField(i);
-		Object f;
-		char label[80];
-		wchar_t wlab[80];
-		GetWindowText(fld->getLabel(), wlab, 80);
-		size_t t;
-		wcstombs_s(&t, label, wlab, 80);
-
-		f["label"] = Value(label);
-		f["cinch_type"] = Value(fld->getControlType());
-		f["name"] = Value(fld->getName());
-		f["config"] = fld->getConfig();
-		fields.push_back(f);
+		if ( fld->getName().compare("_id") == 0 ){
+			fields.push_back("id");
+		} else {
+			fields.push_back(fld->getName());
+		}
+		
 	}
 
 	obj["fields"] = fields;
@@ -237,7 +274,7 @@ void Form::SaveDocument(int changedFieldId){
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* field = layout.getField(i);
 		if ( field->controlChildId == changedFieldId ){
-			//obj = field->storeValue(obj);
+			obj = field->storeValue(obj);
 		}
 	}
 

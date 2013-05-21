@@ -34,7 +34,7 @@ void CouchViewDelegate::loadViewResults(){
 	s = s.substr(ix);
 
 
-	viewResults = db.viewResults(s, ws2s(view), PAGESIZE);
+	viewResults = db.viewResults(s, ws2s(view), PAGESIZE, 0);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wchar_t*[PAGESIZE];
@@ -105,7 +105,7 @@ void CouchViewDelegate::loadPage(int row){
 	Object obj;
 	int i;
 	if ( j < 0 ){
-		obj = db.viewResults(s, ws2s(view), PAGESIZE, skip-1);
+		obj = db.viewResults(s, ws2s(view), PAGESIZE, skip-1, false);
 		i = skip-1;
 	} else {
 		obj = db.viewResultsFromStartDocId(s, ws2s(view), Value(ws2s(data[j%PAGESIZE])), docids[j%PAGESIZE], PAGESIZE, skip);
@@ -144,7 +144,7 @@ bool CouchViewDelegate::stickyHeaders(){
 }
 
 bool CouchViewDelegate::drawHorizontalGridlines(){
-	return false;
+	return true;
 }
 
 bool CouchViewDelegate::drawVerticalGridlines(){
@@ -226,7 +226,7 @@ void CouchViewDelegate::didReloadData(){
 	if ( viewInitialized == false ) return;
 	if ( selectedDocId.length() == 0 ) return;
 	bool found = false;
-	for(int i=0; i<PAGESIZE; i++){
+	for(int i=0; i<PAGESIZE && !found; i++){
 		if ( docids[i].compare(selectedDocId) == 0 ){
 			grid->SetActiveRow(i+1, true);
 			grid->ScrollRowIntoView(i+1);
@@ -235,7 +235,7 @@ void CouchViewDelegate::didReloadData(){
 	}
 	if ( !found ){
 		if ( rowCount > 0 ){
-			grid->SetActiveRow(1, true);
+			grid->SetActiveRow(1);
 			grid->ScrollRowIntoView(1);
 		}
 	}

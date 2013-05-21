@@ -407,7 +407,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			Connection conn;
 			Database db = conn.getDatabase(DATABASE);
-			Object r = db.viewResults("all-objects", "by-label", 100, 0);
+			Object r = db.viewResults("all-document-types", "by-label", 100, 0);
 			Array rows = r["rows"].getArray();
 			unsigned int i = 0;
 			for(; i<rows.size(); i++){
@@ -422,8 +422,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				InsertMenu(hPopupMenu, i, MF_BYPOSITION | MF_STRING, IDD_ADD_OBJECT, wkey.c_str());
             }
 			
-
-			InsertMenu(hPopupMenu, i+1, MF_BYPOSITION | MF_STRING, IDC_ADD_DOCUMENT_TYPE, L"Document Type");
+			InsertMenu(hPopupMenu, ++i, MF_BYPOSITION | MF_STRING, IDC_ADD_DOCUMENT_TYPE, L"Document Type");
 
 			MENUINFO mi;
 			memset(&mi, 0, sizeof(mi));
@@ -482,11 +481,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		unsigned int idx = wParam;
 		if ( idx >= objectTypes.size() ){
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
+			int pos = idx - objectTypes.size();
+			if ( pos == 0 ){
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
+			}
+			
 		} else {
 			Object objectDefinition = objectTypes[idx];
 			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-			designercontrol->NewDocument(DATABASE, objectDefinition["name"].getString());
+			designercontrol->NewDocument(DATABASE, objectDefinition["_id"].getString());
 		}
 		
 		}
@@ -566,7 +569,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		Connection conn;
 		Database db = conn.getDatabase(DATABASE);
-		Object r = db.viewResults("all-objects", "by-label", 100, 0);
+		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
 	
 		vector<string>* ids = new vector<string>();
 
@@ -579,7 +582,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Document doc = db.getDocument(row["id"].getString());
 			Object obj = doc.getData().getObject();
 			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
-			ids->push_back(obj["name"].getString());
+			ids->push_back(obj["_id"].getString());
 
         }
 
@@ -619,36 +622,31 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 					/* Setup the sort combo */
 
-					stringstream template_id;
-					template_id << "template/" << type;
-					Connection conn;
+ 					Connection conn;
 					Database db = conn.getDatabase(DATABASE);
+					vector<Object>* fieldsVector = new vector<Object>();
 
-					Document doc = db.getDocument(template_id.str());
-					Value v = doc.getData();
-					if ( v.isObject() ){
-						Object templ = v.getObject();
-						if ( templ["fields"].isArray() ){
-							Array fields = templ["fields"].getArray();
+					Object results = db.viewResults("all-attributes", "by-document-type", Value(type), Value(type), true);
+					Array rows = results["rows"].getArray();
+					for(unsigned i=0; i<rows.size(); i++){
+						Object row = rows[i].getObject();
+						Object doc = row["doc"].getObject();
 
-							vector<Object>* fieldsVector = new vector<Object>();
+						string name = doc["_id"].getString();
+						string label = doc["label"].getString();
 
-							for(unsigned i=0; i<fields.size(); i++){
-								Object field = fields[i].getObject();
-								string name = field["name"].getString();
-								string label = field["label"].getString();
+						wstring wlabel = s2ws(label);
 
-								wstring wlabel = s2ws(label);
+						fieldsVector->push_back(doc);
 
-								fieldsVector->push_back(field);
-
-								SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
+						SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
 				
-								SetWindowLong(sortCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
 
-							}
-						}
 					}
+					SetWindowLong(sortCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
+
+
+					
 						
 				}
 				else if ( wmId == IDC_ADD_VIEW_FIELD || IDC_ADD_VIEW_SORT ){
@@ -685,7 +683,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
 			Object sortFields = (*sortFieldsVector)[sortIdx];
 
-			string sortby = sortFields["name"].getString();
+			string sortby = sortFields["_id"].getString();
 			string sortbylabel = sortFields["label"].getString();
 
 			int namelen = GetWindowTextLength(newViewNameEdit) + 1;
@@ -760,7 +758,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-// Message handler for about box.
+
 INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);

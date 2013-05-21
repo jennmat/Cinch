@@ -218,7 +218,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 			wchar_t name[80];
 			GetClassName(w, name, 80);
 			if ( wcscmp(name, TEXT("ComboBox")) == 0 ){
-				//self->getForm()->SaveDocument(wmId);
+				self->getForm()->SaveDocument(wmId);
 			}
 		}
 
@@ -285,28 +285,69 @@ void CinchDesigner::MoveField(HWND parent)
 
 INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
-	CinchDesigner* _this = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+	CinchDesigner* self = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
 	HWND hWnd = designerHWnd;
 
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		{
-
+		{	
+			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
 			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
-			int count = _this->getForm()->getLayout()->getFieldCount();
-			for(int i=0; i<count; i++){
-				FormField* field = _this->getForm()->getLayout()->getField(i);
-				HWND label = field->getLabel();
-				wchar_t* title = new wchar_t[80];
-				memset(title, 0, 80);
-				GetWindowText(label, title, 80);
-				SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM) title); 
-		
+			
+			ListBox_ResetContent(hiddenFields);
+			ListBox_ResetContent(visibleFields);
+
+			self->formWithUpdates = self->loadedForm;
+			
+
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+
+			Object results = db.viewResults("all-attributes", "by-document-type", Value(self->getType()), Value(self->getType()), true);
+			
+			int count = self->getForm()->getLayout()->getFieldCount();
+					
+			if ( results["rows"].isArray() ){
+				Array rows = results["rows"].getArray();
+				for(unsigned int i=0; i<rows.size(); i++){
+					Object obj = rows[i].getObject();
+					Object doc = obj["doc"].getObject();
+					string label = doc["label"].getString();
+					string name = doc["_id"].getString();
+
+					int len = label.size() + sizeof(wchar_t);
+					wchar_t* t = new wchar_t[len];
+
+					wcscpy_s(t, len, s2ws(label).c_str());
+
+					bool found = false;
+
+					for(int i=0; i<count; i++){
+						FormField* field = self->getForm()->getLayout()->getField(i);
+						if ( field->getName().compare(name) == 0 ){
+							int index = ListBox_AddString(visibleFields, t);
+							ListBox_SetItemData(visibleFields, index, new Object(doc));
+							found = true;
+						}
+						
+					}
+
+					if ( !found ){
+						int index = ListBox_AddString(hiddenFields, t);
+						ListBox_SetItemData(hiddenFields, index, new Object(doc));
+					}
+
+
+			
+				}
+
+				//SetWindowLongPtr(hiddenFields, GWL_USERDATA, (ULONG_PTR)new Array(rows));
 			}
-		
+
+			
+
 		
 			return (INT_PTR)TRUE;
 		}
@@ -317,12 +358,26 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		}
 		if (LOWORD(wParam) == IDOK)
 		{
-			
-			_this->getForm()->show(hWnd, GetModuleHandle(0));
-			if( _this->getForm()->getDelegate() != 0 ){
+			Array fields = Array();
+			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
+			int count = ListBox_GetCount(visibleFields);
+			for(int i=0; i<count; i++){
+				ULONG_PTR data = ListBox_GetItemData(visibleFields, i);
+				Object* doc = (Object*)data;
 
-				_this->SaveForm();
+				int a =1;
+				fields.push_back((*doc)["_id"].getString());
 			}
+
+			self->formWithUpdates["fields"] = fields;
+			self->loadedForm = self->formWithUpdates;
+			self->getForm()->deserializeForm(designerHWnd, Value(self->loadedForm));
+			//self->getForm()->show(hWnd, GetModuleHandle(0));
+			//if( self->getForm()->getDelegate() != 0 ){
+
+			//	
+			//}
+			self->SaveForm();
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}
@@ -331,33 +386,37 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
 			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
 
-		
 			int selected = ListBox_GetCurSel(hiddenFields);
 			if( selected != LB_ERR ){
 				wchar_t text[80];
 				ListBox_GetText(hiddenFields, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(hiddenFields, selected);
+
+				int pos = ListBox_AddString(visibleFields, text);
+				ListBox_SetItemData(visibleFields, pos, data);
 				
-				int pos = (int)SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM)text); 
-				_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), ws2s(text), text));
 				ListBox_DeleteString(hiddenFields, selected);
 
 			}
 		} 
 		else if ( LOWORD(wParam) == IDC_REMOVE_FROM_VISIBLE_FIELDS )
 		{
-			HWND hidden = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
-			HWND visible = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
+			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
+			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
 
 		
-			int selected = ListBox_GetCurSel(visible);
+			int selected = ListBox_GetCurSel(visibleFields);
 			if( selected != LB_ERR ){
 				wchar_t text[80];
-				ListBox_GetText(visible, selected, text);
-				
-				int pos = (int)SendMessage(hidden, LB_ADDSTRING, 0, (LPARAM)text); 
+				ListBox_GetText(visibleFields, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(visibleFields, selected);
 
-				ListBox_DeleteString(visible, selected);
-				_this->getForm()->getLayout()->removeField(selected);
+				int pos = ListBox_AddString(hiddenFields, text);
+				ListBox_SetItemData(hiddenFields, pos, data);
+				
+				ListBox_DeleteString(visibleFields, selected);
+
+
 			}
 		}
 		else if ( LOWORD(wParam) == IDC_FIELD_UP )
@@ -368,13 +427,17 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		
 			int selected = ListBox_GetCurSel(visible);
 			if( selected != LB_ERR && selected > 0 ){
-				wchar_t text[80];
+				wchar_t* text = new wchar_t[ListBox_GetTextLen(visible, selected)];
 				ListBox_GetText(visible, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(visible, selected);
+
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected-1, text);
+				ListBox_SetItemData(visible, selected-1, data);
+				//ListBox_InsertItemData(visible, selected-1, data);
 				ListBox_SetCurSel(visible, selected-1);
 
-				_this->getForm()->getLayout()->swapFields(selected, selected-1);
+				
 				
 				
 			}
@@ -388,13 +451,15 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			int selected = ListBox_GetCurSel(visible);
 			int count = ListBox_GetCount(visible);
 			if( selected != LB_ERR && selected < count -1 ){
-				wchar_t text[80];
+				wchar_t* text = new wchar_t[ListBox_GetTextLen(visible, selected)];
 				ListBox_GetText(visible, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(visible, selected);
+
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected+1, text);
+				ListBox_SetItemData(visible, selected+1, data);
 				ListBox_SetCurSel(visible, selected+1);
 
-				_this->getForm()->getLayout()->swapFields(selected, selected+1);
 				
 			}
 
@@ -433,7 +498,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		Connection conn;
 		Database d = conn.getDatabase(DATABASE);
-		Object obj = d.viewResults("all-objects", "by-label", 10, 0);
+		Object obj = d.viewResults("all-document-types", "by-label", 10, 0);
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
 			for(unsigned int i=0; i<results.size(); i++){
@@ -520,7 +585,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				HWND typeCombo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 				int selected = SendMessage(GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE), CB_GETCURSEL, 0, 0);
 
-				CinchDesigner* _this = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
+				CinchDesigner* self = (CinchDesigner *)GetWindowLong(designerHWnd, GWL_USERDATA);
 				int type = SendMessage(typeCombo, CB_GETCURSEL, 0, 0);
 				FormField* field;
 				switch(type){
@@ -616,7 +681,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					break;
 				}
-				_this->getForm()->addField(field);
+				self->getForm()->addField(field);
 			}
 
 			EndDialog(hDlg, LOWORD(wParam));
@@ -684,7 +749,7 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 								stringstream label;
 
-								Object objectResults = db.viewResults("all-objects", "by-name", Value(source_document_type), Value(source_document_type));
+								Object objectResults = db.viewResults("all-document-types", "by-name", Value(source_document_type), Value(source_document_type));
 								if ( objectResults["rows"].isArray() ){
 									Array rows = objectResults["rows"].getArray();
 									if ( rows.size() > 0 ){
@@ -852,8 +917,8 @@ void CinchDesigner::SaveForm(){
 
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
-
-	Document newDoc = db.createDocument(Value(o), "template/"+ getType());
+	o["target_type"] = getType();
+	Document newDoc = db.createDocument(Value(o));
 	setLoadedForm(newDoc.getData().getObject());
 }
 
@@ -986,12 +1051,17 @@ void CinchDesigner::loadForm(string database, string t){
 		type = t;
 		Connection conn;
 		Database db = conn.getDatabase(database);
-		try {
-			Document doc = db.getDocument("template/" + type);
-			Value v = doc.getData();
-			loadedForm = v.getObject();
-			form->deserializeForm(hWnd, v);
-		}catch(Exception e){
+		Object results = db.viewResults("all-templates", "by-target-type", Value(type), Value(type), true);
+		Array rows = results["rows"].getArray();
+		if ( rows.size() > 0 ){
+			Object row = rows[0].getObject();
+			Object doc = row["doc"].getObject();
+			loadedForm = doc;
+			form->deserializeForm(hWnd, doc);
+
+		} else {
+			loadedForm = Object();
+			form->deserializeForm(hWnd, Value());
 		}
 	}
 }
