@@ -124,7 +124,7 @@ void ConditionManager::addEmptyCondition(string _type, HWND parent){
 	SetWindowFont(fieldCombo, DEFAULT_FONT, false);
 	SetWindowFont(compareCombo, DEFAULT_FONT, false);
 	
-	Object results = db.viewResults("all-attributes", "by-document-type", Value(_type), Value(_type), true);
+	Object results = db.viewResults("all-attributes", "by-type", Value(_type), Value(_type), true);
 	Array rows = results["rows"].getArray();
 	for(unsigned i=0; i<rows.size(); i++){
 		Object row = rows[i].getObject();

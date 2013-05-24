@@ -10,12 +10,6 @@ TCHAR detailClassName[] = _T("CinchDetail");
 
 #define DETAIL_START_ID 14
 
-#define VIEW "View"
-#define VIEW_WITH_DOCUMENTS_DETAIL "ViewWithDocuments"
-#define TABLE "Table"
-#define TEXT_DETAIL "Text"
-#define ATTACHMENTS_DETAIL "Attachments"
-
 HWND detailHWnd;
 
 INT_PTR CALLBACK AddColumn(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -158,10 +152,18 @@ void Detail::deserializeUIElements(Object obj)
 
 	Array tabs = obj["tabs"].getArray();
 
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
 	for(unsigned int i=0; i<tabs.size(); i++){
 		Object tab = tabs[i].getObject();
-		string name = tab["name"].getString();
+		string field = tab["field"].getString();
 		string label = tab["label"].getString();
+		Document doc = db.getDocument(field);
+		Object obj = doc.getData().getObject();
+
+		string name = obj["_id"].getString();
+		
 		wstring wtitle = s2ws(label);
 		addDetailPage(LPWSTR(wtitle.c_str()));
 		labels.push_back(label);
@@ -257,7 +259,7 @@ Array Detail::serializeUIElements()
 		Object tab;
 		tab["label"] = labels[i];
 		if ( contentType[i] == TABLE_CONTENT ){
-			tab["name"] = ws2s(fieldName[i]);
+			tab["field"] = ws2s(fieldName[i]);
 			tab["content"] = Value(TABLE);
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();

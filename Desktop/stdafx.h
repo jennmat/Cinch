@@ -114,6 +114,16 @@ struct FileWatchController {
 #define MULTILINE "multiline"
 #define STRING "string"
 #define DOCUMENT "document"
+#define DATETYPE "date"
+#define ID		"id"
+
+
+#define VIEW "View"
+#define VIEW_WITH_DOCUMENTS_DETAIL "ViewWithDocuments"
+#define TABLE "Table"
+#define TEXT_DETAIL "Text"
+#define ATTACHMENTS_DETAIL "Attachments"
+
 
 #define WM_NEW_DATA_ARRIVED WM_USER+140
 #define WM_ATTACHMENTS_UPLOADED WM_USER+141

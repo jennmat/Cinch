@@ -626,7 +626,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					Database db = conn.getDatabase(DATABASE);
 					vector<Object>* fieldsVector = new vector<Object>();
 
-					Object results = db.viewResults("all-attributes", "by-document-type", Value(type), Value(type), true);
+					Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);
 					Array rows = results["rows"].getArray();
 					for(unsigned i=0; i<rows.size(); i++){
 						Object row = rows[i].getObject();

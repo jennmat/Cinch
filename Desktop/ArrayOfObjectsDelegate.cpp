@@ -234,15 +234,22 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 	editorConfigs.clear();
 	editorTypes.clear();
 	editors.clear();
+
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
 	if( obj["columns"].isArray() ){
 		Array columns = obj["columns"].getArray();
 		for(unsigned int i=0; i<columns.size(); i++){
 			Object col = columns[i].getObject();
-			fields.push_back(col["name"].getString());
-			editorTypes.push_back(col["cinch_type"].getString());
+			string field = col["field"].getString();
+			Object fieldConfig = db.getDocument(field).getData().getObject();
+
+			fields.push_back(fieldConfig["_id"].getString());
+			editorTypes.push_back(fieldConfig["cinch_type"].getString());
 			editors.push_back(NULL);
 			editorConfigs.push_back(col["config"]);
-			titles.push_back(s2ws(col["label"].getString()));
+			titles.push_back(s2ws(fieldConfig["label"].getString()));
 			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
 				widths.push_back(col["width"].getInt());
 			} else {
@@ -257,9 +264,7 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	Array columns;
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
-		col["name"] = Value(fields[i]);
-		col["cinch_type"] = editorTypes[i];
-		col["label"] =ws2s(titles[i]);
+		col["field"] = Value(fields[i]);
 		col["width"] = Value(250);
 		columns.push_back(col);
 	}

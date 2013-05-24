@@ -64,6 +64,39 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name,
 	return field;
 }
 
+
+
+FormField* FormField::createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
+{
+	static int fieldId = 1199;
+
+	FormField* field = new IdentifierField();
+
+	field->controlChildId = fieldId++;
+
+	HFONT hFont=DEFAULT_FONT;
+	
+	if ( !bare ){
+		field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
+			0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+		SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
+		SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+	}
+
+	
+	field->controlType = "Edit";
+	field->name = name;
+	field->config = Value();
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP | ES_AUTOHSCROLL,
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
+
+	NotifyParentOfEnterKey(field->control);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	return field;
+}
+
 void ReferenceField::setupValues(){
 	vector<string>* ids = new vector<string>();
 
@@ -390,6 +423,48 @@ string EditField::serializeForJS(){
 	return rc.str();
 
 }
+
+
+
+void IdentifierField::loadValue(Object obj){
+	string n = "_id";
+	if ( obj[n.c_str()].isString() ){
+		string val = obj[n.c_str()].getString();
+		wstring valw =s2ws(val);
+		LPCWSTR r = valw.c_str();
+		SetWindowText(getControl(), r); 
+	}
+}
+
+void IdentifierField::clearValue(){
+	SetWindowText(getControl(), L"");
+}
+
+Object IdentifierField::storeValue(Object obj){
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
+	
+	GetWindowText(getControl(), str, len);
+	string key = "_id";
+	string value =ws2s(str);
+	obj[key.c_str()] = value;	
+	return obj;
+}
+
+string IdentifierField::serializeForJS(){
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
+	
+	GetWindowText(getControl(), str, len);
+	string key = "_id";
+	string value =ws2s(str);
+	stringstream rc;
+	rc << "'" << value << "'";
+	return rc.str();
+
+}
+
+
 
 
 

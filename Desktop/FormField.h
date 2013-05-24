@@ -40,6 +40,7 @@ public:
 	virtual string toString(Object obj);
 
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare=false);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
@@ -60,6 +61,14 @@ public:
 };
 
 class EditField : public FormField {
+public:
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+	string serializeForJS();
+};
+
+class IdentifierField : public FormField {
 public:
 	void loadValue(Object obj);
 	void clearValue();

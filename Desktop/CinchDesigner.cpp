@@ -223,7 +223,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		}
 
 		if ( wmEvent == EN_KILLFOCUS || wmEvent == NM_KILLFOCUS ){
-			self->getForm()->SaveDocument(wmId);
+				self->getForm()->SaveDocument(wmId);
 		} else {
 			switch (wmId)
 			{
@@ -282,6 +282,19 @@ void CinchDesigner::MoveField(HWND parent)
 
 }
 
+string getBaseType(string type){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
+	Object o = db.getDocument(type).getData().getObject();
+	string baseType= type;
+	while ( o["type"].getString().compare(baseType) != 0 ){
+		baseType = o["type"].getString();
+		o = db.getDocument(type).getData().getObject();
+	}
+
+	return o["type"].getString();
+}
 
 INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -305,17 +318,24 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			Connection conn;
 			Database db = conn.getDatabase(DATABASE);
 
-			Object results = db.viewResults("all-attributes", "by-document-type", Value(self->getType()), Value(self->getType()), true);
+			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
 			int count = self->getForm()->getLayout()->getFieldCount();
 					
 			if ( results["rows"].isArray() ){
 				Array rows = results["rows"].getArray();
-				for(unsigned int i=0; i<rows.size(); i++){
-					Object obj = rows[i].getObject();
-					Object doc = obj["doc"].getObject();
+				Object templ = rows[0]["doc"].getObject();
+				Array fields = templ["fields"].getArray();
+
+				for(unsigned int i=0; i<fields.size(); i++){
+					string id = fields[i].getString();
+
+					Document d = db.getDocument(id);
+					Object doc = d.getData().getObject();
+					
+					
 					string label = doc["label"].getString();
-					string name = doc["_id"].getString();
+					string name = id;
 
 					int len = label.size() + sizeof(wchar_t);
 					wchar_t* t = new wchar_t[len];
@@ -334,13 +354,37 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 						
 					}
 
-					if ( !found ){
-						int index = ListBox_AddString(hiddenFields, t);
-						ListBox_SetItemData(hiddenFields, index, new Object(doc));
-					}
+					
+				}
 
-
+				results = db.viewResults("all-attributes", "by-type", Value(self->getType()), Value(self->getType()), true);
 			
+				if ( results["rows"].isArray() ){
+					Array rows = results["rows"].getArray();
+					for(unsigned int i=0; i<rows.size(); i++){
+						Object row = rows[i].getObject();
+						Object doc = row["doc"].getObject();
+						string name = doc["_id"].getString();
+						string label = doc["label"].getString();
+						bool found = false;
+						for(unsigned int j=0; j<fields.size(); j++){
+							if ( name.compare(fields[j].getString()) == 0 ){
+								found = true;
+							}
+						}
+						if ( !found ){
+							string baseType = getBaseType(name);
+							if ( baseType.compare("array") != 0 ){
+								int len = label.size() + sizeof(wchar_t);
+								wchar_t* t = new wchar_t[len];
+
+								wcscpy_s(t, len, s2ws(label).c_str());
+
+								int index = ListBox_AddString(hiddenFields, t);
+								ListBox_SetItemData(hiddenFields, index, new Object(doc));
+							}
+						}
+					}
 				}
 
 				//SetWindowLongPtr(hiddenFields, GWL_USERDATA, (ULONG_PTR)new Array(rows));
@@ -372,6 +416,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			self->formWithUpdates["fields"] = fields;
 			self->loadedForm = self->formWithUpdates;
 			self->getForm()->deserializeForm(designerHWnd, Value(self->loadedForm));
+			self->getForm()->ReloadDocument();
 			//self->getForm()->show(hWnd, GetModuleHandle(0));
 			//if( self->getForm()->getDelegate() != 0 ){
 
@@ -942,16 +987,106 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		
 			HWND visibleTabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
+			HWND hiddenTabs = GetDlgItem(hDlg, IDC_HIDDEN_TABS);
 			
 			loadTabLabels(self->tabsForUpdate, visibleTabs);
+
+
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+
+			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
+			
+			int count = self->getForm()->getLayout()->getFieldCount();
+					
+			if ( results["rows"].isArray() ){
+				Array rows = results["rows"].getArray();
+				Object templ = rows[0]["doc"].getObject();
+				Array tabs = templ["tabs"].getArray();
+
+				Object attrResults = db.viewResults("all-attributes", "by-type", Value(self->getType()), Value(self->getType()), true);
+			
+				Array attributeRows = attrResults["rows"].getArray();
+				for(unsigned int i=0; i<attributeRows.size(); i++){
+					Object row = attributeRows[i].getObject();
+					Object doc = row["doc"].getObject();
+					string name = doc["_id"].getString();
+					string label = doc["label"].getString();
+					bool found = false;
+					for(unsigned i=0; i<tabs.size(); i++){
+						Object config = tabs[i].getObject();
+						if ( name.compare(config["name"].getString()) == 0){
+							found = true;
+						}
+					}
+					if ( !found ){
+						string baseType = getBaseType(name);
+						if ( baseType.compare("array") == 0 ){
+							int len = label.size() + sizeof(wchar_t);
+							wchar_t* t = new wchar_t[len];
+
+							wcscpy_s(t, len, s2ws(label).c_str());
+
+							int index = ListBox_AddString(hiddenTabs, t);
+							ListBox_SetItemData(hiddenTabs, index, new Object(doc));
+						}
+					}
+				}
+				
+			}
+
+
+
 			
 		return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDOK ){
 
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+
 			Object form = self->getLoadedForm();
-			form["tabs"] = self->tabsForUpdate;
+			
+			Array tabs = Array();
+			HWND visibleTabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
+			int count = ListBox_GetCount(visibleTabs);
+			for(int i=0; i<count; i++){
+				ULONG_PTR data = ListBox_GetItemData(visibleTabs, i);
+				Object* doc = (Object* )data;
+				Object obj = *doc;
+				if( obj["type"].getString().compare("array") == 0 ){
+					string array_content_type = obj["array_contents"].getString();
+
+					Object results = db.viewResults("all-attributes", "by-type", Value(array_content_type), Value(array_content_type), true);
+					if ( results["rows"].isArray() ){
+						Array rows = results["rows"].getArray();
+						Array columns;
+						for(unsigned int i=0; i<rows.size(); i++){
+							Object row = rows[i].getObject();
+							Object doc = row["doc"].getObject();
+							int a = 1;
+							Object column;
+							column["field"] = doc["_id"];
+							column["width"] = Value(250);
+							columns.push_back(column);
+						}
+
+						Object config;
+						config["columns"] = columns;
+						Object tab;
+						tab["config"] = config;
+						tab["content"] = TABLE;
+						tab["label"] = obj["label"];
+						tab["field"] = obj["_id"];
+
+						tabs.push_back(tab);
+					}
+				}
+			}
+
+			
+			form["tabs"] = tabs;
 			self->setLoadedForm(form);
 
 			self->getForm()->deserializeForm(designerHWnd, Value(self->getLoadedForm()));
@@ -978,8 +1113,16 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ListBox_GetText(hiddenTabs, selected, text);
 				
 				int pos = (int)SendMessage(visibleTabs, LB_ADDSTRING, 0, (LPARAM)text); 
+				ULONG_PTR data = ListBox_GetItemData(hiddenTabs, selected);
+
+				ListBox_SetItemData(visibleTabs, pos, data);
+				
+
 
 				ListBox_DeleteString(hiddenTabs, selected);
+
+				
+
 
 			}
 		} 

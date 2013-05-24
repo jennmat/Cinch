@@ -117,7 +117,6 @@ void Form::deserializeForm(HWND parent, Value v){
 		}
 		string name = field["_id"].getString();
 
-		if ( name.compare("id") == 0 ) name = "_id";
 		wstring wlabel =s2ws(label);
 		string type = field["type"].getString();
 		Value config;
@@ -145,8 +144,12 @@ void Form::deserializeForm(HWND parent, Value v){
 
 		if ( baseType.compare(STRING) == 0){
 			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
+		} else if (baseType.compare(ID) == 0 ){
+			formField = FormField::createIdentifierField(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( baseType.compare(MULTILINE) == 0 ){
 			formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel);
+		} else if ( baseType.compare(DATETYPE) == 0 ) {
+			formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( baseType.compare(DOCUMENT) == 0 ){
 			Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
 			Array rows = results["rows"].getArray();
@@ -166,6 +169,8 @@ void Form::deserializeForm(HWND parent, Value v){
 			}
 
 			
+		} else {
+			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
 		}
 
 		/*if ( type.compare(DATEPICKER) == 0 ){
@@ -203,12 +208,7 @@ Object Form::serializeFormToObject(Object obj){
 	Array fields;
 	for(int i=0; i<layout.getFieldCount(); i++){
 		FormField* fld = layout.getField(i);
-		if ( fld->getName().compare("_id") == 0 ){
-			fields.push_back("id");
-		} else {
-			fields.push_back(fld->getName());
-		}
-		
+		fields.push_back(fld->getName());
 	}
 
 	obj["fields"] = fields;
