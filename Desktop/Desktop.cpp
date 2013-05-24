@@ -925,10 +925,5 @@ DWORD WINAPI ChangesListener(LPVOID lParam){
 void Desktop::formModified(){
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
-	Object o = d->getForm()->serializeFormToObject(loadedForm);
-
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
-
-	db.createDocument(Value(o), "template/property");
+	d->SaveForm();
 }

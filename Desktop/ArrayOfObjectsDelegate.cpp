@@ -257,6 +257,9 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 			}
 		}
 	}
+
+	grid->reloadData();
+
 }
 
 Object ArrayOfObjectsDelegate::serializeUIElements(){
@@ -265,7 +268,7 @@ Object ArrayOfObjectsDelegate::serializeUIElements(){
 	for(unsigned int i=0; i<fields.size(); i++){
 		Object col;
 		col["field"] = Value(fields[i]);
-		col["width"] = Value(250);
+		col["width"] = Value(widths[i]);
 		columns.push_back(col);
 	}
 	o["columns"] = columns;
@@ -291,5 +294,11 @@ void ArrayOfObjectsDelegate::didReloadData(){
 void ArrayOfObjectsDelegate::didSelectRow(int){
 }
 
-void ArrayOfObjectsDelegate::setGrid(CinchGrid*){
+void ArrayOfObjectsDelegate::setGrid(CinchGrid* g){
+	grid = g;
+}
+
+void ArrayOfObjectsDelegate::didChangeColumnWidth(int col, int newWidth){
+	widths[col] = newWidth;
+	detail->getForm()->getDelegate()->formModified();
 }

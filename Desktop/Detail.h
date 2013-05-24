@@ -19,7 +19,6 @@ using namespace JsonBox;
 class Detail {
 private:
 	HWND detailPages[MAX_DETAIL_PAGES];
-	int contentType[MAX_DETAIL_PAGES];
 	int initialized[MAX_DETAIL_PAGES];
 	int pageCount;
 	vector<string> labels;
@@ -35,6 +34,9 @@ private:
 	IExplorerBrowser *_peb;
     
 public:
+	int contentType[MAX_DETAIL_PAGES];
+	
+
 	Detail();
 	void setForm(Form *);
 	Form* getForm();

@@ -67,6 +67,8 @@ public:
 	void willReloadData();
 	void didReloadData();
 
+	void didChangeColumnWidth(int, int);
+
 	void didSelectRow(int row);
 
 	void setGrid(CinchGrid*);

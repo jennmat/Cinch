@@ -252,3 +252,6 @@ void CouchViewDelegate::didSelectRow(int row){
 void CouchViewDelegate::setGrid(CinchGrid* g){
 	grid = g;
 }
+
+void CouchViewDelegate::didChangeColumnWidth(int, int){
+}

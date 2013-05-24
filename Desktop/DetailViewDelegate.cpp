@@ -317,3 +317,6 @@ void DetailViewDelegate::didSelectRow(int row){
 
 void DetailViewDelegate::setGrid(CinchGrid *){
 }
+
+void DetailViewDelegate::didChangeColumnWidth(int, int){
+}

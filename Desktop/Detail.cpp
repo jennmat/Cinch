@@ -383,6 +383,39 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 }
 
 
+vector<string> collectAttributes(string field){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
+	vector<string> attributes;
+
+	string baseType = "";
+	string type = field;
+
+	Object o;
+
+	do {
+		Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);
+		if ( results["rows"].isArray() ){
+			Array rows = results["rows"].getArray();
+			for(unsigned int i=0; i<rows.size(); i++){
+				Object row = rows[i].getObject();
+				Object doc = row["doc"].getObject();
+				attributes.push_back(doc["_id"].getString());
+			}
+		}
+
+		Object o = db.getDocument(type).getData().getObject();
+		baseType = o["type"].getString();
+		type = baseType;
+		o = db.getDocument(type).getData().getObject();
+
+	} while ( type.compare(baseType) != 0 );
+	
+
+	return attributes;
+}
+
 INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Detail* detail = (Detail *)GetWindowLong(detailHWnd, GWL_USERDATA);
@@ -392,8 +425,11 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 	{
 	case WM_INITDIALOG:
 		{
+			Connection conn;
+			Database db = conn.getDatabase(DATABASE);
+
 			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
-			
+			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
 
 			int currentTab = TabCtrl_GetCurSel(detail->getTabControlHwnd());
 			string tabName = detail->getDetailPageFieldName(currentTab);
@@ -402,15 +438,52 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 			for(unsigned int i=0; i<tabs.size(); i++){
 				Object tab = tabs[i].getObject();
-				if ( tab["name"].getString().compare(tabName) == 0 ){
+				if ( tab["field"].getString().compare(tabName) == 0 ){
+
+					Object obj = db.getDocument(tabName).getData().getObject();
+					string array_contents = obj["array_contents"].getString();
+
+
+					
+
 					Object config = tab["config"].getObject();
 					Array columns = config["columns"].getArray();
 					for(unsigned int j=0; j<columns.size(); j++){
-						Object column = columns[j].getObject();
-		
-						wstring label = s2ws(column["label"].getString());
-						SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM) label.c_str()); 
-		
+						Object columnConfig = columns[j].getObject();
+						string field = columnConfig["field"].getString();
+						Object fieldConfig = db.getDocument(field).getData().getObject();
+
+						wstring label = s2ws(fieldConfig["label"].getString());
+						int index = SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM) label.c_str()); 
+						ListBox_SetItemData(visibleFields, index, new Object(columnConfig));
+					}
+
+					vector<string> attributes = collectAttributes(array_contents);
+
+					for(unsigned int i=0; i<attributes.size(); i++){
+						string attribute = attributes[i];
+
+						bool found = false;
+
+						for(unsigned int j=0; j<columns.size(); j++){
+							Object columnConfig = columns[j].getObject();
+							string field = columnConfig["field"].getString();
+							if ( field.compare(attribute) == 0 ){
+								found = true;
+							}
+						}
+
+						if ( !found ){
+							Object columnConfig;
+							columnConfig["field"] = attribute;
+							columnConfig["width"] = 200;
+							Object obj = db.getDocument(attribute).getData().getObject();
+
+
+							wstring label = s2ws(obj["label"].getString());
+							int index = SendMessage(hiddenFields, LB_ADDSTRING, 0, (LPARAM) label.c_str()); 
+							ListBox_SetItemData(hiddenFields, index, new Object(columnConfig));
+						}
 					}
 				}
 			}
@@ -425,6 +498,39 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 		}
 		if (LOWORD(wParam) == IDOK)
 		{
+
+			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
+			
+			int currentTab = TabCtrl_GetCurSel(detail->getTabControlHwnd());
+			string tabName = detail->getDetailPageFieldName(currentTab);
+			Object configuration = detail->getConfiguration();
+			Array tabs = configuration["tabs"].getArray();
+
+			for(unsigned int i=0; i<tabs.size(); i++){
+				Object tab = tabs[i].getObject();
+				if ( tab["field"].getString().compare(tabName) == 0 ){
+					Object tabConfig = tab["config"].getObject();
+					Array columns;
+					int count = ListBox_GetCount(visibleFields);
+					for(int i=0; i<count; i++){
+						ULONG_PTR data = ListBox_GetItemData(visibleFields, i);
+						Object obj = *(Object *)data;
+
+						columns.push_back(obj);
+					}
+
+					tabConfig["columns"] = columns;
+
+					if ( detail->contentType[currentTab] == TABLE_CONTENT ){
+						CinchGrid* grid = (CinchGrid *)GetWindowLong(detail->GetDetailPage(currentTab), GWL_USERDATA);
+						ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
+						delegate->deserializeUIElements(detailHWnd, tabConfig);
+					}
+				}
+			}
+
+			detail->getForm()->getDelegate()->formModified();
+
 			EndDialog(hDlg, LOWORD(wParam));
 			return (INT_PTR)TRUE;
 		}
@@ -438,8 +544,10 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			if( selected != LB_ERR ){
 				wchar_t text[80];
 				ListBox_GetText(hiddenFields, selected, text);
-				
+				ULONG_PTR data = ListBox_GetItemData(hiddenFields, selected);
+
 				int pos = (int)SendMessage(visibleFields, LB_ADDSTRING, 0, (LPARAM)text); 
+				ListBox_SetItemData(visibleFields, pos, data);
 				//_this->getForm()->addField(FormField::createEditField(hWnd, GetModuleHandle(0), text, text));
 				ListBox_DeleteString(hiddenFields, selected);
 
@@ -472,8 +580,12 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			if( selected != LB_ERR && selected > 0 ){
 				wchar_t text[80];
 				ListBox_GetText(visible, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(visible, selected);
+
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected-1, text);
+				ListBox_SetItemData(visible, selected-1, data);
+
 				ListBox_SetCurSel(visible, selected-1);
 
 				//_this->getForm()->getLayout()->swapFields(selected, selected-1);
@@ -492,8 +604,11 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			if( selected != LB_ERR && selected < count -1 ){
 				wchar_t text[80];
 				ListBox_GetText(visible, selected, text);
+				ULONG_PTR data = ListBox_GetItemData(visible, selected);
+				
 				ListBox_DeleteString(visible, selected);
 				ListBox_InsertString(visible, selected+1, text);
+				ListBox_SetItemData(visible, selected+1, data);
 				ListBox_SetCurSel(visible, selected+1);
 
 				//_this->getForm()->getLayout()->swapFields(selected, selected+1);

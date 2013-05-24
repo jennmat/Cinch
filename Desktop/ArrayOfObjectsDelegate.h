@@ -19,6 +19,7 @@ private:
 	vector<Value> editorConfigs;
 	vector<int> widths;
 	Detail * detail;
+	CinchGrid* grid;
 	int fieldId;
 public:
 	ArrayOfObjectsDelegate(Detail *, int);
@@ -64,6 +65,8 @@ public:
 	void willReloadData();
 	void didReloadData();
 	void didSelectRow(int);
+
+	void didChangeColumnWidth(int, int);
 
 	void setGrid(CinchGrid *);
 };
