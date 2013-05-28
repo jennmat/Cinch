@@ -12,3 +12,6 @@ std::string ws2s(const std::wstring& s);
 void UnixTimeToFileTime(time_t t, LPFILETIME pft);
 
 string CreateUUID();
+
+
+vector<string> collectAttributes(string field);

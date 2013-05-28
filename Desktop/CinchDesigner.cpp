@@ -122,9 +122,15 @@ void loadTabLabels(Array tabs, HWND tabList){
 	for(unsigned i=0; i<tabs.size(); i++){
 		Object config = tabs[i].getObject();
 		string label = config["label"].getString();
+		string field = config["field"].getString();
 		wstring l =s2ws(label);
+		
+		Connection conn;
+		Database db = conn.getDatabase(DATABASE);
+		Object doc = db.getDocument(field).getData().getObject();
 
-		SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
+		int pos = SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
+		ListBox_SetItemData(tabList, pos, new Object(doc));
 	
 	}	
 }
@@ -321,41 +327,46 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
 			int count = self->getForm()->getLayout()->getFieldCount();
-					
+			
+			Array fields;
+
 			if ( results["rows"].isArray() ){
 				Array rows = results["rows"].getArray();
-				Object templ = rows[0]["doc"].getObject();
-				Array fields = templ["fields"].getArray();
+				if ( rows.size() > 0 ){
+					Object templ = rows[0]["doc"].getObject();
+					fields = templ["fields"].getArray();
 
-				for(unsigned int i=0; i<fields.size(); i++){
-					string id = fields[i].getString();
+					for(unsigned int i=0; i<fields.size(); i++){
+						string id = fields[i].getString();
 
-					Document d = db.getDocument(id);
-					Object doc = d.getData().getObject();
+						Document d = db.getDocument(id);
+						Object doc = d.getData().getObject();
 					
 					
-					string label = doc["label"].getString();
-					string name = id;
+						string label = doc["label"].getString();
+						string name = id;
 
-					int len = label.size() + sizeof(wchar_t);
-					wchar_t* t = new wchar_t[len];
+						int len = label.size() + sizeof(wchar_t);
+						wchar_t* t = new wchar_t[len];
 
-					wcscpy_s(t, len, s2ws(label).c_str());
+						wcscpy_s(t, len, s2ws(label).c_str());
 
-					bool found = false;
+						bool found = false;
 
-					for(int i=0; i<count; i++){
-						FormField* field = self->getForm()->getLayout()->getField(i);
-						if ( field->getName().compare(name) == 0 ){
-							int index = ListBox_AddString(visibleFields, t);
-							ListBox_SetItemData(visibleFields, index, new Object(doc));
-							found = true;
-						}
+						for(int i=0; i<count; i++){
+							FormField* field = self->getForm()->getLayout()->getField(i);
+							if ( field->getName().compare(name) == 0 ){
+								int index = ListBox_AddString(visibleFields, t);
+								ListBox_SetItemData(visibleFields, index, new Object(doc));
+								found = true;
+							}
 						
+						}
 					}
-
-					
+				} else {
+					fields = Array();
 				}
+
 
 				results = db.viewResults("all-attributes", "by-type", Value(self->getType()), Value(self->getType()), true);
 			
@@ -482,9 +493,6 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				//ListBox_InsertItemData(visible, selected-1, data);
 				ListBox_SetCurSel(visible, selected-1);
 
-				
-				
-				
 			}
 		}
 		else if ( LOWORD(wParam) == IDC_FIELD_DOWN )
@@ -667,7 +675,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					config["pick_from_list"] = pickFromList;
 
-					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel, config);
+					field = FormField::createComboBox(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel, ws2s(szNewFieldName));
 					}
 					break;
 				case 6:
@@ -997,6 +1005,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
+			vector<string> attributes = collectAttributes(self->getType());
+
 			int count = self->getForm()->getLayout()->getFieldCount();
 					
 			if ( results["rows"].isArray() ){
@@ -1004,24 +1014,23 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				Object templ = rows[0]["doc"].getObject();
 				Array tabs = templ["tabs"].getArray();
 
-				Object attrResults = db.viewResults("all-attributes", "by-type", Value(self->getType()), Value(self->getType()), true);
-			
-				Array attributeRows = attrResults["rows"].getArray();
-				for(unsigned int i=0; i<attributeRows.size(); i++){
-					Object row = attributeRows[i].getObject();
-					Object doc = row["doc"].getObject();
+				vector<string> attributes = collectAttributes(self->getType());
+
+				for(unsigned int i=0; i<attributes.size(); i++){
+					string attribute = attributes[i];
+					Object doc = db.getDocument(attribute).getData().getObject();
 					string name = doc["_id"].getString();
 					string label = doc["label"].getString();
 					bool found = false;
 					for(unsigned i=0; i<tabs.size(); i++){
 						Object config = tabs[i].getObject();
-						if ( name.compare(config["name"].getString()) == 0){
+						if ( name.compare(config["field"].getString()) == 0){
 							found = true;
 						}
 					}
 					if ( !found ){
 						string baseType = getBaseType(name);
-						if ( baseType.compare("array") == 0 ){
+						if ( baseType.compare("array") == 0 || baseType.compare("attachments") == 0 ){
 							int len = label.size() + sizeof(wchar_t);
 							wchar_t* t = new wchar_t[len];
 
@@ -1082,6 +1091,11 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 						tabs.push_back(tab);
 					}
+				} else if ( obj["type"].getString().compare("attachments") == 0 ){
+					Object tab;
+					tab["content"] = ATTACHMENTS_DETAIL;
+					tab["label"] = "Attachments";
+					tabs.push_back(tab);
 				}
 			}
 

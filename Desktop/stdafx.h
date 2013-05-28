@@ -69,6 +69,7 @@ struct FileWatchController {
 #include <sstream>
 
 // TODO: reference additional headers your program requires here
+#include "util.h"
 #include "base64.h"
 #include "FormField.h"
 #include "FormLayout.h"
@@ -78,7 +79,6 @@ struct FileWatchController {
 #include "ReadOnlyDelegate.h"
 #include "BlankDelegate.h"
 #include "ArrayOfObjectsDelegate.h"
-#include "util.h"
 #include "MaskEdit.h"
 #include "NotifyParent.h"
 #include "CinchDesigner.h"
@@ -99,8 +99,8 @@ struct FileWatchController {
 #define IDM_TEXTAREA	34010
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
-#define DATABASE "cinch-business-starter"
-//#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-business-starter"
+#define DATABASE "cinch-starter"
 //#define DATABASE "hvac"
 
 #define DATEPICKER "DatePicker"
@@ -115,6 +115,7 @@ struct FileWatchController {
 #define STRING "string"
 #define DOCUMENT "document"
 #define DATETYPE "date"
+#define CODEDVALUE "coded_value"
 #define ID		"id"
 
 

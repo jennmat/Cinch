@@ -85,7 +85,7 @@ void ConditionManager::updateConditions(HWND parent){
 				} else if ( type.compare(EDIT) == 0 ){
 					formField = FormField::createEditField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(COMBO) == 0 ){
-					formField = FormField::createComboBox(parent, GetModuleHandle(0), "", L"", config);
+					formField = FormField::createComboBox(parent, GetModuleHandle(0), "", L"", name);
 				} else if ( type.compare(REFERENCE) == 0 ){
 					formField = FormField::createReferenceField(parent, GetModuleHandle(0), "", L"", config);
 				} else {

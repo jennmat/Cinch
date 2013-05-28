@@ -42,7 +42,7 @@ public:
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
-	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare=false);
+	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, string type, bool bare=false);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createRadioGroup(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);

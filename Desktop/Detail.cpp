@@ -359,7 +359,7 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			}
 
 			if ( self->detailPages[nTabItem] != NULL ){
-				//self->ShowPage(nTabItem);
+				self->ShowPage(nTabItem);
 				ShowWindow(self->detailPages[nTabItem], SW_SHOW);
 				//ShowWindow(self->detailPages[nTabItem], SW_SHOW);
 			}
@@ -383,38 +383,6 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 }
 
 
-vector<string> collectAttributes(string field){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
-
-	vector<string> attributes;
-
-	string baseType = "";
-	string type = field;
-
-	Object o;
-
-	do {
-		Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);
-		if ( results["rows"].isArray() ){
-			Array rows = results["rows"].getArray();
-			for(unsigned int i=0; i<rows.size(); i++){
-				Object row = rows[i].getObject();
-				Object doc = row["doc"].getObject();
-				attributes.push_back(doc["_id"].getString());
-			}
-		}
-
-		Object o = db.getDocument(type).getData().getObject();
-		baseType = o["type"].getString();
-		type = baseType;
-		o = db.getDocument(type).getData().getObject();
-
-	} while ( type.compare(baseType) != 0 );
-	
-
-	return attributes;
-}
 
 INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {

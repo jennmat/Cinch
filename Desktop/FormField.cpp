@@ -208,7 +208,7 @@ string ReferenceField::toString(Object obj){
 	return o["label"].getString();
 }
 
-FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, Value config, bool bare)
+FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, string type, bool bare)
 {
 	static int fieldId = 651;
 
@@ -225,24 +225,28 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, 
 
 	field->controlType = "Combo";
 	field->name = name;
-	field->config = config;
-
+	
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, 200, parent, (HMENU)field->controlChildId, hInst, NULL);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
-	if( config["pick_from_list"].isArray() ){
-		Array values = config["pick_from_list"].getArray();
-		for (unsigned i=0; i<values.size(); i++){
-			if ( values[i].isString() ){
-				string value = values[i].getString();
-				wstring val =s2ws(value);
-				SendMessage(field->control,(UINT) CB_ADDSTRING,(WPARAM) 0,(LPARAM)val.c_str()); 
-			}
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Object obj = db.getDocument(type).getData().getObject();
+
+	if ( obj["allowed_codes"].isArray() ){
+		Array values = obj["allowed_codes"].getArray();
+		for(unsigned int i=0; i<values.size(); i++){
+			Object code = values[i].getObject();
+			string value = code["value"].getString();
+			string label = code["label"].getString();
+			wstring wlabel = s2ws(label);
+			int index = ComboBox_AddString(field->control, wlabel.c_str());
+			ComboBox_SetItemData(field->control, index, new string(value));
+
 		}
 	}
-
 
 	return field;
 
@@ -692,17 +696,14 @@ void ComboBoxField::clearValue(){
 Object ComboBoxField::storeValue(Object obj){
 
 	int idx = ComboBox_GetCurSel(getControl());
-	int len = ComboBox_GetLBTextLen(getControl(), idx) + 1;
-	wchar_t* text = new wchar_t[len];
-
-	ComboBox_GetLBText(getControl(), idx, text);
-
-	string value = ws2s(text);
-
+	
+	ULONG_PTR data = ComboBox_GetItemData(getControl(), idx);
+	string s = *(string *)data;
+			
 	string key = getName();
 
 	if ( idx >= 0 ){
-		obj[key.c_str()] = value;
+		obj[key.c_str()] = s;
 	} else {
 		obj[key.c_str()] = Value();
 	}
@@ -713,16 +714,14 @@ Object ComboBoxField::storeValue(Object obj){
 
 string ComboBoxField::serializeForJS(){
 	int idx = ComboBox_GetCurSel(getControl());
-	int len = ComboBox_GetLBTextLen(getControl(), idx) + 1;
-	wchar_t* text = new wchar_t[len];
-
-	ComboBox_GetLBText(getControl(), idx, text);
-
-	string value = ws2s(text);
+	
+	ULONG_PTR data = ComboBox_GetItemData(getControl(), idx);
+	string s = *(string *)data;
+			
 
 	if ( idx >= 0 ){
 		stringstream rc;
-		rc << "'" << value << "'";
+		rc << "'" << s << "'";
 		return rc.str();
 	} else {
 		return "";
@@ -737,7 +736,14 @@ void ComboBoxField::loadValue(Object obj){
 		string value = obj[n.c_str()].getString();
 		wstring val = s2ws(value);
 		int idx = ComboBox_FindStringExact(getControl(), -1, val.c_str());
-		ComboBox_SetCurSel(getControl(), idx);
+		int count = ComboBox_GetCount(getControl());
+		for(int i=0; i<count; i++){
+			ULONG_PTR data = ComboBox_GetItemData(getControl(), i);
+			string s = *(string *)data;
+			if ( s.compare(value) == 0 ){
+				ComboBox_SetCurSel(getControl(), i);
+			}
+		}
 	}
 }
 

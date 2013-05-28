@@ -113,7 +113,7 @@ void Form::deserializeForm(HWND parent, Value v){
 		if( field["label"].isString() ){
 			label = field["label"].getString();
 		} else {
-			label = field["name"].getString();
+			label = field["_id"].getString();
 		}
 		string name = field["_id"].getString();
 
@@ -150,6 +150,8 @@ void Form::deserializeForm(HWND parent, Value v){
 			formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel);
 		} else if ( baseType.compare(DATETYPE) == 0 ) {
 			formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel);
+		} else if ( baseType.compare(CODEDVALUE) == 0 ){
+			formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, name);
 		} else if ( baseType.compare(DOCUMENT) == 0 ){
 			Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
 			Array rows = results["rows"].getArray();

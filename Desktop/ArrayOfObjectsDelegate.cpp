@@ -153,7 +153,7 @@ HWND ArrayOfObjectsDelegate::editorForColumn(int col, HWND parent, HINSTANCE hIn
 		} else if ( type.compare(EDIT) == 0 ){
 			formField = FormField::createEditField(parent, GetModuleHandle(0), fields[col], L"", true);
 		} else if ( type.compare(COMBO) == 0 ){
-			formField = FormField::createComboBox(parent, GetModuleHandle(0), fields[col], L"", editorConfigs[col], true);
+			formField = FormField::createComboBox(parent, GetModuleHandle(0), fields[col], L"", type, true);
 		} else if ( type.compare(REFERENCE) == 0 ){
 			formField = FormField::createReferenceField(parent, GetModuleHandle(0), fields[col], L"", editorConfigs[col], true);
 		} else {
