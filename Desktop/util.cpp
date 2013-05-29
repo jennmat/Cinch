@@ -96,3 +96,83 @@ vector<string> collectAttributes(string field){
 
 	return attributes;
 }
+
+
+FormField* createFieldForType(HWND parent, string id, bool bare){
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+
+	Object field = db.getDocument(id).getData().getObject();
+		
+	string label;
+	if( field["label"].isString() ){
+		label = field["label"].getString();
+	} else {
+		label = field["_id"].getString();
+	}
+	string name = field["_id"].getString();
+
+	wstring wlabel =s2ws(label);
+	string type = field["type"].getString();
+	Value config;
+	if ( field["config"].isObject() ){
+		config = field["config"].getObject();
+	}
+		
+
+	/* Find the base type and the first default view */
+	Object o = db.getDocument(type).getData().getObject();
+	Object defaultView;
+	bool foundDefaultView = false;
+	string baseType= type;
+	while ( o["type"].getString().compare(baseType) != 0 ){
+		baseType = o["type"].getString();
+		o = db.getDocument(type).getData().getObject();
+
+		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
+		Array rows = results["rows"].getArray();
+		if ( rows.size() > 0 ){
+			defaultView = rows[0].getObject();
+			foundDefaultView = true;
+		}
+	}
+
+		
+
+	
+	wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
+	memset(wclabel, 0, label.length() + sizeof(wchar_t));
+	wcscpy_s(wclabel, label.length()+sizeof(wchar_t), wlabel.c_str());
+
+
+	FormField* formField;
+
+	if ( baseType.compare(STRING) == 0){
+		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if (baseType.compare(ID) == 0 ){
+		formField = FormField::createIdentifierField(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(MULTILINE) == 0 ){
+		formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(DATETYPE) == 0 ) {
+		formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(CODEDVALUE) == 0 ){
+		formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, name, bare);
+	} else if ( baseType.compare(DOCUMENT) == 0 ){
+		
+		Object doc = defaultView["doc"].getObject();
+		string design = doc["design_name"].getString();
+		string view = doc["view_name"].getString();
+
+		Object config;
+		Object pick;
+		pick["design"] = design;
+		pick["view"] = view;
+		config["pick_from"] = pick;
+
+		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(config), bare);
+			
+	} else {
+		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
+	}
+	return formField;
+}

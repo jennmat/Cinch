@@ -140,25 +140,7 @@ HWND ArrayOfObjectsDelegate::editorForColumn(int col, HWND parent, HINSTANCE hIn
 		FormField* formField;
 		string type = editorTypes[col];
 
-		if ( type.compare(DATEPICKER) == 0 ){
-			formField = FormField::createDatePicker(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(RADIO) == 0 ){
-			formField = FormField::createRadioGroup(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(NUMBER) == 0 ){
-			formField = FormField::createNumberField(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(YESNO) == 0 ){
-			formField = FormField::createYesNoField(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(MULTILINE) == 0 ){
-			formField = FormField::createMultilineText(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(EDIT) == 0 ){
-			formField = FormField::createEditField(parent, GetModuleHandle(0), fields[col], L"", true);
-		} else if ( type.compare(COMBO) == 0 ){
-			formField = FormField::createComboBox(parent, GetModuleHandle(0), fields[col], L"", type, true);
-		} else if ( type.compare(REFERENCE) == 0 ){
-			formField = FormField::createReferenceField(parent, GetModuleHandle(0), fields[col], L"", editorConfigs[col], true);
-		} else {
-			formField = FormField::createEditField(parent, GetModuleHandle(0), fields[col], L"", true);
-		}
+			formField = createFieldForType(parent, type, true);
 
 		editors[col] = formField;
 	}
@@ -246,7 +228,7 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 			Object fieldConfig = db.getDocument(field).getData().getObject();
 
 			fields.push_back(fieldConfig["_id"].getString());
-			editorTypes.push_back(fieldConfig["cinch_type"].getString());
+			editorTypes.push_back(field);
 			editors.push_back(NULL);
 			editorConfigs.push_back(col["config"]);
 			titles.push_back(s2ws(fieldConfig["label"].getString()));

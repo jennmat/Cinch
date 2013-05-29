@@ -1066,30 +1066,47 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				Object obj = *doc;
 				if( obj["type"].getString().compare("array") == 0 ){
 					string array_content_type = obj["array_contents"].getString();
+					string baseType = getBaseType(array_content_type);
 
-					Object results = db.viewResults("all-attributes", "by-type", Value(array_content_type), Value(array_content_type), true);
-					if ( results["rows"].isArray() ){
-						Array rows = results["rows"].getArray();
-						Array columns;
-						for(unsigned int i=0; i<rows.size(); i++){
-							Object row = rows[i].getObject();
-							Object doc = row["doc"].getObject();
-							int a = 1;
-							Object column;
-							column["field"] = doc["_id"];
-							column["width"] = Value(250);
-							columns.push_back(column);
-						}
-
-						Object config;
-						config["columns"] = columns;
+					if ( baseType.compare(DOCUMENT) == 0 ){
 						Object tab;
+						Object config;
+						Array columns;
+						Object column;
+						column["field"] = array_content_type;
+						column["label"] = "Label";
+						columns.push_back(column);
+						config["columns"] = columns;
 						tab["config"] = config;
 						tab["content"] = TABLE;
 						tab["label"] = obj["label"];
-						tab["field"] = obj["_id"];
-
 						tabs.push_back(tab);
+					} else {
+
+						Object results = db.viewResults("all-attributes", "by-type", Value(array_content_type), Value(array_content_type), true);
+						if ( results["rows"].isArray() ){
+							Array rows = results["rows"].getArray();
+							Array columns;
+							for(unsigned int i=0; i<rows.size(); i++){
+								Object row = rows[i].getObject();
+								Object doc = row["doc"].getObject();
+								int a = 1;
+								Object column;
+								column["field"] = doc["_id"];
+								column["width"] = Value(250);
+								columns.push_back(column);
+							}
+
+							Object config;
+							config["columns"] = columns;
+							Object tab;
+							tab["config"] = config;
+							tab["content"] = TABLE;
+							tab["label"] = obj["label"];
+							tab["field"] = obj["_id"];
+
+							tabs.push_back(tab);
+						}
 					}
 				} else if ( obj["type"].getString().compare("attachments") == 0 ){
 					Object tab;
