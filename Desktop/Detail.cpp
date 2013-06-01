@@ -172,9 +172,9 @@ void Detail::deserializeUIElements(Object obj)
 			Object config = tab["config"].getObject();
 			string design = config["design"].getString();
 			string view = config["view"].getString();
-			string startkey_from = config["startkey_with_value_of"].getString();
-			string endkey_from = config["endkey_with_value_of"].getString();
-			string docs_of_type = config["shows_docs_of_type"].getString();
+			string startkey_from = "_id";
+			string endkey_from = "_id";
+			string docs_of_type = "";
 
 			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
 			del->setIncludeDocs(true);

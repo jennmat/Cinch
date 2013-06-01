@@ -83,6 +83,7 @@ public:
 	void clearValue();
 	Object storeValue(Object obj);
 	string serializeForJS();
+	string toString(Object obj);
 };
 
 #define YES_RADIO 130908

@@ -69,8 +69,13 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 	wchar_t* result;
 
 	Object c = config["columns"].getArray()[col].getObject();
-	string t = c["label"].getString();
-	wstring title = s2ws(t);
+	string field = c["field"].getString();
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Object definition = db.getDocument(field).getData().getObject();
+	string label = definition["label"].getString();
+
+	wstring title = s2ws(label);
 	
 	int size = title.size() + sizeof(wchar_t);
 	result = new wchar_t[size];
@@ -93,7 +98,7 @@ const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 			string value;
 			if ( includeDocs == true ){
 				Object data = r["doc"].getObject();
-				string name = c["name"].getString();
+				string name = c["field"].getString();
 				value = data[name].getString();
 
 			} else {
@@ -254,22 +259,7 @@ HFONT DetailViewDelegate::getEditFont(){
 
 
 void DetailViewDelegate::deserializeUIElements(Object obj){
-	config = obj;
-	/*if( obj["columns"].isArray() ){
-		Array columns = obj["columns"].getArray();
-		for(unsigned int i=0; i<columns.size(); i++){
-			Object col = columns[i].getObject();
-			fields.push_back(col["name"].getString());
-			editorTypes.push_back(col["cinch_type"].getString());
-			editors.push_back(NULL);
-			titles.push_back(s2ws(col["label"].getString()));
-			if ( col["width"].isInteger() && col["width"].getInt() > 0 ){
-				widths.push_back(col["width"].getInt());
-			} else {
-				widths.push_back(250);
-			}
-		}
-	}*/
+	config = Object(obj);
 }
 
 Object DetailViewDelegate::serializeUIElements(){

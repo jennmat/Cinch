@@ -110,7 +110,7 @@ void ReferenceField::setupValues(){
 			if ( design.length() > 0 && view.length() > 0 ){
 				Connection conn;
 				Database db = conn.getDatabase(DATABASE);
-				Object results = db.viewResults(design, view, 50, 0);
+				Object results = db.viewResults(design, view, 500, 0);
 
 				ComboBox_ResetContent(getControl());
 
@@ -531,6 +531,28 @@ string DatePickerField::serializeForJS(){
 	return rc.str();
 }
 
+
+string NumberField::toString(Object obj){
+	string n = getName();
+	if ( obj[n.c_str()].isDouble() ){
+		double val = obj[n.c_str()].getDouble();
+		int decimal, sign;
+		char* buffer = new char[_CVTBUFSIZE];
+		int precision = 2;
+		_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
+		string s = string(buffer);
+		s.insert(decimal, ".");
+		return s;
+	} else if ( obj[n.c_str()].isInteger() ){
+		int val = obj[n.c_str()].getInt();
+		char* buf = new char[100];
+		memset(buf, 0, 100);
+		_itoa_s(val, buf, 100, 10);
+
+		return string(buf);
+	}
+
+}
 
 void NumberField::loadValue(Object obj){
 	string n = getName();

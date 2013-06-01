@@ -64,7 +64,7 @@ vector<Document> Database::documentsVectorFromValue(const Value& var){
 		  Object docObj = (*row).getObject();
 		  Object values = docObj["value"].getObject();
 
-         Document doc(comm, name,
+         Document doc(comm, Object(), name,
 			 docObj["id"].getString(),
 			 docObj["key"].getString(),
 			 values["rev"].getString());
@@ -172,7 +172,7 @@ Document Database::getDocument(const string &id, const string &rev){
    if(obj.find("error") != obj.end())
 	   throw Exception("Document " + id + " (v" + rev + ") not found: " + obj["error"].getString());
 
-   Document doc(comm, name,
+   Document doc(comm,  obj, name,
 				obj["_id"].getString(),
                 "", // no key returned here
 				obj["_rev"].getString()
@@ -225,7 +225,7 @@ Document Database::createDocument(Value data,
    if(obj.find("error") != obj.end())
 	   throw Exception("Document could not be created: " + obj["error"].getString());
 
-   Document doc(comm, name,
+   Document doc(comm, obj, name,
 				obj["id"].getString(),
                 "", // no key returned here
 				obj["rev"].getString()

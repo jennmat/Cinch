@@ -32,7 +32,7 @@ class Document{
    friend class Database;
 
    protected:
-      Document(Communication&, const std::string&,
+      Document(Communication&, Object data, const std::string&,
                const std::string&, const std::string&, const std::string&);
 
    public:
@@ -72,6 +72,7 @@ class Document{
 
    private:
       Communication &comm;
+	  Object		data;
       std::string   db;
       std::string   id;
       std::string   key;

@@ -124,6 +124,14 @@ FormField* createFieldForType(HWND parent, string id, bool bare){
 	Object o = db.getDocument(type).getData().getObject();
 	Object defaultView;
 	bool foundDefaultView = false;
+	
+	Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(name), Value(name), true);
+	Array rows = results["rows"].getArray();
+	if ( rows.size() > 0 ){
+		defaultView = rows[0].getObject();
+		foundDefaultView = true;
+	}
+
 	string baseType= type;
 	while ( o["type"].getString().compare(baseType) != 0 ){
 		baseType = o["type"].getString();
@@ -157,6 +165,8 @@ FormField* createFieldForType(HWND parent, string id, bool bare){
 		formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(CODEDVALUE) == 0 ){
 		formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, name, bare);
+	} else if ( baseType.compare(NUMBERTYPE) == 0 ){
+		formField = FormField::createNumberField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){
 		
 		Object doc = defaultView["doc"].getObject();

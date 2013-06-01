@@ -1041,7 +1041,22 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 					}
 				}
-				
+			}
+
+			results = db.viewResults("all-view-definitions-emitting-ids", "by-emitted-type", Value(self->getType()), Value(self->getType()), true);
+			if ( results["rows"].isArray() ){
+				Array rows = results["rows"].getArray();
+				for(unsigned int i=0; i<rows.size(); i++){
+					Object row = rows[i].getObject();
+					Object doc = row["doc"].getObject();
+					string label = doc["label"].getString();
+					int len = label.size() + sizeof(wchar_t);
+					wchar_t* t = new wchar_t[len];
+					wcscpy_s(t, len, s2ws(label).c_str());
+
+					int index = ListBox_AddString(hiddenTabs, t);
+					ListBox_SetItemData(hiddenTabs, index, new Object(doc));
+				}
 			}
 
 
@@ -1113,6 +1128,34 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					tab["content"] = ATTACHMENTS_DETAIL;
 					tab["label"] = "Attachments";
 					tabs.push_back(tab);
+				} else if ( obj["cinch_type"].getString().compare("view_definition") == 0 ){
+					Object tab;
+					Object config;
+					Array columns;
+
+					Object results = db.viewResults("all-attributes", "by-type", obj["emits"], obj["emits"], true);
+					if ( results["rows"].isArray() ){
+						Array rows = results["rows"].getArray();
+						for(unsigned int i=0; i<rows.size(); i++){
+							Object row = rows[i].getObject();
+							Object doc = row["doc"].getObject();
+							int a = 1;
+							Object column;
+							column["field"] = doc["_id"];
+							column["width"] = Value(250);
+							columns.push_back(column);
+						}
+					}
+
+					config["design"] = obj["design_name"];
+					config["view"] = obj["view_name"];
+					config["columns"] = columns;
+					tab["content"] = VIEW_WITH_DOCUMENTS_DETAIL;
+					tab["label"] = obj["label"];
+					tab["config"] = config;
+
+					tabs.push_back(tab);
+
 				}
 			}
 

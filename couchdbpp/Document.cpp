@@ -19,7 +19,7 @@
 using namespace std;
 using namespace CouchDB;
 
-Document::Document(Communication &_comm, const string &_db, const string &_id,
+Document::Document(Communication &_comm, Object obj, const string &_db, const string &_id,
                    const string &_key, const string &_rev)
    : comm(_comm)
    , db(_db)
@@ -27,6 +27,7 @@ Document::Document(Communication &_comm, const string &_db, const string &_id,
    , key(_key)
    , revision(_rev)
 {
+	data = obj;
 }
 
 Document::Document(const Document &doc)
@@ -36,6 +37,7 @@ Document::Document(const Document &doc)
    , key(doc.key)
    , revision(doc.revision)
 {
+	data = doc.data;
 }
 
 Document::~Document(){
@@ -46,7 +48,7 @@ Document& Document::operator=(Document& doc){
    id       = doc.getID();
    key      = doc.getKey();
    revision = doc.getRevision();
-
+   data     = doc.getData().getObject();
    return *this;
 }
 
@@ -106,6 +108,9 @@ vector<Revision> Document::getAllRevisions(){
 }
 
 Value Document::getData(){
+	if( data["_id"].isString() ){
+		return data;
+	}
    Value var = comm.getData(getURL(false));
    Object  obj = var.getObject();
 
