@@ -98,7 +98,7 @@ vector<string> collectAttributes(string field){
 }
 
 
-FormField* createFieldForType(HWND parent, string id, bool bare){
+FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
 
@@ -119,6 +119,7 @@ FormField* createFieldForType(HWND parent, string id, bool bare){
 		config = field["config"].getObject();
 	}
 		
+	bool autocomplete = field["autocomplete"].getBoolean();
 
 	/* Find the base type and the first default view */
 	Object o = db.getDocument(type).getData().getObject();
@@ -145,18 +146,18 @@ FormField* createFieldForType(HWND parent, string id, bool bare){
 		}
 	}
 
-		
-
-	
 	wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
 	memset(wclabel, 0, label.length() + sizeof(wchar_t));
 	wcscpy_s(wclabel, label.length()+sizeof(wchar_t), wlabel.c_str());
 
-
 	FormField* formField;
 
 	if ( baseType.compare(STRING) == 0){
-		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel, bare);
+		if ( autocomplete ) {
+			formField = FormField::createAutocompletingEditField(parent, GetModuleHandle(0), enclosingType, name, wclabel, bare);
+		} else {
+			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel, bare);
+		}
 	} else if (baseType.compare(ID) == 0 ){
 		formField = FormField::createIdentifierField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(MULTILINE) == 0 ){
@@ -167,6 +168,8 @@ FormField* createFieldForType(HWND parent, string id, bool bare){
 		formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, name, bare);
 	} else if ( baseType.compare(NUMBERTYPE) == 0 ){
 		formField = FormField::createNumberField(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(BOOLEAN) == 0 ){
+		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){
 		
 		Object doc = defaultView["doc"].getObject();

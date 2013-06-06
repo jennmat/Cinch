@@ -57,13 +57,123 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name,
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
-	NotifyParentOfEnterKey(field->control);
+	//NotifyParentOfEnterKey(field->control);
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
 	return field;
 }
 
+FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst, string enclosingType, string name, const wchar_t * label, bool bare)
+{
+	static int fieldId = 48900;
+
+	EditField* field = new EditField();
+
+	field->controlChildId = fieldId++;
+
+	HFONT hFont=DEFAULT_FONT;
+	
+	if ( !bare ){
+		field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
+			0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+		SendMessage(field->label, WM_SETFONT, (WPARAM)hFont,0);
+		SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+	}
+
+	
+	field->controlType = "Edit";
+	field->name = name;
+	field->config = Value();
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_OVERLAPPED | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
+
+	
+	IAutoComplete2 *pac;
+
+	HRESULT hr = CoCreateInstance(CLSID_AutoComplete, 
+                                NULL, 
+                              CLSCTX_INPROC_SERVER,
+                              IID_PPV_ARGS(&pac));
+
+
+	IUnknown *punkSource;
+
+	hr = CoCreateInstance(CLSID_ACListISF, 
+                      NULL, 
+                      CLSCTX_INPROC_SERVER,
+                      IID_PPV_ARGS(&punkSource));
+
+
+	ViewAutocompleteSource *pcacs = new ViewAutocompleteSource();
+
+	/* Find an appropriate view */
+	Connection conn;
+	Database db = conn.getDatabase(DATABASE);
+	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", Value(name), Value(name), true);
+	if ( results["rows"].isArray() ){
+		Array rows = results["rows"].getArray();
+		if ( rows.size() == 0 ){
+			/* None exists.  Lets create one */
+			Object view;
+			stringstream id;
+			stringstream designname;
+			designname << "all-" << enclosingType;
+			id << "_design/" << designname.str();
+			view["_id"] = id.str();
+			view["language"] = "javascript";
+			stringstream map;
+			stringstream viewname;
+			viewname << "by-" << name;
+			map << "function(doc) {if ( doc.cinch_type && doc.cinch_type == '" << enclosingType << "' ){emit(doc." << name << ", null);}}";
+			view["views"][viewname.str()]["map"] = map.str();
+			view["views"][viewname.str()]["reduce"] = "function(key, value){ return true; }";
+			
+			Object viewDefinition;
+			viewDefinition["cinch_type"] = "view_definition";
+			viewDefinition["design_name"] = designname.str();
+			viewDefinition["view_name"] = viewname.str();
+			viewDefinition["emits"] = enclosingType;
+			viewDefinition["key_field"] =  name;
+			viewDefinition["default"] = false;
+			viewDefinition["includes_docs"] = false;
+			viewDefinition["reduce"] = true;
+			viewDefinition["groups_by_key_field"] = true;
+
+			db.createDocument(Value(view));
+			db.createDocument(Value(viewDefinition));
+
+			pcacs->design = designname.str();
+			pcacs->view = viewname.str();
+		} else {
+			Object row = rows[0].getObject();
+			Object doc = row["doc"].getObject();
+
+			pcacs->design = doc["design_name"].getString();
+			pcacs->view = doc["view_name"] .getString();
+		}
+	}
+
+
+
+
+	hr = pcacs->QueryInterface(IID_PPV_ARGS(&punkSource));
+	if(SUCCEEDED(hr))
+	{
+		hr = pac->Init(field->control, punkSource, NULL, NULL);
+		pac->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND | ACO_UPDOWNKEYDROPSLIST);
+	}
+
+	pcacs->Release();
+	
+	//SHAutoComplete(field->control, SHACF_FILESYSTEM);
+	
+	//NotifyParentOfEnterKey(field->control);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	return field;
+}
 
 
 FormField* FormField::createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
@@ -552,6 +662,7 @@ string NumberField::toString(Object obj){
 		return string(buf);
 	}
 
+	return "NaN";
 }
 
 void NumberField::loadValue(Object obj){

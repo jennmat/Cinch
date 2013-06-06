@@ -17,6 +17,8 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <Shlwapi.h>
+
 #include <stdint.h>
 
 #include "Windowsx.h"
@@ -68,6 +70,13 @@ struct FileWatchController {
 #include <shlobj.h>             // shell stuff
 #include <sstream>
 
+
+//#define DATABASE "cinch-customer-contact-plugin-starter"
+//#define DATABASE "cinch-business-starter"
+#define DATABASE "cinch-inventory-starter"
+//#define DATABASE "cinch-starter"
+//#define DATABASE "hvac"
+
 // TODO: reference additional headers your program requires here
 #include "util.h"
 #include "base64.h"
@@ -83,6 +92,7 @@ struct FileWatchController {
 #include "NotifyParent.h"
 #include "CinchDesigner.h"
 #include "DetailViewDelegate.h"
+#include "ViewAutocompleteSource.h"
 
 #include "AttachmentViewer.h"
 
@@ -98,10 +108,6 @@ struct FileWatchController {
 #define IDM_TABULAR		34009
 #define IDM_TEXTAREA	34010
 
-//#define DATABASE "cinch-customer-contact-plugin-starter"
-#define DATABASE "cinch-business-starter"
-//#define DATABASE "cinch-starter"
-//#define DATABASE "hvac"
 
 #define DATEPICKER "DatePicker"
 #define NUMBER "Number"
@@ -118,6 +124,7 @@ struct FileWatchController {
 #define CODEDVALUE "coded_value"
 #define NUMBERTYPE	"number"
 #define ID		"id"
+#define BOOLEAN "boolean"
 
 
 

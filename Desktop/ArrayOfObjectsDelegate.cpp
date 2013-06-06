@@ -140,7 +140,7 @@ HWND ArrayOfObjectsDelegate::editorForColumn(int col, HWND parent, HINSTANCE hIn
 		FormField* formField;
 		string type = editorTypes[col];
 
-			formField = createFieldForType(parent, type, true);
+		formField = createFieldForType(parent, "", type, true);
 
 		editors[col] = formField;
 	}

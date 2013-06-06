@@ -100,6 +100,7 @@ void Form::deserializeForm(HWND parent, Value v){
 
 	Object o = v.getObject();
 	Array fields = o["fields"].getArray();
+	string type = o["target_type"].getString();
 
 	Connection conn;
 	Database db = conn.getDatabase(DATABASE);
@@ -108,7 +109,7 @@ void Form::deserializeForm(HWND parent, Value v){
 
 		string id = fields[i].getString();
 		
-		FormField * formField = createFieldForType(parent, id, false);
+		FormField * formField = createFieldForType(parent, type, id, false);
 
 		/*if ( type.compare(DATEPICKER) == 0 ){
 			formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel);

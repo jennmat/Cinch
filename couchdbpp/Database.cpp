@@ -86,11 +86,11 @@ Object Database::listViews(){
 	return var.getObject();
 }
 
-Object Database::viewResults(const string& design, const string& view, int limit=25, bool includeDocs=false){
-	return viewResults(design, view, limit, 0, includeDocs);
+Object Database::viewResults(const string& design, const string& view, int limit, bool includeDocs, bool reduce, int group_level){
+	return viewResults(design, view, limit, 0, includeDocs, reduce);
 }
 
-Object Database::viewResults(const string& design, const string& view, int limit=25, int skip=0, bool includeDocs=false){
+Object Database::viewResults(const string& design, const string& view, int limit, int skip, bool includeDocs, bool reduce, int group_level){
 	stringstream s;
 	s << "/" << name << "/_design/";
 	s << design;
@@ -103,13 +103,20 @@ Object Database::viewResults(const string& design, const string& view, int limit
 	if ( includeDocs == true ){
 		s << "&include_docs=true";
 	}
+	if ( reduce == true ){
+		s << "&reduce=true";
+		s << "&group_level=" << group_level;
+	} else {
+		s << "&reduce=false";
+	}
+
 
 	Value var = comm.getData(s.str());
 
 	return var.getObject();
 }
 
-Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs){
+Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs, bool reduce){
 	stringstream s;
 	s << "/" << name << "/_design/";
 	s << design;

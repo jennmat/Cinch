@@ -16,4 +16,4 @@ string CreateUUID();
 
 vector<string> collectAttributes(string field);
 
-FormField* createFieldForType(HWND parent, string type, bool bare);
+FormField* createFieldForType(HWND parent, string enclosingType, string type, bool bare);

@@ -40,6 +40,7 @@ public:
 	virtual string toString(Object obj);
 
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createAutocompletingEditField(HWND parent, HINSTANCE hInst, string enclosingType, string name, const wchar_t * label, bool bare=false);
 	static FormField* createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, string type, bool bare=false);
@@ -66,6 +67,7 @@ public:
 	void clearValue();
 	Object storeValue(Object obj);
 	string serializeForJS();
+	void setupAutocompleteValues();
 };
 
 class IdentifierField : public FormField {

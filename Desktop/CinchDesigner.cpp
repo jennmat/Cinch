@@ -167,10 +167,6 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 	switch (message)
 	{
 	case WM_KEYUP:
-		if ( wParam == VK_RETURN ){
-			self->getForm()->SaveDocument(-1);
-			self->NewDocument(DATABASE, self->getType());
-		}
 		break;
 	case WM_KILLFOCUS:
 		OutputDebugStringW(TEXT("lost focus\n"));
@@ -219,7 +215,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		//if ( wmEvent == BN_CLICKED ){
 		//	self->getForm()->SaveDocument(wmId);
 		//}
-		if ( wmEvent == CBN_SELCHANGE ){
+		if ( wmEvent == CBN_SELCHANGE || wmEvent == CBN_KILLFOCUS ){
 			HWND w = GetDlgItem(hWnd, wmId);
 			wchar_t name[80];
 			GetClassName(w, name, 80);
