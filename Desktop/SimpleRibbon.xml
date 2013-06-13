@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!--
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+// PARTICULAR PURPOSE.
+//
+// Copyright (c) Microsoft Corporation. All rights reserved
+-->
+
+<Application xmlns='http://schemas.microsoft.com/windows/2009/Ribbon'>
+  <!-- Commands section -->
+  <Application.Commands>
+
+    <Command Name="cmdTabHome">
+      <Command.LabelTitle>
+        <String Id="200">Home</String>
+      </Command.LabelTitle>
+    </Command>
+    <Command Name="cmdTabUsers">
+      <Command.LabelTitle>
+        <String Id="201">Users</String>
+      </Command.LabelTitle>
+    </Command>
+    <Command Name="cmdShapesGroup">
+      <Command.LabelTitle>
+        <String Id="210">Documents</String>
+      </Command.LabelTitle>
+    </Command>
+    <Command Name="cmdViewGroup">
+      <Command.LabelTitle>
+        <String Id="211">Views</String>
+      </Command.LabelTitle>
+    </Command>
+    <!-- Optional Symbol and Id properties are not defined for the following commands.
+    A Symbol same as the name of the command 
+    and a valid Id for this command will be automatically generated. -->
+    <Command Name="cmdSizeAndColor" Symbol="IDR_CMD_SIZEANDCOLOR">
+      <Command.LabelTitle>
+        <String Id="250">New Document</String>
+      </Command.LabelTitle>
+      <Command.LargeImages>
+        <Image Id ="291">res/AddTableL.bmp</Image>
+      </Command.LargeImages>
+    </Command>
+    <Command Name="cmdDelete" Symbol="IDR_CMD_DELETE">
+      <Command.LabelTitle>
+        <String Id="251">Delete</String>
+      </Command.LabelTitle>
+      <Command.LargeImages>
+        <Image Id ="292">res/DeleteTableL.bmp</Image>
+      </Command.LargeImages>
+    </Command>
+    <Command Name="cmdNewView" Symbol="IDR_CMD_NEW_VIEW">
+      <Command.LabelTitle>
+        <String Id="252">New View</String>
+      </Command.LabelTitle>
+      <Command.LargeImages>
+        <Image Id ="293">res/Button_Image.bmp</Image>
+      </Command.LargeImages>
+    </Command>
+
+    <Command Name="cmdQat"/>
+    <Command Name="cmdFileMenu"/>
+    <Command Name="cmdMRUList">
+      <Command.LabelTitle>
+        <String Id ="280">MRU List</String>
+      </Command.LabelTitle>
+    </Command>
+    <Command Name="cmdExit" Symbol="IDC_CMD_EXIT">
+      <Command.LabelTitle>
+        <String Id ="290">Exit Button</String>
+      </Command.LabelTitle>
+      <Command.LargeImages>
+        <Image Id ="294">res/ExitL.bmp</Image>
+      </Command.LargeImages>
+    </Command>
+  </Application.Commands>
+  <Application.Views>
+    <Ribbon>
+      <Ribbon.ApplicationMenu>
+        <ApplicationMenu CommandName="cmdFileMenu">
+          <ApplicationMenu.RecentItems>
+            <RecentItems CommandName="cmdMRUList" MaxCount="1" />
+          </ApplicationMenu.RecentItems>
+          <MenuGroup Class="MajorItems">
+            <Button CommandName="cmdExit" />
+          </MenuGroup>
+        </ApplicationMenu>
+      </Ribbon.ApplicationMenu>
+      <Ribbon.Tabs>
+        <Tab CommandName="cmdTabHome">
+          <Group CommandName="cmdShapesGroup" SizeDefinition="TwoButtons">
+            <DropDownGallery CommandName="cmdSizeAndColor" Type="Items">
+              <DropDownGallery.MenuLayout>
+                <VerticalMenuLayout Gripper="None"/>
+              </DropDownGallery.MenuLayout>
+            </DropDownGallery>
+            <Button CommandName="cmdDelete"/>
+          </Group>
+          <Group CommandName="cmdViewGroup" SizeDefinition="OneButton">
+            <Button CommandName="cmdNewView"></Button>
+          </Group>
+        </Tab>
+        <Tab CommandName="cmdTabUsers">
+          
+        </Tab>
+      </Ribbon.Tabs>
+      <Ribbon.QuickAccessToolbar>
+        <QuickAccessToolbar CommandName="cmdQat" />
+      </Ribbon.QuickAccessToolbar>
+    </Ribbon>
+  </Application.Views>
+</Application>

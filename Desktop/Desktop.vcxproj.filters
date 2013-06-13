@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Handlers">
+      <UniqueIdentifier>{c10f5d7b-f695-4256-8f89-dee67d201ca0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Handlers">
+      <UniqueIdentifier>{81f75347-3d19-4945-a2dd-47f9f3fbcd65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">
@@ -25,6 +31,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="LIST.BMP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\AddTableS.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\DeleteL.bmp">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -101,11 +113,23 @@
     <ClInclude Include="base64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AutoCombo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ViewAutocompleteSource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RibbonFramework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertySet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NewDocumentHandler.h">
+      <Filter>Header Files\Handlers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -166,8 +190,20 @@
     <ClCompile Include="base64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AutoCombo.cpp">
+    <ClCompile Include="Application.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RibbonFramework.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertySet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NewDocumentHandler.cpp">
+      <Filter>Source Files\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,5 +213,8 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="Desktop.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="SimpleRibbon.xml" />
   </ItemGroup>
 </Project>

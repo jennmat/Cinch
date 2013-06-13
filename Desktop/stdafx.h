@@ -31,6 +31,14 @@
 #include <Wincrypt.h>
 
 
+
+#include <UIRibbon.h>
+#include "Application.h"
+#include "CommandHandler.h"
+#include "RibbonFramework.h"
+#include "PropertySet.h"
+#include <uiribbonpropertyhelpers.h>
+
 using namespace std;
 
 class Form;
@@ -95,6 +103,11 @@ struct FileWatchController {
 #include "ViewAutocompleteSource.h"
 
 #include "AttachmentViewer.h"
+#include "SimpleRibbon.h"
+#include "NewDocumentHandler.h"
+
+
+
 
 #define ROW_HEIGHT 25
 #define LABEL_WIDTH 150

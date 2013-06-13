@@ -15,7 +15,7 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
-#define TOOLBAR_HEIGHT 53
+#define TOOLBAR_HEIGHT 145
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -38,6 +38,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	HRESULT hr = CoInitialize(NULL);
+    if (FAILED(hr))
+    {
+        return FALSE;
+    }
 
  	// TODO: Place code here.
 	MSG msg;
@@ -70,6 +76,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			MessageBox(msg.hwnd, m.c_str(), L"", 0);
 		}
 	}
+
+	CoUninitialize();
 
 	return (int) msg.wParam;
 }
@@ -293,9 +301,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	//SendMessage(hWnd,IDC_TREE1,TVM_SETIMAGELIST,0,(LPARAM)hImageList); // put it onto the tree control
 	//TreeView_SetImageList(tree, hImageList, 0);
   
-	toolbar = CreateCinchToolbar(hWnd);
-	ShowWindow(toolbar, SW_SHOW);
-	UpdateWindow(toolbar);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
@@ -338,7 +343,7 @@ void SizeWindows(HWND hWnd)
 	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
 	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
 	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
-	SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
+	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
 }
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -355,9 +360,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
+	bool initSuccess;
 
 	switch (message)
 	{
+	case WM_CREATE:
+    // Initializes the Ribbon framework.
+    initSuccess = InitializeFramework(hWnd);
+    if (!initSuccess) 
+    {
+        return -1;
+    }
+    break;
 	case WM_NOTIFY:
 		{
 		LPNMHDR pnmhdr = (LPNMHDR)lParam;
@@ -385,77 +399,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 
-			break;
-		case TBN_DROPDOWN:
-			// Get the coordinates of the button.
-            RECT rc;
-            SendMessage(lpnmTB->hdr.hwndFrom, TB_GETRECT, (WPARAM)lpnmTB->iItem, (LPARAM)&rc);
-
-            // Convert to screen coordinates.            
-            MapWindowPoints(lpnmTB->hdr.hwndFrom, HWND_DESKTOP, (LPPOINT)&rc, 2);                         
-        
-            // Get the menu.
-			//HMENU hMenuLoaded = LoadMenu(GetModuleHandle(0), MAKEINTRESOURCE(IDR_POPUP)); 
-         
-            // Get the submenu for the first menu item.
-            //HMENU hPopupMenu = GetSubMenu(hMenuLoaded, 0);
-
-
-			HMENU hPopupMenu = CreatePopupMenu();
-
-			objectTypes.clear();
-
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
-			Object r = db.viewResults("all-document-types", "by-label", 100, 0);
-			Array rows = r["rows"].getArray();
-			unsigned int i = 0;
-			for(; i<rows.size(); i++){
-				Object row = rows[i].getObject();
-				string key = row["key"].getString();
-				wstring wkey = s2ws(key);
-				
-				Document doc = db.getDocument(row["id"].getString());
-
-				objectTypes.push_back(doc.getData().getObject());
-
-				InsertMenu(hPopupMenu, i, MF_BYPOSITION | MF_STRING, IDD_ADD_OBJECT, wkey.c_str());
-            }
-			
-			InsertMenu(hPopupMenu, ++i, MF_BYPOSITION | MF_STRING, IDC_ADD_DOCUMENT_TYPE, L"Document Type");
-
-			MENUINFO mi;
-			memset(&mi, 0, sizeof(mi));
-			mi.cbSize = sizeof(mi);
-			mi.fMask = MIM_STYLE;
-			mi.dwStyle = MNS_NOTIFYBYPOS;
-			SetMenuInfo(hPopupMenu, &mi);
-
-            // Set up the pop-up menu.
-            // In case the toolbar is too close to the bottom of the screen, 
-            // set rcExclude equal to the button rectangle and the menu will appear above 
-            // the button, and not below it.
-         
-            TPMPARAMS tpm;
-         
-            tpm.cbSize    = sizeof(TPMPARAMS);
-            tpm.rcExclude = rc;
-         
-            // Show the menu and wait for input. 
-            // If the user selects an item, its WM_COMMAND is sent.
-         
-            TrackPopupMenuEx(hPopupMenu, 
-                             TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL, 
-                             rc.left, rc.bottom, hWnd, &tpm);
-
-            DestroyMenu(hPopupMenu);
-         
-        return (FALSE);
-			break;
+			}
 		}
-		
 		break;
-		}
 	case WM_ERASEBKGND:
 		return 1;
 	case WM_NEW_DATA_ARRIVED:
@@ -477,23 +423,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		designercontrol->LoadDocument(DATABASE, d.getID(), d, v.getObject());
 		break;
 		}
-	case WM_MENUCOMMAND:
-		{
-		unsigned int idx = wParam;
-		if ( idx >= objectTypes.size() ){
-			int pos = idx - objectTypes.size();
-			if ( pos == 0 ){
-				DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
-			}
-			
-		} else {
-			Object objectDefinition = objectTypes[idx];
-			CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-			designercontrol->NewDocument(DATABASE, objectDefinition["_id"].getString());
-		}
-		
-		}
-		break;
+	//case WM_MENUCOMMAND:
+		//DialogBox(hInst, MAKEINTRESOURCE(IDD_ADD_DOCUMENT_TYPE), hWnd, AddDocumentType);
+//		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);

@@ -20,6 +20,8 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -50,7 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\JsonBox\include;..\CinchDesigner\Designer2;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);..\JsonBox\include;..\CinchDesigner\Designer2;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -59,6 +61,9 @@
       <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -83,15 +88,23 @@
     <None Include="Desktop.ico" />
     <None Include="LIST.BMP" />
     <None Include="New.ico" />
+    <CustomBuild Include="SimpleRibbon.xml">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)/SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)/SimpleRibbon.rc</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).bml;%(Filename).h;%(Filename).rc;%(Outputs)</Outputs>
+      <SubType>Designer</SubType>
+    </CustomBuild>
+    <None Include="res\AddTableS.bmp" />
+    <None Include="res\DeleteL.bmp" />
     <None Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Application.h" />
     <ClInclude Include="ArrayOfObjectsDelegate.h" />
     <ClInclude Include="AttachmentViewer.h" />
-    <ClInclude Include="AutoCombo.h" />
     <ClInclude Include="base64.h" />
     <ClInclude Include="BlankDelegate.h" />
     <ClInclude Include="CinchDesigner.h" />
+    <ClInclude Include="CommandHandler.h" />
     <ClInclude Include="ConditionManager.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CouchViewDelegate.h" />
@@ -104,9 +117,12 @@
     <ClInclude Include="FormLayout.h" />
     <ClInclude Include="MaskEdit.h" />
     <ClInclude Include="NotifyParent.h" />
+    <ClInclude Include="PropertySet.h" />
     <ClInclude Include="ReadOnlyDelegate.h" />
     <ClInclude Include="Replication.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RibbonFramework.h" />
+    <ClInclude Include="NewDocumentHandler.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Toolbar.h" />
@@ -114,12 +130,13 @@
     <ClInclude Include="ViewAutocompleteSource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="ArrayOfObjectsDelegate.cpp" />
     <ClCompile Include="AttachmentViewer.cpp" />
-    <ClCompile Include="AutoCombo.cpp" />
     <ClCompile Include="base64.cpp" />
     <ClCompile Include="BlankDelegate.cpp" />
     <ClCompile Include="CinchDesigner.cpp" />
+    <ClCompile Include="CommandHandler.cpp" />
     <ClCompile Include="ConditionManager.cpp" />
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
@@ -130,7 +147,10 @@
     <ClCompile Include="FormLayout.cpp" />
     <ClCompile Include="MaskEdit.cpp" />
     <ClCompile Include="NotifyParent.cpp" />
+    <ClCompile Include="PropertySet.cpp" />
     <ClCompile Include="ReadOnlyDelegate.cpp" />
+    <ClCompile Include="RibbonFramework.cpp" />
+    <ClCompile Include="NewDocumentHandler.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

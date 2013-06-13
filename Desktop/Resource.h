@@ -53,3 +53,4 @@
 #define IDC_CONTENT_COMBO                       40021
 #define IDC_NEW_TAB_LABEL                       40022
 #define IDC_NEW_TAB_NAME                        40023
+#define IDR_SMALL_ADD_BITMAP					40024

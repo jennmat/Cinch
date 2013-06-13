@@ -1,7 +1,4 @@
-#pragma once
-
-#include "resource.h"
-
+#include "stdafx.h"
 
 CouchViewDelegate* delegate;
 
@@ -16,9 +13,7 @@ HWND hWnd; //Main window
 HWND grid;
 HWND tree;
 HWND designer;
-HWND toolbar;
 
-vector<Object> objectTypes;
 
 Desktop desktop;
 
