@@ -6,6 +6,9 @@
 #include <sstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
 using namespace std;
 using namespace JsonBox;
@@ -15,7 +18,6 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
-#define TOOLBAR_HEIGHT 145
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -38,6 +40,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+
 
 	HRESULT hr = CoInitialize(NULL);
     if (FAILED(hr))
@@ -338,10 +341,17 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 void SizeWindows(HWND hWnd)
 {
 	RECT client;
+	
 	GetClientRect(hWnd, &client);
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, TOOLBAR_HEIGHT, LIST_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
-	SetWindowPos(tree, HWND_TOP, 0, TOOLBAR_HEIGHT, TREE_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, TOOLBAR_HEIGHT, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom - TOOLBAR_HEIGHT, 0);
+	
+	UINT ribbonHeight;
+	GetRibbonHeight(&ribbonHeight);
+	
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, ribbonHeight, LIST_WIDTH, client.bottom - ribbonHeight, 0);
+	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight, TREE_WIDTH, client.bottom - ribbonHeight, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, ribbonHeight, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom - ribbonHeight, 0);
+
+	
 	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
 	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
 }
