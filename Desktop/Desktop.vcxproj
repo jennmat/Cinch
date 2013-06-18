@@ -90,8 +90,9 @@
     <None Include="New.ico" />
     <CustomBuild Include="SimpleRibbon.xml">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)/SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)/SimpleRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).bml;%(Filename).h;%(Filename).rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)/SimpleRibbon.rc;%(Outputs)</Outputs>
       <SubType>Designer</SubType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SimpleRibbon.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="res\AddTableS.bmp" />
     <None Include="res\DeleteL.bmp" />
