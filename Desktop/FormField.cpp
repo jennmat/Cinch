@@ -108,8 +108,8 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	ViewAutocompleteSource *pcacs = new ViewAutocompleteSource();
 
 	/* Find an appropriate view */
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", Value(name), Value(name), true);
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
@@ -218,8 +218,8 @@ void ReferenceField::setupValues(){
 			view = pick["view"].getString();
 
 			if ( design.length() > 0 && view.length() > 0 ){
-				Connection conn;
-				Database db = conn.getDatabase(DATABASE);
+				;
+				
 				Object results = db.viewResults(design, view, 500, 0);
 
 				ComboBox_ResetContent(getControl());
@@ -311,8 +311,8 @@ string FormField::toString(Object obj){
 string ReferenceField::toString(Object obj){
 	string id = obj[getName()].getString();
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	Object o = db.getDocument(id).getData().getObject();
 	return o["label"].getString();
@@ -341,8 +341,8 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, 
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 	Object obj = db.getDocument(type).getData().getObject();
 
 	if ( obj["allowed_codes"].isArray() ){

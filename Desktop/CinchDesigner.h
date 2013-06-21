@@ -17,7 +17,7 @@ private:
 	Form* form;
 	string type;
 	
-	Connection conn;
+	;
 	void loadForm(string database, string type);
 public:
 	ConditionManager* conditionManager;

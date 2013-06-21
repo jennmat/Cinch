@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+extern Connection conn;
+extern Database db;
+
 class ViewAutocompleteSource : public IEnumString {
 private:
 	int refCount;
@@ -16,8 +19,7 @@ public:
 
 	void setup(){
 		currentElement = 0;
-		Connection conn;
-		Database db = conn.getDatabase(DATABASE);
+		
 		Object results = db.viewResults(design, view, 500, 0, false, true, 1);
 
 		elements.clear();

@@ -18,6 +18,7 @@ HWND designer;
 Desktop desktop;
 
 CouchDB::Connection conn;
+CouchDB::Database db = conn.getDatabase(DATABASE);
 
 DWORD WINAPI ChangesListener(LPVOID lParam);
 

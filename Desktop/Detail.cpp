@@ -152,8 +152,8 @@ void Detail::deserializeUIElements(Object obj)
 
 	Array tabs = obj["tabs"].getArray();
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	for(unsigned int i=0; i<tabs.size(); i++){
 		Object tab = tabs[i].getObject();
@@ -192,8 +192,8 @@ void Detail::deserializeUIElements(Object obj)
 
 			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
 			if ( !config["columns"].isArray() ){
-				Connection conn;
-				Database db = conn.getDatabase(DATABASE);
+				;
+				
 				Object results = db.viewResults("all-document-types", "by-name", Value(docs_of_type), Value(docs_of_type));
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
@@ -393,8 +393,8 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 	{
 	case WM_INITDIALOG:
 		{
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 
 			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
 			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);

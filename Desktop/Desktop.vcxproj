@@ -107,6 +107,7 @@
     <ClInclude Include="CinchDesigner.h" />
     <ClInclude Include="CommandHandler.h" />
     <ClInclude Include="ConditionManager.h" />
+    <ClInclude Include="console.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CouchViewDelegate.h" />
     <ClInclude Include="Desktop.h" />
@@ -139,6 +140,7 @@
     <ClCompile Include="CinchDesigner.cpp" />
     <ClCompile Include="CommandHandler.cpp" />
     <ClCompile Include="ConditionManager.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
     <ClCompile Include="Detail.cpp" />

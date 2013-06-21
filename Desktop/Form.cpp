@@ -102,8 +102,8 @@ void Form::deserializeForm(HWND parent, Value v){
 	Array fields = o["fields"].getArray();
 	string type = o["target_type"].getString();
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	for(unsigned int i=0; i<fields.size(); i++){
 
@@ -221,7 +221,7 @@ void Form::SaveDocument(int changedFieldId){
 	
 	
 	
-	Database db = conn.getDatabase(DATABASE);
+	
 	
 	Document updatedDoc = db.createDocument(Value(obj), id);
 
@@ -234,8 +234,8 @@ void Form::SaveDocument(int changedFieldId){
 
 
 void Form::ReloadDocument(){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 	Document d = db.getDocument(id);
 	LoadDocument(id, d.getData().getObject(),  false);
 }

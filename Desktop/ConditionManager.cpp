@@ -108,8 +108,8 @@ void ConditionManager::updateConditions(HWND parent){
 
 void ConditionManager::addEmptyCondition(string _type, HWND parent){
 	type = _type;
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	vector<Object>* fieldsVector = new vector<Object>();
 

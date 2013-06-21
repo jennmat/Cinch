@@ -125,8 +125,8 @@ void loadTabLabels(Array tabs, HWND tabList){
 		string field = config["field"].getString();
 		wstring l =s2ws(label);
 		
-		Connection conn;
-		Database db = conn.getDatabase(DATABASE);
+		;
+		
 		Object doc = db.getDocument(field).getData().getObject();
 
 		int pos = SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
@@ -285,8 +285,8 @@ void CinchDesigner::MoveField(HWND parent)
 }
 
 string getBaseType(string type){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	Object o = db.getDocument(type).getData().getObject();
 	string baseType= type;
@@ -317,8 +317,8 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			self->formWithUpdates = self->loadedForm;
 			
 
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 
 			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
@@ -545,7 +545,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
 
-		Connection conn;
+		;
 		Database d = conn.getDatabase(DATABASE);
 		Object obj = d.viewResults("all-document-types", "by-label", 10, 0);
 		if ( obj["rows"].isArray() ){
@@ -722,8 +722,8 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							rel["label"] = label;
 							rel["source_document_property"] = name;
 
-							Connection conn;
-							Database db = conn.getDatabase(DATABASE);
+							;
+							
 							db.createDocument(Value(rel));
 						}
 						
@@ -778,8 +778,8 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						ShowWindow(GetDlgItem(hDlg, IDC_RELATIONSHIP_LABEL), SW_SHOW);
 						ShowWindow(GetDlgItem(hDlg, IDC_CONDITIONS_LABEL), SW_SHOW);
 						ComboBox_ResetContent(relcombo);
-						Connection conn;
-						Database db = conn.getDatabase(DATABASE);
+						;
+						
 						Object results = db.viewResults("all-relationships", "by-destination-document-type", Value(self->getType()), Value(self->getType()));
 				
 						vector<string>* ids = new vector<string>();
@@ -836,8 +836,8 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				int idx = ComboBox_GetCurSel( GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO));
 				vector<string>* ids = (vector<string>*)GetWindowLong(GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO), GWL_USERDATA);
 				if ( idx >= 0 ){
-					Connection conn;
-					Database db = conn.getDatabase(DATABASE);
+					;
+					
 					Document d = db.getDocument((*ids)[idx]);
 					Object obj = d.getData().getObject();
 					string type = obj["source_document_type"].getString();
@@ -876,8 +876,8 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				newTab["content"] = "Table";
 			} else if ( idx == 2 ){
 
-				Connection conn;
-				Database db = conn.getDatabase(DATABASE);
+				;
+				
 
 				HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
 				vector<string>* ids = (vector<string>*)GetWindowLong(relcombo, GWL_USERDATA);
@@ -964,8 +964,8 @@ void CinchDesigner::ChooseForm()
 void CinchDesigner::SaveForm(){
 	Object o = getForm()->serializeFormToObject(getLoadedForm());
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 	o["target_type"] = getType();
 	Document newDoc = db.createDocument(Value(o));
 	setLoadedForm(newDoc.getData().getObject());
@@ -996,8 +996,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			loadTabLabels(self->tabsForUpdate, visibleTabs);
 
 
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 
 			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
@@ -1063,8 +1063,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDOK ){
 
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 
 			Object form = self->getLoadedForm();
 			
@@ -1262,8 +1262,8 @@ void CinchDesigner::loadForm(string database, string t){
 		/* TODO: Check here if the form has been changed */
 	} else {
 		type = t;
-		Connection conn;
-		Database db = conn.getDatabase(database);
+		;
+		
 		Object results = db.viewResults("all-templates", "by-target-type", Value(type), Value(type), true);
 		Array rows = results["rows"].getArray();
 		if ( rows.size() > 0 ){

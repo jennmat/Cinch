@@ -10,7 +10,7 @@ private:
 	FormLayout layout;
 	Detail detail;
 	HWND parent;
-	Connection conn;
+	;
 	string id;
 	Object obj;
 	bool hasDocument;

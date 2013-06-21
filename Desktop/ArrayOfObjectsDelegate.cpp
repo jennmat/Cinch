@@ -217,8 +217,8 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 	editorTypes.clear();
 	editors.clear();
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	if( obj["columns"].isArray() ){
 		Array columns = obj["columns"].getArray();

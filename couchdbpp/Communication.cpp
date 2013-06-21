@@ -86,6 +86,10 @@ Communication::Communication(const string &url){
    init(url);
 }
 
+void Communication::setTimeout(long millis){
+   curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, millis);
+}
+
 void Communication::init(const string &url){
    curl_global_init(CURL_GLOBAL_DEFAULT);
 
@@ -93,7 +97,9 @@ void Communication::init(const string &url){
    if(!curl)
       throw Exception("Unable to create CURL object");
 
-   //curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
+   curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+   curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+   curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000L);
 
    if(curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer) != CURLE_OK)
       throw Exception("Unable to set writer function");

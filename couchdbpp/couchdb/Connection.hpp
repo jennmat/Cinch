@@ -39,6 +39,7 @@ class Connection{
       bool createDatabase(const std::string&);
       bool deleteDatabase(const std::string&);
 
+	  void setTimeout(long millis);
    private:
       void init(const std::string&);
       void getInfo();

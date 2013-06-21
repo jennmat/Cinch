@@ -71,7 +71,7 @@ static Value createRecord(int key, const string &value,
 int main(){
 
    try{
-      CouchDB::Connection conn;
+	  CouchDB::Connection conn;
       cout << "CouchDB version: " << conn.getCouchDBVersion() << endl;
 
       cout << "Initial database set: ";

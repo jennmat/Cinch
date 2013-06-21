@@ -66,8 +66,8 @@ void AttachmentViewer::PrepareAttachments(){
 		if ( fileWatchController != NULL ){
 			fileWatchController->pause = TRUE;  //Needs work but this is to prevent me from getting into an infinite loop
 		}
-		Connection conn;
-		Database db = conn.getDatabase(DATABASE);
+		;
+		
 		Document doc = db.getDocument(_id, _rev);
 
 		wchar_t tempdir[MAX_PATH];
@@ -320,8 +320,8 @@ string readSingleLine(const char *filename){
 }
 
 void ProcessChanges(wchar_t* dir){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;

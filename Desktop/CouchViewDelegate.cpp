@@ -27,7 +27,7 @@ void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	Database db = conn.getDatabase(DATABASE);
+	
 
 	string s = ws2s(design);
 	int ix = s.find("/");
@@ -88,7 +88,7 @@ wchar_t* CouchViewDelegate::headerContent(int col)
 
 void CouchViewDelegate::loadPage(int row){
 	/* Load some more documents  */
-	Database db = conn.getDatabase(DATABASE);
+	
 		
 	string s = ws2s(design);
 	int ix = s.find("/");

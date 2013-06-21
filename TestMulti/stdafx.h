@@ -12,9 +12,11 @@
 #include <windows.h>
 using namespace std;
 #include <string>
-
+#include <CommCtrl.h>
 #include <WindowsX.h>
 #include <curl\curl.h>
+
+#include "winhttp_async\AsyncWinHttp.h"
 
 // C RunTime Header Files
 #include <stdlib.h>

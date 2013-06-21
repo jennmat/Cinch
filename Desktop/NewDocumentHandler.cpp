@@ -108,8 +108,8 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
                                                       IID_PPV_ARGS(&pCollection));
         
 
-		Connection conn;
-		Database db = conn.getDatabase(DATABASE);
+		;
+		
 		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
 		Array rows = r["rows"].getArray();
 		unsigned int i = 0;

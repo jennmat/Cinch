@@ -69,8 +69,8 @@ vector<string> collectAttributesSingle(Database& db, string field){
 
 
 vector<string> collectAttributes(string field){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	vector<string> attributes;
 
@@ -99,8 +99,8 @@ vector<string> collectAttributes(string field){
 
 
 FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 
 	Object field = db.getDocument(id).getData().getObject();
 		

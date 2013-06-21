@@ -79,3 +79,7 @@ bool Connection::deleteDatabase(const string &db){
 
    return obj["ok"].getBoolean();
 }
+
+void Connection::setTimeout(long millis){
+	comm.setTimeout(millis);
+}

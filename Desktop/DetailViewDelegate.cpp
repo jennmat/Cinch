@@ -37,8 +37,8 @@ int DetailViewDelegate::totalRows()
 }
 
 void DetailViewDelegate::LoadDocument(string database, Object o){
-	Connection conn;
-	Database db = conn.getDatabase(database);
+	;
+	
 	Value startkey = o[startkey_from];
 	Value endkey = o[endkey_from];
 
@@ -70,8 +70,8 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 
 	Object c = config["columns"].getArray()[col].getObject();
 	string field = c["field"].getString();
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
+	;
+	
 	Object definition = db.getDocument(field).getData().getObject();
 	string label = definition["label"].getString();
 
@@ -85,7 +85,7 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 
 const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 {
-	Connection conn;
+	;
 	Database d = conn.getDatabase(DATABASE);
 			
 	if ( (*obj)["rows"].isArray() ){

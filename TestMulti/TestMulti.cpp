@@ -10,6 +10,8 @@
 
 using namespace std;
 
+HWND hDlg;
+  
 
 #define MAX_LOADSTRING 100
 
@@ -22,191 +24,187 @@ int domultitransfer(void);
 int doeasy(void);
 void domultitest();
 
-// Forward declarations of functions included in this code module:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
-BOOL				InitInstance(HINSTANCE, int);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+string buffer1;
+string buffer2;
 
-int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+
+
+static int writer(char *data, size_t size, size_t nmemb, string *dest){
+   int written = 0;
+   buffer1.append(data);
+   written = size * nmemb;
+   return written;
+}
+
+
+static int writer2(char *data, size_t size, size_t nmemb, string *dest){
+   int written = 0;
+   buffer2.append(data);
+  
+   written = size * nmemb;
+   return written;
+}
+
+#pragma comment(linker, \
+  "\"/manifestdependency:type='Win32' "\
+  "name='Microsoft.Windows.Common-Controls' "\
+  "version='6.0.0.0' "\
+  "processorArchitecture='*' "\
+  "publicKeyToken='6595b64144ccf1df' "\
+  "language='*'\"")
+
+#pragma comment(lib, "ComCtl32.lib")
+
+void WinHttp_CallBack(AsyncWinHttp* asyncWinHttp)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
-
- 	// TODO: Place code here.
-	MSG msg;
-	HACCEL hAccelTable;
-
-	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_TESTMULTI, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
-
-	// Perform application initialization:
-	if (!InitInstance (hInstance, nCmdShow))
+	if (asyncWinHttp->status.Status() == ASYNC_WINHTTP_ERROR)
 	{
-		return FALSE;
+		//printf("%S", asyncWinHttp->status.Desc().c_str());
 	}
-
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TESTMULTI));
-
-	while (true){
-
-		do_curl_processing();
+	else
+	{
+		std::string response;
+		asyncWinHttp->GetResponseRaw(response);
 		
-		// Main message loop:
-		while (PeekMessage(&msg, NULL,  0, 0, PM_REMOVE)) 
-		{ 
-		//while (GetMessage(&msg, NULL, 0, 0))
-		//{
-			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
+		wstring w = s2ws(response);
+			
+		Edit_SetText(GetDlgItem(hDlg, IDC_EDIT1), w.c_str());
+
 	}
-
-	do_curl_cleanup();
-
-	return (int) msg.wParam;
-}
-
-void fun(){
-
 }
 
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-//  COMMENTS:
-//
-//    This function and its usage are only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-//    function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
+
+void WinHttp_CallBack2(AsyncWinHttp* asyncWinHttp)
 {
-	WNDCLASSEX wcex;
+	if (asyncWinHttp->status.Status() == ASYNC_WINHTTP_ERROR)
+	{
+		//printf("%S", asyncWinHttp->status.Desc().c_str());
+	}
+	else
+	{
+		std::string response;
+		asyncWinHttp->GetResponseRaw(response);
+		
+		wstring w = s2ws(response);
+			
+		Edit_SetText(GetDlgItem(hDlg, IDC_EDIT2), w.c_str());
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= WndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TESTMULTI));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_TESTMULTI);
-	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-	return RegisterClassEx(&wcex);
+	}
 }
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   HWND hWnd;
-
-   hInst = hInstance; // Store instance handle in our global variable
-
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   edit = CreateWindowEx(0, L"EDIT", L"", WS_BORDER|WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
-						0, 0, 500, 200, hWnd, NULL, GetModuleHandle(0), NULL);
-
-   SetWindowFont(edit, CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI")), false);
-
-   ShowWindow(edit, nCmdShow);
-
-   edit2 = CreateWindowEx(0, L"EDIT", L"",WS_BORDER| WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
-						500, 0, 510, 200, hWnd, NULL, GetModuleHandle(0), NULL);
-
-   SetWindowFont(edit2, CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI")), false);
-
-   ShowWindow(edit2, nCmdShow);
+  switch(uMsg)
+  {
+  case WM_COMMAND:
+    switch(LOWORD(wParam))
+    {
+    case IDCANCEL:
+      SendMessage(hDlg, WM_CLOSE, 0, 0);
+      return TRUE;
+    case IDC_BUTTON1:
+		{
+			HWND h = GetDlgItem(hDlg, IDC_EDIT3);
+			int len = GetWindowTextLength(h);
+			len+=sizeof(wchar_t);
+			wchar_t* t = new wchar_t[len];
+			GetWindowText(h, t, len);
+			
+			/*
+			string s = ws2s(t);
+			download_url(s.c_str(), writer);*/
 
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+			http.Initialize(WinHttp_CallBack);
+			http.SetTimeout(30 * 60 * 1000);
+			http.SendRequest(t);
+	
+			
+		}
+	  break;
+	case IDC_BUTTON2:
+		{
+			HWND h = GetDlgItem(hDlg, IDC_EDIT4);
+			int len = GetWindowTextLength(h);
+			len+=sizeof(wchar_t);
+			wchar_t* t = new wchar_t[len];
+			GetWindowText(h, t, len);
+			string s = ws2s(t);
+			//download_url(s.c_str(), writer2);
 
-   do_curl_setup();
+			http.Initialize(WinHttp_CallBack2);
+			http.SetTimeout(3 * 60 * 1000);
+			http.SendRequest(t);
+	
+			
+		}
+	  break;
+    }
+    break;
+	
+  case WM_CLOSE:
+    DestroyWindow(hDlg);
+    return TRUE;
 
-   return TRUE;
+  case WM_DESTROY:
+    PostQuitMessage(0);
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_COMMAND	- process the application menu
-//  WM_PAINT	- Paint the main window
-//  WM_DESTROY	- post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
 
+int WINAPI _tWinMain(HINSTANCE hInst, HINSTANCE h0, LPTSTR lpCmdLine, int nCmdShow)
+{
+
+
+  MSG msg;
+  BOOL ret;
+
+  InitCommonControls();
+  hDlg = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_DIALOG1), 0, DialogProc, 0);
+  ShowWindow(hDlg, nCmdShow);
+
+  do_curl_setup();
+
+  while ( true ){ 
+
+	  do_curl_processing();
+
+	  while((ret = PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) != 0) {
+		if(ret == -1)
+		  return -1;
+
+		if(!IsDialogMessage(hDlg, &msg)) {
+		  TranslateMessage(&msg);
+		  DispatchMessage(&msg);
+		}
+	  }
+  }
+
+  return 0;
+}
+
+// Message handler for about box.
+INT_PTR CALLBACK Main(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
 		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
 		}
 		break;
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
-		EndPaint(hWnd, &ps);
-		break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return 0;
+	return (INT_PTR)FALSE;
 }
 
 // Message handler for about box.
@@ -243,40 +241,44 @@ wstring s2ws(const string& s)
 }
 
 
-
-
-static int writer(char *data, size_t size, size_t nmemb, string *dest){
-   int written = 0;
-   string s = string(data);
-   wstring w= s2ws(s);
-   //int len = Edit_GetTextLength(edit) + sizeof(wchar_t);
-   //wchar_t* cur = new wchar_t[len];
-   //Edit_GetText(edit, cur, len);
-
-   //w.append(cur);
-
-   Edit_SetText(edit, w.c_str());
-   written = size * nmemb;
-   return written;
+std::string ws2s(const std::wstring& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0); 
+    char* buf = new char[len];
+    WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, buf, len, 0, 0); 
+    std::string r(buf);
+    delete[] buf;
+    return r;
 }
 
 
-static int writer2(char *data, size_t size, size_t nmemb, string *dest){
-   int written = 0;
-   string s = string(data);
-   wstring w= s2ws(s);
-   //int len = Edit_GetTextLength(edit2) + sizeof(wchar_t);
-   //wchar_t* cur = new wchar_t[len];
-   //Edit_GetText(edit2, cur, len);
 
-   //w.append(cur);
+void download_url(const char *url, void* writeFunc){
+	if( writeFunc == writer ){
+		http_handle = curl_easy_init();
+		curl_easy_setopt(http_handle, CURLOPT_URL, url);
+		curl_easy_setopt(http_handle, CURLOPT_WRITEFUNCTION, writeFunc);
+		curl_easy_setopt(http_handle, CURLOPT_VERBOSE, 1L);
+	
+		curl_multi_add_handle(multi_handle, http_handle);
+	} else {
+		http_handle2 = curl_easy_init();
+		curl_easy_setopt(http_handle2, CURLOPT_URL, url);
+		curl_easy_setopt(http_handle2, CURLOPT_WRITEFUNCTION, writeFunc);
+		curl_easy_setopt(http_handle2, CURLOPT_VERBOSE, 1L);
+	
+		curl_multi_add_handle(multi_handle, http_handle2);
+	
+	}
+		
+	
+	int running;
+	/* we start some action by calling perform right away */
+	curl_multi_perform(multi_handle, &running);
 
-   Edit_SetText(edit2, w.c_str());
-   written = size * nmemb;
-   return written;
 }
-
-
 
 /*
  * Download a HTTP file and upload an FTP file simultaneously.
@@ -288,27 +290,8 @@ void do_curl_setup(void)
 {
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
-	http_handle = curl_easy_init();
-	http_handle2 = curl_easy_init();
-
-	/* set the options (I left out a few, you'll get the point anyway) */
-	curl_easy_setopt(http_handle, CURLOPT_URL, "http://www.google.com/");
-	curl_easy_setopt(http_handle, CURLOPT_WRITEFUNCTION, writer);
-	curl_easy_setopt(http_handle, CURLOPT_VERBOSE, 1L);
-	
-	curl_easy_setopt(http_handle2, CURLOPT_URL, "http://www.yahoo.com/");
-	curl_easy_setopt(http_handle2, CURLOPT_WRITEFUNCTION, writer2);
-	curl_easy_setopt(http_handle2, CURLOPT_VERBOSE, 1L);
-	
 	/* init a multi stack */
 	multi_handle = curl_multi_init();
-
-	/* add the individual transfers */
-	curl_multi_add_handle(multi_handle, http_handle);
-	curl_multi_add_handle(multi_handle, http_handle2);
-	int running;
-	/* we start some action by calling perform right away */
-	curl_multi_perform(multi_handle, &running);
 
 }
 
@@ -317,6 +300,9 @@ void do_curl_processing(){
 
 	struct timeval timeout;
 	int rc; /* select() return code */
+
+	CURLMsg *msg; /* for picking up messages with the transfer status */
+	  int msgs_left; /* how many messages are left */
 
 	fd_set fdread;
 	fd_set fdwrite;
@@ -366,6 +352,37 @@ void do_curl_processing(){
 			break;
 		}
 	}
+
+	/* See how the transfers went */
+  while ((msg = curl_multi_info_read(multi_handle, &msgs_left))) {
+    if (msg->msg == CURLMSG_DONE) {
+      int idx, found = 0;
+
+      /* Find out which handle this message is about */
+      for (idx=0; idx<HANDLECOUNT; idx++) {
+        found = (msg->easy_handle == http_handle);
+        if(found)
+          break;
+      }
+
+	  if ( msg->easy_handle == http_handle ){
+		  wstring w = s2ws(buffer1);
+			
+			Edit_SetText(GetDlgItem(hDlg, IDC_EDIT1), w.c_str());
+
+			buffer1.clear();
+
+	  } else {
+		  wstring w = s2ws(buffer2);
+			
+			Edit_SetText(GetDlgItem(hDlg, IDC_EDIT2), w.c_str());
+
+			buffer2.clear();
+	  
+      }
+    }
+  }
+
 }
 
 

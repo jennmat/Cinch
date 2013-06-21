@@ -107,6 +107,13 @@ struct FileWatchController {
 #include "NewDocumentHandler.h"
 
 
+#include "console.h"
+
+#include <conio.h>
+#include <limits>	// For SHRT_MAX
+#include <cassert>
+#include <iostream>
+
 
 
 #define ROW_HEIGHT 25
@@ -157,3 +164,6 @@ struct FileWatchController {
 
 #define BUFSIZE 1024
 #define MD5LEN  16
+
+extern Connection conn;
+extern Database db;

@@ -42,6 +42,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 
+	stu::Console::Create(500, 200);
+
 	HRESULT hr = CoInitialize(NULL);
     if (FAILED(hr))
     {
@@ -191,8 +193,6 @@ void LoadViews(HWND hwnd, string emitsDocumentsOfType = ""){
 
 	TreeView_DeleteAllItems(hwnd);
 
-	Connection conn;
-	Database db = conn.getDatabase(DATABASE);
 	Object views = db.listViews();
 
    if ( views["total_rows"].getInt() > 0 ){
@@ -313,7 +313,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
 	designer = CinchDesigner::CreateCinchDesigner(hWnd);
    
-	Database db = conn.getDatabase(DATABASE);
+	
    
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
@@ -427,7 +427,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		int row = gridcontrol->GetActiveRow();
 		string str = delegate->getDocumentIdForRow(row);
-		Database db = conn.getDatabase(DATABASE);
+		
 		Document d = db.getDocument(str);
 		Value v = d.getData();
 		designercontrol->LoadDocument(DATABASE, d.getID(), d, v.getObject());
@@ -509,8 +509,8 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 		
-		Connection conn;
-		Database db = conn.getDatabase(DATABASE);
+		;
+		
 		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
 	
 		vector<string>* ids = new vector<string>();
@@ -564,8 +564,8 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 					/* Setup the sort combo */
 
- 					Connection conn;
-					Database db = conn.getDatabase(DATABASE);
+ 					;
+					
 					vector<Object>* fieldsVector = new vector<Object>();
 
 					Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);
@@ -617,8 +617,8 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			int idx = ComboBox_GetCurSel(typeCombo);
 			string type = (*ids)[idx];
 
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 			
 
 			int sortIdx = ComboBox_GetCurSel(sortCombo);
@@ -824,8 +824,8 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 			_template["fields"] = fields;
 			_template["cinch_type"] = "template";
 
-			Connection conn;
-			Database db = conn.getDatabase(DATABASE);
+			;
+			
 
 			db.createDocument(Value(definition));
 
@@ -858,6 +858,7 @@ void changesArrived(){
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
 	Connection conn;
+	conn.setTimeout(0);
 	Database db = conn.getDatabase(DATABASE);
 	db.listenForChanges(changesArrived);
 

@@ -66,6 +66,7 @@ class Communication{
 
 	  void saveRawData(std::string url, std::string filename);
 
+	  void setTimeout(long millis);
    private:
       void init(const std::string&);
       Value getData(const std::string&, const std::string&,
