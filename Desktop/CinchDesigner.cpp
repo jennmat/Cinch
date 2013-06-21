@@ -51,7 +51,7 @@ HWND CinchDesigner::CreateCinchDesigner(HWND parent){
 	HWND hWnd = CreateWindowEx(0,
 		designerClassName,
 		_T("Cinch Designer"),
-		WS_VISIBLE | WS_CHILD | WS_BORDER,
+		WS_VISIBLE | WS_CHILD,
 		0, 0, 0, 0,
 		parent,
 		NULL, GetModuleHandle(0), NULL);

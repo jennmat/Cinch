@@ -100,7 +100,7 @@ void Detail::CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* 
 }
 
 void Detail::CreateTextareaForPage(const wchar_t* field, int i){
-	detailPages[i] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
+	detailPages[i] = CreateWindowEx(0, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
 						0, 0, CONTROL_WIDTH, 200, detail, (HMENU)(i+DETAIL_START_ID), GetModuleHandle(0), NULL);
 	contentType[i] = TEXTAREA_CONTENT;
 	pageCount++;

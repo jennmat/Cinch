@@ -609,7 +609,7 @@
  */
 
 /* Define to enable c-ares asynchronous DNS lookups. */
-#define USE_ARES 1 
+/*#define USE_ARES 1 */
 
 /* Define to enable threaded asynchronous DNS lookups. */
 /*#define USE_THREADS_WIN32 1*/

@@ -171,9 +171,6 @@
     <ProjectReference Include="..\curl\lib\libcurl.vcxproj">
       <Project>{87ee9da4-de1e-4448-8324-183c98dca588}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Projects\c-ares\c-ares.vcxproj">
-      <Project>{3298296a-c822-415f-84b9-d91564a28abf}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Projects\CinchGrid\CinchGrid.vcxproj">
       <Project>{10bbbce6-fdc9-4561-8a0c-89a2e8b15abb}</Project>
     </ProjectReference>

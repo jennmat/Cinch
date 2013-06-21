@@ -23,14 +23,29 @@
         <String Id="201">Users</String>
       </Command.LabelTitle>
     </Command>
+    <Command Name="cmdTabDebug">
+      <Command.LabelTitle>
+        <String Id="202">Debug</String>
+      </Command.LabelTitle>
+    </Command>
     <Command Name="cmdShapesGroup">
       <Command.LabelTitle>
         <String Id="210">Documents</String>
       </Command.LabelTitle>
     </Command>
+    <Command Name="cmdDebugGroup">
+      <Command.LabelTitle>
+        <String Id="213">Debug</String>
+      </Command.LabelTitle>
+    </Command>
     <Command Name="cmdViewGroup">
       <Command.LabelTitle>
         <String Id="211">Views</String>
+      </Command.LabelTitle>
+    </Command>
+    <Command Name="cmdShowDebugOutput" Symbol="IDR_CMD_DEBUGOUTPUT">
+      <Command.LabelTitle>
+        <String Id="212">Show Debug Output</String>
       </Command.LabelTitle>
     </Command>
     <!-- Optional Symbol and Id properties are not defined for the following commands.
@@ -105,6 +120,11 @@
         </Tab>
         <Tab CommandName="cmdTabUsers">
           
+        </Tab>
+        <Tab CommandName="cmdTabDebug">
+          <Group CommandName="cmdDebugGroup" SizeDefinition="OneButton">
+            <Button CommandName="cmdShowDebugOutput"/>
+          </Group>
         </Tab>
       </Ribbon.Tabs>
       <Ribbon.QuickAccessToolbar>

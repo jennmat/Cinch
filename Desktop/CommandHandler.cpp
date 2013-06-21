@@ -191,6 +191,8 @@ STDMETHODIMP CCommandHandler::Execute(
 		switch (nCmdID) {
 		case IDR_CMD_NEW_VIEW:
 			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_ADD_VIEW), hWnd, NewView);
+		case IDR_CMD_DEBUGOUTPUT:
+			stu::Console::Create(500, 200);
 		}
 	}
     return S_OK;
