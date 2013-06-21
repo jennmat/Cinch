@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3298296A-C822-415F-84B9-D91564A28ABF}</ProjectGuid>
+    <RootNamespace>cares</RootNamespace>
+    <ProjectName>libcares</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\work\Cinch\c-ares-1.10.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_MBCS;CARES_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\c-ares-1.10.0\ares.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_build.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_data.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_dns.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_getenv.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_getopt.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_inet_net_pton.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_iphlpapi.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_ipv6.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_library_init.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_llist.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_nowarn.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_platform.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_private.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_rules.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_setup.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_strcasecmp.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_strdup.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_version.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\ares_writev.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\bitncmp.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\config-dos.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\config-win32.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\nameser.h" />
+    <ClInclude Include="..\..\c-ares-1.10.0\setup_once.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\c-ares-1.10.0\acountry.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\adig.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ahost.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_cancel.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_create_query.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_data.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_destroy.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_expand_name.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_expand_string.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_fds.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_free_hostent.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_free_string.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_getenv.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_gethostbyaddr.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_gethostbyname.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_getnameinfo.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_getopt.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_getsock.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_init.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_library_init.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_llist.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_mkquery.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_nowarn.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_options.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_aaaa_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_a_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_mx_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_naptr_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_ns_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_ptr_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_soa_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_srv_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_parse_txt_reply.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_platform.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_process.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_query.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_search.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_send.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_strcasecmp.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_strdup.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_strerror.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_timeout.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_version.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares_writev.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares__close_sockets.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares__get_hostent.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares__read_line.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\ares__timeval.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\bitncmp.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\inet_net_pton.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\inet_ntop.c" />
+    <ClCompile Include="..\..\c-ares-1.10.0\windows_port.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
