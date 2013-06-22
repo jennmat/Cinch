@@ -289,7 +289,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    InitCommonControls();
 
    tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"),
-	   WS_VISIBLE | WS_CHILD | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
+	   WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
 	   0, 0, TREE_WIDTH, client.bottom,
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 

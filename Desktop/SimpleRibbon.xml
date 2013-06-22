@@ -53,7 +53,7 @@
     and a valid Id for this command will be automatically generated. -->
     <Command Name="cmdSizeAndColor" Symbol="IDR_CMD_SIZEANDCOLOR">
       <Command.LabelTitle>
-        <String Id="250">New Document</String>
+        <String Id="250">New</String>
       </Command.LabelTitle>
       <Command.LargeImages>
         <Image Id ="291">res/AddTableL.bmp</Image>
