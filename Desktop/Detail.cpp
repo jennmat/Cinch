@@ -52,7 +52,7 @@ void Detail::ShowPage(int i){
 	RECT tabControlClient;
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
 	GetClientRect(tabControl, &tabControlClient);
-	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom, 0);
+	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom-tabs.bottom, 0);
 	//ShowWindow(detailPages[i], SW_SHOW);
 
 	if ( initialized[i] == 0 ){
@@ -138,6 +138,7 @@ HWND Detail::GetDetailPage(int i){
 
 void Detail::deserializeUIElements(Object obj)
 {
+	
 	for(int i=0; i<getDetailPageCount(); i++){
 		detailPages[i] = NULL;
 		contentType[i] = 0;
@@ -152,9 +153,7 @@ void Detail::deserializeUIElements(Object obj)
 
 	Array tabs = obj["tabs"].getArray();
 
-	;
 	
-
 	for(unsigned int i=0; i<tabs.size(); i++){
 		Object tab = tabs[i].getObject();
 		string field = tab["field"].getString();
@@ -192,8 +191,6 @@ void Detail::deserializeUIElements(Object obj)
 
 			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
 			if ( !config["columns"].isArray() ){
-				;
-				
 				Object results = db.viewResults("all-document-types", "by-name", Value(docs_of_type), Value(docs_of_type));
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
@@ -232,10 +229,8 @@ void Detail::deserializeUIElements(Object obj)
 	}
 
 	
-	
 	ShowWindow(detail, SW_SHOW);
-	ShowWindow(tabControl, SW_SHOW);
-
+	
 	if ( getDetailPageCount() > 0 ){
 		ShowWindow(detailPages[0], SW_SHOW);
 	}
@@ -339,6 +334,18 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			self->getForm()->ReloadDocument();
 			break;
 		}
+	case WM_ERASEBKGND:
+		{
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+			UINT rheight;
+			GetRibbonHeight(&rheight);
+			rect.top = rheight;
+			HDC dc = (HDC)wParam;
+			FillRect(dc, &rect, CreateSolidBrush(DEFAULT_BACKGROUND_COLOR));
+
+		}
+		return 1;
 	case WM_NOTIFY:
 		{
 		LPNMHDR lpnmhdr = (LPNMHDR)lParam;
@@ -639,7 +646,9 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 		tabControl = CreateWindow(WC_TABCONTROL, L"", 
 			WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, 
 			0, 0, 0, 0, detail, NULL, hInst, NULL); 
-    
+		
+		
+
 		//grid = CinchGrid::CreateCinchGrid(parent, new ReferenceDelegate());
 	
 		/*tab1 = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD|WS_VISIBLE|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN,
@@ -658,7 +667,7 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 	SetWindowPos(detail, HWND_TOP, 
 		displayArea.left,
 		displayArea.top,
-		displayArea.right-displayArea.left,
+		displayArea.right,
 		displayArea.bottom-displayArea.top, 0);
 
 
@@ -667,16 +676,19 @@ void Detail::show(HWND parent, HINSTANCE hInst, RECT displayArea){
 	SetWindowPos(tabControl, HWND_TOP, 
 		displayArea.left,
 		displayArea.top,
-		displayArea.right-displayArea.left,
+		displayArea.right,
 		displayArea.bottom-displayArea.top, SWP_NOMOVE);
 
 	ShowWindow(tabControl, SW_SHOW);
 
+	
 	RECT tr;
+	RECT tabRect;
 	TabCtrl_GetItemRect(tabControl, 0, &tr);
+	GetClientRect(tabControl, &tabRect);
 
 	for(int i=0; i<getDetailPageCount(); i++){
-		SetWindowPos(detailPages[i], HWND_TOP, 0, tr.bottom, displayArea.right-displayArea.left, displayArea.bottom-displayArea.top-tr.bottom, 0);
+		SetWindowPos(detailPages[i], HWND_TOP, 0, tr.bottom, tabRect.right, tabRect.bottom-tr.bottom, 0);
 	}
 
 

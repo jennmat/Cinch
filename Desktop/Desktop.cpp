@@ -18,6 +18,8 @@ using namespace CouchDB;
 
 #define TREE_WIDTH 200
 #define LIST_WIDTH 200
+#define TOP_MARGIN 5
+#define INNER_MARGIN 5
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -112,7 +114,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DESKTOP));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground	= CreateSolidBrush(DEFAULT_BACKGROUND_COLOR);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_DESKTOP);
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -289,9 +291,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    InitCommonControls();
 
    tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"),
-	   WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
+	   WS_VISIBLE | WS_CHILD | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS,
 	   0, 0, TREE_WIDTH, client.bottom,
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
+
+   TreeView_SetBkColor(tree, DEFAULT_BACKGROUND_COLOR);
 
 	HIMAGELIST hImageList=ImageList_Create(16,16,ILC_COLOR16,3,10);					  // Macro: 16x16:16bit with 2 pics [array]
 	HBITMAP hBitMap=LoadBitmap(hInst,MAKEINTRESOURCE(IDB_TREE));					  // load the picture from the resource
@@ -318,7 +322,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    
    
 	ShowWindow(grid, SW_SHOW);
-	ShowWindow(designer, SW_SHOW);
+	//ShowWindow(designer, SW_SHOW);
 
 	LoadViews(tree);
   
@@ -344,9 +348,9 @@ void SizeWindows(HWND hWnd)
 	UINT ribbonHeight;
 	GetRibbonHeight(&ribbonHeight);
 	
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH, ribbonHeight, LIST_WIDTH, client.bottom - ribbonHeight, 0);
-	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight, TREE_WIDTH, client.bottom - ribbonHeight, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH, ribbonHeight, client.right - TREE_WIDTH - LIST_WIDTH, client.bottom - ribbonHeight, 0);
+	SetWindowPos(grid, HWND_TOP, TREE_WIDTH + INNER_MARGIN, ribbonHeight+TOP_MARGIN, LIST_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
+	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight+TOP_MARGIN, TREE_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN, 0);
+	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH + INNER_MARGIN + INNER_MARGIN, ribbonHeight + TOP_MARGIN, client.right - TREE_WIDTH - LIST_WIDTH - INNER_MARGIN - INNER_MARGIN - INNER_MARGIN, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
 
 	
 	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
@@ -410,6 +414,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_ERASEBKGND:
+		{
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+			UINT rheight;
+			GetRibbonHeight(&rheight);
+			rect.top = rheight;
+			HDC dc = (HDC)wParam;
+			FillRect(dc, &rect, CreateSolidBrush(DEFAULT_BACKGROUND_COLOR));
+
+		}
 		return 1;
 	case WM_NEW_DATA_ARRIVED:
 		{

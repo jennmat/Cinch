@@ -36,7 +36,7 @@ void RegisterCinchDesigner()
     wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
     wc.hIcon          = 0;
     wc.lpszMenuName   = 0;
-	wc.hbrBackground  = (HBRUSH)CreateSolidBrush(RGB(240,240,240));
+	wc.hbrBackground  = (HBRUSH)CreateSolidBrush(DEFAULT_BACKGROUND_COLOR);
     wc.style          = 0;
     wc.cbClsExtra     = 0;
     wc.cbWndExtra     = 0;

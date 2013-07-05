@@ -81,8 +81,8 @@ struct FileWatchController {
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
 //#define DATABASE "cinch-business-starter"
-#define DATABASE "cinch-inventory-starter"
-//#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-inventory-starter"
+#define DATABASE "cinch-starter"
 //#define DATABASE "hvac"
 
 // TODO: reference additional headers your program requires here
@@ -160,6 +160,8 @@ struct FileWatchController {
 
 
 #define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))
+
+#define DEFAULT_BACKGROUND_COLOR RGB(240,240,240)
 
 
 #define BUFSIZE 1024

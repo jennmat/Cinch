@@ -48,23 +48,21 @@ FormLayout* Form::getLayout(){
 }
 
 void Form::show(HWND parent, HINSTANCE hInst){
-	RECT window;
-	GetWindowRect(parent, &window);
+	RECT client;
+	GetClientRect(parent, &client);
 
-	int window_width = window.right - window.left;
-	int window_height = window.bottom - window.top;
-
+	
 	RECT form;
 	form.left = 0;
 	form.top = 0;
-	form.right = window_width;
-	form.bottom = window_height - 275;
+	form.right = client.right;
+	form.bottom = client.bottom - 275;
 
 	RECT detailArea;
 	detailArea.left = 0;
-	detailArea.right = window_width;
-	detailArea.top = window_height - 275;
-	detailArea.bottom = window_height;
+	detailArea.right = client.right;
+	detailArea.top = client.bottom - 275;
+	detailArea.bottom = client.bottom;
 
 
 	layout.show(parent, hInst, form);
