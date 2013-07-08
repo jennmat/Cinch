@@ -53,7 +53,7 @@ void Detail::ShowPage(int i){
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
 	GetClientRect(tabControl, &tabControlClient);
 	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom-tabs.bottom, 0);
-	//ShowWindow(detailPages[i], SW_SHOW);
+	ShowWindow(detailPages[i], SW_SHOW);
 
 	if ( initialized[i] == 0 ){
 		InitializePage(i);
@@ -232,7 +232,8 @@ void Detail::deserializeUIElements(Object obj)
 	ShowWindow(detail, SW_SHOW);
 	
 	if ( getDetailPageCount() > 0 ){
-		ShowWindow(detailPages[0], SW_SHOW);
+		//ShowWindow(detailPages[0], SW_SHOW);
+		ShowPage(0);
 	}
 
 }

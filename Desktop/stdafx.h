@@ -82,8 +82,9 @@ struct FileWatchController {
 //#define DATABASE "cinch-customer-contact-plugin-starter"
 //#define DATABASE "cinch-business-starter"
 //#define DATABASE "cinch-inventory-starter"
-#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-starter"
 //#define DATABASE "hvac"
+#define DATABASE "zebra"
 
 // TODO: reference additional headers your program requires here
 #include "util.h"
