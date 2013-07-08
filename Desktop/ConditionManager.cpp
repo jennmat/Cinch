@@ -108,9 +108,7 @@ void ConditionManager::updateConditions(HWND parent){
 
 void ConditionManager::addEmptyCondition(string _type, HWND parent){
 	type = _type;
-	;
 	
-
 	vector<Object>* fieldsVector = new vector<Object>();
 
 	HWND fieldCombo = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", L"", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_OVERLAPPED | WS_TABSTOP,
@@ -186,7 +184,7 @@ string ConditionManager::getJavascript(){
 				vector<Object>* fieldsVector = (vector<Object>*)GetWindowLong(c->fieldCombo, GWL_USERDATA);
 				Object field = (*fieldsVector)[fieldIdx];
 
-				string fieldforcomparison = field["name"].getString();
+				string fieldforcomparison = field["_id"].getString();
 
 				vector<string>* operatorVector = (vector<string>*)GetWindowLong(c->compareCombo, GWL_USERDATA);
 				int compareIdx = ComboBox_GetCurSel(c->compareCombo);

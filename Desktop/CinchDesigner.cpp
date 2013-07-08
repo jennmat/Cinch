@@ -284,19 +284,7 @@ void CinchDesigner::MoveField(HWND parent)
 
 }
 
-string getBaseType(string type){
-	;
-	
 
-	Object o = db.getDocument(type).getData().getObject();
-	string baseType= type;
-	while ( o["type"].getString().compare(baseType) != 0 ){
-		baseType = o["type"].getString();
-		o = db.getDocument(type).getData().getObject();
-	}
-
-	return o["type"].getString();
-}
 
 INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {

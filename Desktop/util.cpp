@@ -97,11 +97,28 @@ vector<string> collectAttributes(string field){
 	return attributes;
 }
 
+map<string,string> baseTypes;
+
+string getBaseType(string type){
+
+	if ( baseTypes.find(type) != baseTypes.end() ){
+		return baseTypes[type];
+	}
+
+	string baseType= type;
+	Object o = db.getDocument(type).getData().getObject();
+	while ( o["type"].getString().compare(baseType) != 0 ){
+		baseType = o["type"].getString();
+		o = db.getDocument(type).getData().getObject();
+	}
+
+	baseTypes[type] = baseType;
+
+	return baseType;
+}
+
 
 FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
-	;
-	
-
 	Object field = db.getDocument(id).getData().getObject();
 		
 	string label;
@@ -122,19 +139,11 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	bool autocomplete = field["autocomplete"].getBoolean();
 
 	/* Find the base type and the first default view */
-	Object o = db.getDocument(type).getData().getObject();
-	Object defaultView;
-	bool foundDefaultView = false;
-	
-	Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(name), Value(name), true);
-	Array rows = results["rows"].getArray();
-	if ( rows.size() > 0 ){
-		defaultView = rows[0].getObject();
-		foundDefaultView = true;
-	}
+	//Object defaultView;
+	//bool foundDefaultView = false;
+	string baseType= getBaseType(type);
 
-	string baseType= type;
-	while ( o["type"].getString().compare(baseType) != 0 ){
+	/*while ( o["type"].getString().compare(baseType) != 0 ){
 		baseType = o["type"].getString();
 		o = db.getDocument(type).getData().getObject();
 
@@ -144,7 +153,7 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 			defaultView = rows[0].getObject();
 			foundDefaultView = true;
 		}
-	}
+	}*/
 
 	wchar_t* wclabel = new wchar_t[label.length()+sizeof(wchar_t)];
 	memset(wclabel, 0, label.length() + sizeof(wchar_t));
@@ -171,19 +180,22 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	} else if ( baseType.compare(BOOLEAN) == 0 ){
 		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){
+		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(name), Value(name), true);
+		Array rows = results["rows"].getArray();
+		Object conf;
+		if ( rows.size() > 0 ){
+			Object doc = rows[0]["doc"].getObject();
+			string design = doc["design_name"].getString();
+			string view = doc["view_name"].getString();
+
+			Object pick;
+			pick["design"] = design;
+			pick["view"] = view;
+			conf["pick_from"] = pick;
+		}
+
+		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(conf), bare);
 		
-		Object doc = defaultView["doc"].getObject();
-		string design = doc["design_name"].getString();
-		string view = doc["view_name"].getString();
-
-		Object config;
-		Object pick;
-		pick["design"] = design;
-		pick["view"] = view;
-		config["pick_from"] = pick;
-
-		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(config), bare);
-			
 	} else {
 		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
 	}

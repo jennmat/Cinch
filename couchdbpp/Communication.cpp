@@ -31,8 +31,8 @@ static Value parseData(const string &buffer){
 	value.loadFromString(buffer);
 
 #ifdef COUCH_DB_DEBUG
-   cout << "Data:" << endl;
-   value.writeToStream(std::cout);
+   //cout << "Data:" << endl;
+   //value.writeToStream(std::cout);
 #endif
 
    return value;
@@ -98,7 +98,7 @@ void Communication::init(const string &url){
       throw Exception("Unable to create CURL object");
 
    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-   curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+   //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000L);
 
    if(curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer) != CURLE_OK)
@@ -167,7 +167,7 @@ void Communication::getRawData(const string &_url, const string &method,
    string url = baseURL + _url;
 
 #ifdef COUCH_DB_DEBUG
-   cout << "Getting data: " << url << " [" << method << "]" << endl;
+   printf("%s\n", url.c_str());
 #endif
 
    buffer.clear();
@@ -177,7 +177,7 @@ void Communication::getRawData(const string &_url, const string &method,
 
    if(data.size() > 0){
 #ifdef COUCH_DB_DEBUG
-      cout << "Sending data: " << data << endl;
+      //cout << "Sending data: " << data << endl;
 #endif
 
       if(curl_easy_setopt(curl, CURLOPT_READFUNCTION, reader) != CURLE_OK)
@@ -225,12 +225,12 @@ void Communication::getRawData(const string &_url, const string &method,
    }
 
 #ifdef COUCH_DB_DEBUG
-   long responseCode;
-   if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
-      throw Exception("Unable to get response code");
+   //long responseCode;
+   //if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
+      //throw Exception("Unable to get response code");
 
-   cout << "Response code: " << responseCode << endl;
-   cout << "Raw buffer: " << buffer;
+   //cout << "Response code: " << responseCode << endl;
+   //cout << "Raw buffer: " << buffer;
 #endif
 }
 
