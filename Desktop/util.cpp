@@ -99,18 +99,28 @@ vector<string> collectAttributes(string field){
 
 map<string,string> baseTypes;
 
+string getSuperType(string type){
+	Object o = db.getDocument(type).getData().getObject();
+	string superType = o["type"].getString();
+	return superType;
+}
+
 string getBaseType(string type){
 
 	if ( baseTypes.find(type) != baseTypes.end() ){
 		return baseTypes[type];
 	}
 
-	string baseType= type;
-	Object o = db.getDocument(type).getData().getObject();
+	string baseType = getSuperType(type);
+	while ( baseType.compare(type) != 0 ){
+		type = baseType;
+		baseType = getSuperType(baseType);
+	}
+	/*Object o = db.getDocument(type).getData().getObject();
 	while ( o["type"].getString().compare(baseType) != 0 ){
 		baseType = o["type"].getString();
 		o = db.getDocument(type).getData().getObject();
-	}
+	}*/
 
 	baseTypes[type] = baseType;
 
@@ -180,8 +190,14 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	} else if ( baseType.compare(BOOLEAN) == 0 ){
 		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){
-		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(name), Value(name), true);
-		Array rows = results["rows"].getArray();
+		Array rows;
+		string type = name;
+		do { 
+			Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
+			rows = results["rows"].getArray();
+			type = getSuperType(type);
+		} while ( rows.size() == 0 );
+
 		Object conf;
 		if ( rows.size() > 0 ){
 			Object doc = rows[0]["doc"].getObject();

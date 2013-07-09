@@ -19,4 +19,5 @@ vector<string> collectAttributes(string field);
 FormField* createFieldForType(HWND parent, string enclosingType, string type, bool bare);
 
 string getBaseType(string);
+string getSuperType(string type);
 

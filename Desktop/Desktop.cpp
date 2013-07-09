@@ -626,10 +626,6 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			int idx = ComboBox_GetCurSel(typeCombo);
 			string type = (*ids)[idx];
 
-			;
-			
-			
-
 			int sortIdx = ComboBox_GetCurSel(sortCombo);
 			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
 			Object sortFields = (*sortFieldsVector)[sortIdx];
