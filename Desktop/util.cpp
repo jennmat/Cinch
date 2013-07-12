@@ -98,10 +98,16 @@ vector<string> collectAttributes(string field){
 }
 
 map<string,string> baseTypes;
+map<string,string> superTypes;
+map<string, Object> typeDefinitions;
 
 string getSuperType(string type){
+	if ( superTypes.find(type) != superTypes.end() ){
+		return superTypes[type];
+	}
 	Object o = db.getDocument(type).getData().getObject();
 	string superType = o["type"].getString();
+	superTypes[type] = superType;
 	return superType;
 }
 
@@ -127,9 +133,17 @@ string getBaseType(string type){
 	return baseType;
 }
 
+Object getTypeDefinition(string type){
+	if ( typeDefinitions.find(type) != typeDefinitions.end() ){
+		return typeDefinitions[type];
+	}
+	Object def = db.getDocument(type).getData().getObject();
+	typeDefinitions[type] = def;
+	return def;
+}
 
 FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
-	Object field = db.getDocument(id).getData().getObject();
+	Object field = getTypeDefinition(id);
 		
 	string label;
 	if( field["label"].isString() ){

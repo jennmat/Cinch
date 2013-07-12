@@ -225,8 +225,8 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 		for(unsigned int i=0; i<columns.size(); i++){
 			Object col = columns[i].getObject();
 			string field = col["field"].getString();
-			Object fieldConfig = db.getDocument(field).getData().getObject();
-
+			Object fieldConfig = getTypeDefinition(field);
+			
 			fields.push_back(fieldConfig["_id"].getString());
 			editorTypes.push_back(field);
 			editors.push_back(NULL);

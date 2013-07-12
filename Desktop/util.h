@@ -20,4 +20,4 @@ FormField* createFieldForType(HWND parent, string enclosingType, string type, bo
 
 string getBaseType(string);
 string getSuperType(string type);
-
+Object getTypeDefinition(string type);

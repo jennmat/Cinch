@@ -71,8 +71,9 @@ wchar_t* DetailViewDelegate::headerContent(int col)
 	Object c = config["columns"].getArray()[col].getObject();
 	string field = c["field"].getString();
 	;
-	
-	Object definition = db.getDocument(field).getData().getObject();
+
+	Object definition = getTypeDefinition(field);
+	//Object definition = db.getDocument(field).getData().getObject();
 	string label = definition["label"].getString();
 
 	wstring title = s2ws(label);

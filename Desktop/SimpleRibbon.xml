@@ -43,6 +43,11 @@
         <String Id="211">Views</String>
       </Command.LabelTitle>
     </Command>
+    <Command Name="cmdPerspectivesGroup">
+      <Command.LabelTitle>
+        <String>Perspectives</String>
+      </Command.LabelTitle>
+    </Command>
     <Command Name="cmdShowDebugOutput" Symbol="IDR_CMD_DEBUGOUTPUT">
       <Command.LabelTitle>
         <String Id="212">Show Debug Output</String>
@@ -116,6 +121,9 @@
           </Group>
           <Group CommandName="cmdViewGroup" SizeDefinition="OneButton">
             <Button CommandName="cmdNewView"></Button>
+          </Group>
+          <Group CommandName="cmdPerspectivesGroup" >
+            
           </Group>
         </Tab>
         <Tab CommandName="cmdTabUsers">
