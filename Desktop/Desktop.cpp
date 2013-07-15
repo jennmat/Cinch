@@ -188,10 +188,116 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
     return hPrev; 
 } 
 
+
+void LoadMenus(HWND tree){
+	TreeView_DeleteAllItems(tree);
+	
+
+	Object results = db.viewResults("all-menu-definitions", "by-perspective", 25, 0, true);
+	if ( results["rows"].isArray() ){
+		Array rows = results["rows"].getArray();
+		Object row = rows[0].getObject();
+		if ( row["doc"].isObject() ){
+			Object doc = row["doc"].getObject();
+
+			if( doc["items"].isArray() ){
+				Array items = doc["items"].getArray();
+				for(unsigned int i=0; i<items.size(); i++){
+					Object item = items[i].getObject();
+					if ( item["type"].isString() && item["type"].getString().compare("view") == 0 ){
+						string viewId = item["view"].getString();
+						Object view = db.getDocument(viewId).getData().getObject();
+
+						string label = view["label"].getString();
+						wstring wl = s2ws(label);
+						int len = label.length() + sizeof(wchar_t);
+						wchar_t* clabel = new wchar_t[len];
+						wcscpy_s(clabel, len, wl.c_str());
+
+						ViewPair* v = new ViewPair;
+						v->design = "_design/" + view["design_name"].getString();
+						v->view = view["view_name"].getString();
+						v->emitsDocsWithType = view["emits"].getString();
+						AddItemToTree(tree, clabel, (LPARAM)v, 0);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
 void LoadViews(HWND hwnd, string emitsDocumentsOfType = ""){
 
 	TreeView_DeleteAllItems(hwnd);
 
+	Object views = db.listViews();
+
+   if ( views["total_rows"].getInt() > 0 ){
+	   Array rows = views["rows"].getArray();
+	   for(unsigned int i=0; i<rows.size(); i++){
+		   Object row = rows[i].getObject();
+			
+		   Object doc = row["doc"].getObject();
+		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
+			   continue;
+		   }
+		   wstring name;
+		   wstring id = s2ws(row["id"].getString());
+		   if ( doc["label"].isString() ){
+				name = s2ws(doc["label"].getString());
+		   } else {
+				name = s2ws(row["id"].getString());
+		   }
+		   LPWSTR str = new wchar_t[80];
+		   wcscpy_s(str, 80, name.c_str());
+
+		   bool hasCinchView = false;
+
+		   Object views = doc["views"].getObject();
+		   Object::const_iterator it = views.begin();
+
+		   for(it=views.begin(); it != views.end(); it++){
+				pair<string, Value> p = *it;
+				Object o = p.second.getObject();
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
+					hasCinchView = true;
+				}
+		   }
+
+		   if ( hasCinchView ){
+				AddItemToTree(hwnd, str, NULL, 1);
+		   }
+	
+		   for(it=views.begin(); it != views.end(); it++){
+			   pair<string, Value> p = *it;
+				wstring view = s2ws(p.first);
+				wstring name = s2ws(p.first);
+				Object o = p.second.getObject();
+				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
+					if ( o["label"].isString() ){
+						name = s2ws(o["label"].getString());
+					}
+					LPWSTR str = new wchar_t[80];
+					wcscpy_s(str, 80, name.c_str());
+
+					int dlen = id.length() + sizeof(wchar_t);
+					ViewPair* v = new ViewPair;
+					v->design = row["id"].getString();
+					v->view = p.first;
+					v->emitsDocsWithType = o["emits_docs_with_type"].getString();
+					AddItemToTree(hwnd, str, (LPARAM)v, 2);
+				}
+		
+		   }
+		   //for(unsigned int j = 0; j<views.size(); j++){
+			 //  Object view = views[j].getObject();
+			  // int a = 1;
+			//}
+
+	   }
+   }
 }
 
 void SizeWindows(HWND hWnd);
@@ -258,7 +364,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	ShowWindow(grid, SW_SHOW);
 	//ShowWindow(designer, SW_SHOW);
 
-	LoadViews(tree);
+	LoadMenus(tree);
   
 
 	ShowWindow(tree, SW_SHOW);
@@ -468,7 +574,6 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			Object obj = doc.getData().getObject();
 			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
 			ids->push_back(obj["_id"].getString());
-
         }
 
 		SetWindowLong(typeCombo, GWL_USERDATA, (ULONG_PTR)ids);
