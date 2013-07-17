@@ -44,15 +44,15 @@ int ArrayOfObjectsDelegate::rowHeight(){
 	return 25;
 }
 
-wchar_t* ArrayOfObjectsDelegate::headerContent(int col)
-{
-	wchar_t* result;
+int ArrayOfObjectsDelegate::headerContentLength(int col){
+	return titles[col].length();
+}
 
+void ArrayOfObjectsDelegate::headerContent(int col, wchar_t* content)
+{
 	wstring title = titles[col];
-	int size = title.size() + sizeof(wchar_t);
-	result = new wchar_t[size];
-	wcscpy_s(result, size, title.c_str());
-	return result;
+	wcscpy_s(content, title.length()+1, title.c_str());
+
 }
 
 const wchar_t* ArrayOfObjectsDelegate::cellContent(int row, int col)

@@ -64,24 +64,30 @@ int DetailViewDelegate::rowHeight(){
 	return 25;
 }
 
-wchar_t* DetailViewDelegate::headerContent(int col)
+int DetailViewDelegate::headerContentLength(int col){
+	Object c = config["columns"].getArray()[col].getObject();
+	string field = c["field"].getString();
+
+	Object definition = getTypeDefinition(field);
+	//Object definition = db.getDocument(field).getData().getObject();
+	string label = definition["label"].getString();
+	return label.length();
+}
+
+void DetailViewDelegate::headerContent(int col, wchar_t* result)
 {
-	wchar_t* result;
 
 	Object c = config["columns"].getArray()[col].getObject();
 	string field = c["field"].getString();
-	;
 
 	Object definition = getTypeDefinition(field);
 	//Object definition = db.getDocument(field).getData().getObject();
 	string label = definition["label"].getString();
 
 	wstring title = s2ws(label);
-	
-	int size = title.size() + sizeof(wchar_t);
-	result = new wchar_t[size];
-	wcscpy_s(result, size, title.c_str());
-	return result;
+	int len = label.length() + 1;
+
+	wcscpy_s(result, len, title.c_str());
 }
 
 const wchar_t* DetailViewDelegate::cellContent(int row, int col)

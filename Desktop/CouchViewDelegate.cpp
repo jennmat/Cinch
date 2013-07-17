@@ -81,9 +81,13 @@ int CouchViewDelegate::rowHeight(){
 	return 25;
 }
 
-wchar_t* CouchViewDelegate::headerContent(int col)
+int CouchViewDelegate::headerContentLength(int col){
+	return 4;
+}
+
+void CouchViewDelegate::headerContent(int col, wchar_t* content)
 {
-	return L"Name";
+	wcscpy_s(content, 5, L"Name");
 }
 
 void CouchViewDelegate::loadPage(int row){

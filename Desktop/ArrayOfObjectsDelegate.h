@@ -31,7 +31,8 @@ public:
 	int columnWidth(int column);
 	int rowHeight();
 
-	wchar_t* headerContent(int);
+	int headerContentLength(int);
+	void headerContent(int, wchar_t*);
 	const wchar_t* cellContent(int, int);
 
 	bool stickyHeaders();

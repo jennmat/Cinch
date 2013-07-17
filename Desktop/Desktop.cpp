@@ -29,6 +29,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
+void				DestroyInstance();
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	NewView(HWND, UINT, WPARAM, LPARAM);
@@ -82,6 +83,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	CoUninitialize();
+
+	DestroyInstance();
+
+	_CrtDumpMemoryLeaks();
 
 	return (int) msg.wParam;
 }
@@ -138,7 +143,6 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
     static HTREEITEM hPrev = (HTREEITEM)TVI_FIRST; 
     static HTREEITEM hPrevRootItem = NULL; 
     static HTREEITEM hPrevLev2Item = NULL; 
-    HTREEITEM hti; 
 
 	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	// Set the text of the item. 
@@ -377,7 +381,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    InitCommonControls();
 
    tree = CreateWindowEx(0, WC_TREEVIEW, TEXT("Tree View"),
-	   WS_VISIBLE | WS_CHILD | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS,
+	   WS_VISIBLE | WS_CHILD | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_EDITLABELS,
 	   0, 0, TREE_WIDTH, client.bottom,
 	   hWnd, (HMENU) IDC_VIEW_TREE, hInst, 0);
 
@@ -425,6 +429,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+
+void DestroyInstance() {
+	//CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+	
+}
+
+
 void SizeWindows(HWND hWnd)
 {
 	RECT client;
@@ -468,7 +479,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         return -1;
     }
-    break;
+	break;
 	case WM_NOTIFY:
 		{
 		LPNMHDR pnmhdr = (LPNMHDR)lParam;
