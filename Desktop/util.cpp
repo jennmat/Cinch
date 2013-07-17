@@ -100,6 +100,7 @@ vector<string> collectAttributes(string field){
 map<string,string> baseTypes;
 map<string,string> superTypes;
 map<string, Object> typeDefinitions;
+map<string,Object> defaultViewDefinitions;
 
 string getSuperType(string type){
 	if ( superTypes.find(type) != superTypes.end() ){
@@ -140,6 +141,29 @@ Object getTypeDefinition(string type){
 	Object def = db.getDocument(type).getData().getObject();
 	typeDefinitions[type] = def;
 	return def;
+}
+
+Object getDefaultViewDefinition(string t){
+	if ( defaultViewDefinitions.find(t) != defaultViewDefinitions.end() ){
+		return defaultViewDefinitions[t];
+	}
+
+	Array rows;
+	string type = t;
+	do { 
+		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
+		rows = results["rows"].getArray();
+		type = getSuperType(type);
+	} while ( rows.size() == 0 );
+
+	if ( rows[0].isObject() ){
+		Object result = rows[0].getObject();
+		if ( result["doc"].isObject() ) {
+			defaultViewDefinitions[t] = result["doc"].getObject();
+		}
+	}
+
+	return defaultViewDefinitions[t];
 }
 
 FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
@@ -204,25 +228,17 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	} else if ( baseType.compare(BOOLEAN) == 0 ){
 		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){
-		Array rows;
-		string type = name;
-		do { 
-			Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
-			rows = results["rows"].getArray();
-			type = getSuperType(type);
-		} while ( rows.size() == 0 );
-
+	
 		Object conf;
-		if ( rows.size() > 0 ){
-			Object doc = rows[0]["doc"].getObject();
-			string design = doc["design_name"].getString();
-			string view = doc["view_name"].getString();
+		Object doc = getDefaultViewDefinition(name);
+		string design = doc["design_name"].getString();
+		string view = doc["view_name"].getString();
 
-			Object pick;
-			pick["design"] = design;
-			pick["view"] = view;
-			conf["pick_from"] = pick;
-		}
+		Object pick;
+		pick["design"] = design;
+		pick["view"] = view;
+		conf["pick_from"] = pick;
+	
 
 		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(conf), bare);
 		

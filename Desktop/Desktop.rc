@@ -209,6 +209,10 @@ IDI_NEW            ICON           "New.ico"
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDI_SMALL          ICON           "small.ico"
 
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+IDB_FOLDER         BITMAP           "res\\folder.bmp"
+
+
 IDR_SMALL_ADD_BITMAP BITMAP    "res\\AddTableS.bmp" /* LargeImages IDR_CMD_SIZEANDCOLOR_LargeImages_RESID: (null) */
 
 
