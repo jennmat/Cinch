@@ -81,13 +81,9 @@ int CouchViewDelegate::rowHeight(){
 	return 25;
 }
 
-int CouchViewDelegate::headerContentLength(int col){
-	return 4;
-}
-
-void CouchViewDelegate::headerContent(int col, wchar_t* content)
+void CouchViewDelegate::headerContent(int col, wstring &content)
 {
-	wcscpy_s(content, 5, L"Name");
+	content = L"Name";
 }
 
 void CouchViewDelegate::loadPage(int row){
@@ -132,15 +128,15 @@ void CouchViewDelegate::loadPage(int row){
 	}
 }
 
-const wchar_t* CouchViewDelegate::cellContent(int row, int col)
+void CouchViewDelegate::cellContent(int row, int col, wstring &content)
 {
 	if ( rownums[row % PAGESIZE] != row ){
 		loadPage(row);
 	}
 
-		
-	return data[row % PAGESIZE];
+	wchar_t* d = data[row % PAGESIZE];
 
+	content = d;
 }
 
 bool CouchViewDelegate::stickyHeaders(){

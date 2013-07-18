@@ -64,17 +64,7 @@ int DetailViewDelegate::rowHeight(){
 	return 25;
 }
 
-int DetailViewDelegate::headerContentLength(int col){
-	Object c = config["columns"].getArray()[col].getObject();
-	string field = c["field"].getString();
-
-	Object definition = getTypeDefinition(field);
-	//Object definition = db.getDocument(field).getData().getObject();
-	string label = definition["label"].getString();
-	return label.length();
-}
-
-void DetailViewDelegate::headerContent(int col, wchar_t* result)
+void DetailViewDelegate::headerContent(int col, wstring &content)
 {
 
 	Object c = config["columns"].getArray()[col].getObject();
@@ -84,17 +74,12 @@ void DetailViewDelegate::headerContent(int col, wchar_t* result)
 	//Object definition = db.getDocument(field).getData().getObject();
 	string label = definition["label"].getString();
 
-	wstring title = s2ws(label);
-	int len = label.length() + 1;
+	content = s2ws(label);
 
-	wcscpy_s(result, len, title.c_str());
 }
 
-const wchar_t* DetailViewDelegate::cellContent(int row, int col)
+void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 {
-	;
-	Database d = conn.getDatabase(DATABASE);
-			
 	if ( (*obj)["rows"].isArray() ){
 		Array rows = (*obj)["rows"].getArray();
 		if ( (unsigned)row < rows.size() ){
@@ -110,8 +95,8 @@ const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 
 			} else {
 				string id = r["id"].getString();
-
-				Document doc = d.getDocument(id);
+				
+				Document doc = db.getDocument(id);
 				Object data = doc.getData().getObject();
 
 				string name = c["name"].getString();
@@ -123,22 +108,18 @@ const wchar_t* DetailViewDelegate::cellContent(int row, int col)
 
 			if ( c["is_document_reference"].isBoolean() && c["is_document_reference"].getBoolean() == true ){
 				string fieldname = c["field_with_value"].getString();
-				Document doc = d.getDocument(value);
+				Document doc = db.getDocument(value);
 
 				Object o = doc.getData().getObject();
 				value = o[fieldname].getString();
 			}
 		
-			wstring val = s2ws(value);
-			int size = val.size() + sizeof(wchar_t);
-			wchar_t* wval = new wchar_t[size];
-			wcscpy_s(wval, size, val.c_str());
-			return wval;
-
+			content = s2ws(value);
+			
 		}
 	}
 	
-	return L"";
+	content = L"";
 }
 
 bool DetailViewDelegate::stickyHeaders(){

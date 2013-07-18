@@ -44,21 +44,14 @@ int ArrayOfObjectsDelegate::rowHeight(){
 	return 25;
 }
 
-int ArrayOfObjectsDelegate::headerContentLength(int col){
-	return titles[col].length();
-}
-
-void ArrayOfObjectsDelegate::headerContent(int col, wchar_t* content)
+void ArrayOfObjectsDelegate::headerContent(int col, wstring &content)
 {
-	wstring title = titles[col];
-	wcscpy_s(content, title.length()+1, title.c_str());
+	content = titles[col];
 
 }
 
-const wchar_t* ArrayOfObjectsDelegate::cellContent(int row, int col)
+void ArrayOfObjectsDelegate::cellContent(int row, int col, wstring &content)
 {
-	wchar_t* result;
-
 	if ( data[row].isObject() ){
 		Object o = data[row].getObject();
 		string field = fields[col];
@@ -66,14 +59,9 @@ const wchar_t* ArrayOfObjectsDelegate::cellContent(int row, int col)
 
 		if ( data[row].isObject() ){
 			string s = editors[col]->toString(data[row].getObject());
-			wstring ws = s2ws(s);
-			int len = ws.length() + sizeof(wchar_t);
-			result = new wchar_t[len];
-			wcscpy_s(result, len, ws.c_str());
-			return result;
+			content = s2ws(s);
 		}
 	}
-	return L"";
 }
 
 bool ArrayOfObjectsDelegate::stickyHeaders(){

@@ -241,15 +241,15 @@ void AddMenuItems(HWND tree, Array items, int level){
 
 				string label = view["label"].getString();
 				wstring wl = s2ws(label);
-				int len = label.length() + sizeof(wchar_t);
-				wchar_t* clabel = new wchar_t[len];
-				wcscpy_s(clabel, len, wl.c_str());
+				//int len = label.length() + sizeof(wchar_t);
+				//wchar_t* clabel = new wchar_t[len];
+				//wcscpy_s(clabel, len, wl.c_str());
 
 				ViewPair* v = new ViewPair;
 				v->design = "_design/" + view["design_name"].getString();
 				v->view = view["view_name"].getString();
 				v->emitsDocsWithType = view["emits"].getString();
-				AddItemToTree(tree, clabel, (LPARAM)v, level);
+				AddItemToTree(tree, (LPWSTR)wl.c_str(), (LPARAM)v, level);
 			}
 		}
 	}
