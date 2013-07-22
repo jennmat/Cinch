@@ -29,6 +29,7 @@
 #include <string>
 
 #include <Wincrypt.h>
+#include <unordered_set>
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -113,6 +114,8 @@ struct FileWatchController {
 #include "CinchDesigner.h"
 #include "DetailViewDelegate.h"
 #include "ViewAutocompleteSource.h"
+
+#include "Explorer.h"
 
 #include "AttachmentViewer.h"
 #include "SimpleRibbon.h"

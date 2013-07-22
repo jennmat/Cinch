@@ -19,25 +19,26 @@
 using namespace std;
 using namespace CouchDB;
 
-Document::Document(Communication &_comm, Object obj, const string &_db, const string &_id,
+Document::Document(Communication &_comm, const Object& data, const string &_db, const string &_id,
                    const string &_key, const string &_rev)
    : comm(_comm)
+   , data(data)
    , db(_db)
    , id(_id)
    , key(_key)
    , revision(_rev)
 {
-	data = obj;
 }
 
 Document::Document(const Document &doc)
    : comm(doc.comm)
+   , data(doc.data)
    , db(doc.db)
    , id(doc.id)
    , key(doc.key)
    , revision(doc.revision)
 {
-	data = doc.data;
+
 }
 
 Document::~Document(){

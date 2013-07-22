@@ -121,6 +121,7 @@
     <ClInclude Include="NotifyParent.h" />
     <ClInclude Include="PropertySet.h" />
     <ClInclude Include="ReadOnlyDelegate.h" />
+    <ClInclude Include="Explorer.h" />
     <ClInclude Include="Replication.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RibbonFramework.h" />
@@ -148,10 +149,12 @@
     <ClCompile Include="Form.cpp" />
     <ClCompile Include="FormField.cpp" />
     <ClCompile Include="FormLayout.cpp" />
+    <ClCompile Include="ApplicationMenu.cpp" />
     <ClCompile Include="MaskEdit.cpp" />
     <ClCompile Include="NotifyParent.cpp" />
     <ClCompile Include="PropertySet.cpp" />
     <ClCompile Include="ReadOnlyDelegate.cpp" />
+    <ClCompile Include="RenameItemHandler.cpp" />
     <ClCompile Include="RibbonFramework.cpp" />
     <ClCompile Include="NewDocumentHandler.cpp" />
     <ClCompile Include="stdafx.cpp">

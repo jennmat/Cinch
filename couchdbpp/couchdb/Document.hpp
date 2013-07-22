@@ -32,12 +32,12 @@ class Document{
    friend class Database;
 
    protected:
-      Document(Communication&, Object data, const std::string&,
-               const std::string&, const std::string&, const std::string&);
-
+   
    public:
-      Document(const Document&);
-      ~Document();
+      Document(Communication&, const Object& data, const std::string&,
+               const std::string&, const std::string&, const std::string&);
+	  Document(const Document&);
+	  ~Document();
 
       Document& operator=(Document&);
       bool operator==(const Document&);

@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+#include <unordered_set>
 
 void NotifyParentControl(HWND hWnd){
 	SetWindowSubclass(hWnd, NotifyParentProc, 0, 0);
@@ -49,3 +50,4 @@ LRESULT CALLBACK PreserveTabInMultilineEditProc(HWND hWnd, UINT message, WPARAM 
 
 	return DefSubclassProc(hWnd, message, wParam, lParam);
 }
+

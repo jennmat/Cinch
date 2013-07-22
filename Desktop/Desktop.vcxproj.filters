@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Handlers">
       <UniqueIdentifier>{81f75347-3d19-4945-a2dd-47f9f3fbcd65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Menu">
+      <UniqueIdentifier>{8c10faea-c75a-4ee2-97fe-11dbf5d3ee06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Explorer">
+      <UniqueIdentifier>{db33b7f8-6b83-4375-a4be-23614f8c13b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">
@@ -134,6 +140,9 @@
     <ClInclude Include="console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Explorer.h">
+      <Filter>Header Files\Explorer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -210,6 +219,12 @@
     </ClCompile>
     <ClCompile Include="console.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenameItemHandler.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationMenu.cpp">
+      <Filter>Source Files\Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

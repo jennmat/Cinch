@@ -278,6 +278,9 @@ void Database::startReplication(const string& destinationHost, const string& des
 	int a  =1;
 }
 
+Communication& Database::getCommunication(){
+	return comm;
+}
 
 
 ostream& operator<<(ostream &out, const CouchDB::Database &db){

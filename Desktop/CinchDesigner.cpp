@@ -508,7 +508,7 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	return (INT_PTR)FALSE;
 }
 
-void LoadViews(HWND hwnd, string emitsDocumentsOfType = "");
+//void LoadViews(HWND hwnd, string emitsDocumentsOfType = "");
 
 INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -586,7 +586,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				HWND combo = GetDlgItem(hDlg, IDC_NEW_FIELD_TYPE);
 				vector<string>* v = (vector<string>*)GetWindowLong(combo, GWL_USERDATA);
 				
-				LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), (*v)[type-8]);
+				//LoadViews(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), (*v)[type-8]);
 
 			} else {
 				ShowWindow(GetDlgItem(hDlg, IDC_ADD_FIELD_VIEW_TREE), SW_HIDE);

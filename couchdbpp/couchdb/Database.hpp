@@ -58,8 +58,8 @@ class Database{
 
 	  void listenForChanges(void (*)());
 	  void startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password);
-   protected:
-      Communication& getCommunication();
+      
+	  Communication& getCommunication();
 
    private:
       Communication &comm;

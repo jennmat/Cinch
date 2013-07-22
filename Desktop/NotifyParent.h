@@ -13,4 +13,3 @@ LRESULT CALLBACK NotifyParentOfEnterKeyProc(HWND hWnd, UINT message, WPARAM wPar
 void PreserveTabInMultilineEdit(HWND);
 LRESULT CALLBACK PreserveTabInMultilineEditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-
