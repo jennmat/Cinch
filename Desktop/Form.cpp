@@ -100,9 +100,8 @@ void Form::deserializeForm(HWND parent, Value v){
 	Array fields = o["fields"].getArray();
 	string type = o["target_type"].getString();
 
-	;
+	preloadTypeDefinitions();
 	
-
 	for(unsigned int i=0; i<fields.size(); i++){
 
 		string id = fields[i].getString();
@@ -215,10 +214,6 @@ void Form::SaveDocument(int changedFieldId){
 	}
 
 	obj = detail.StoreValuesToDocument(changedFieldId, obj);
-	
-	
-	
-	
 	
 	
 	Document updatedDoc = db.createDocument(Value(obj), id);

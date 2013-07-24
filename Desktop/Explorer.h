@@ -13,6 +13,7 @@ void DestroyApplicationExplorer(HWND tree);
 /* Explorer.cpp */
 class Explorer {
 private:
+	Object doc;
 	string id;
 	string rev;
 	void AddMenuItems(HWND tree, const Array& items, int level);
@@ -21,5 +22,5 @@ public:
 	Explorer();
 	~Explorer();
 	void buildExplorer(HWND tree);
-	void saveChanges(HWND tree);
+	bool saveChanges();
 };

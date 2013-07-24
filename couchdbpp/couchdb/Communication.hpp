@@ -16,6 +16,7 @@
 #ifndef __COUCH_DB_COMM_HPP__
 #define __COUCH_DB_COMM_HPP__
 
+#define COUCH_DB_ANNOUNCE_URLS
 
 #include <iostream>
 #include <string>

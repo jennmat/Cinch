@@ -22,3 +22,5 @@ string getBaseType(string);
 string getSuperType(string type);
 Object getTypeDefinition(string type);
 Object getDefaultViewDefinition(string type);
+
+void preloadTypeDefinitions();

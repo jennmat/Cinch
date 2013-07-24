@@ -143,6 +143,28 @@ Object getTypeDefinition(string type){
 	return def;
 }
 
+void preloadTypeDefinitions(){
+	if ( typeDefinitions.size() > 0 ){
+		return;
+	}
+
+	Object results = db.viewResults("all-data-definitions", "by-id", 25, 0, true);
+	if ( results["rows"].isArray() ){
+		Array rows = results["rows"].getArray();
+		for(unsigned int i=0; i<rows.size(); i++){
+			Object row = rows[i].getObject();
+			Object doc = row["doc"].getObject();
+			typeDefinitions[doc["_id"].getString()] = doc;
+		}
+	}
+	/*
+	for(unsigned int i=0; i<definitions.size(); i++){
+		Object o = definitions[i].getObject();
+		typeDefinitions[o["_id"].getString()] = o;
+	}
+	*/
+}
+
 Object getDefaultViewDefinition(string t){
 	if ( defaultViewDefinitions.find(t) != defaultViewDefinitions.end() ){
 		return defaultViewDefinitions[t];

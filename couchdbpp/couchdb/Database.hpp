@@ -50,6 +50,7 @@ class Database{
       Object viewResultsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit, int skip);
 
 	  Document getDocument(const string&, const string &rev="");
+	  Array getDocuments(const Array& ids);
       Document createDocument(const Value&, const string &id="");
       Document createDocument(Value, vector<Attachment>,
                               const string &id="");

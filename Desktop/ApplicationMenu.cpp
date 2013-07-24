@@ -92,7 +92,7 @@ Explorer::~Explorer(){
 void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 	for(unsigned int i=0; i<items.size(); i++){
 		Object item = items[i].getObject();
-		
+		const Object& constItem = items[i].getObject();
 		if ( item["type"].isString() ) {
 			if ( item["type"].getString().compare("folder") == 0 ){
 
@@ -102,11 +102,12 @@ void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 				wchar_t* clabel = new wchar_t[len];
 				wcscpy_s(clabel, len, wl.c_str());
 
-				HTREEITEM hitem = AddItemToTree(tree, clabel, 0, level);
-				ULONG_PTR ptr = (ULONG_PTR)&item;
-
-				if ( item["items"].isArray() ){
-					AddMenuItems(tree, item["items"].getArray(), level+1);
+				ULONG_PTR ptr = (ULONG_PTR)&constItem;
+				HTREEITEM hitem = AddItemToTree(tree, clabel, ptr, level);	
+				
+				Object::const_iterator it = constItem.find("items");
+				if ( it != constItem.end() ){
+					AddMenuItems(tree, it->second.getArray(), level+1);
 				}
 
 			} else if (  item["type"].getString().compare("view") == 0 ){
@@ -116,11 +117,11 @@ void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 				string label = view["label"].getString();
 				wstring wl = s2ws(label);
 				
-				ViewPair* v = new ViewPair;
+				/*ViewPair* v = new ViewPair;
 				v->design = "_design/" + view["design_name"].getString();
 				v->view = view["view_name"].getString();
-				v->emitsDocsWithType = view["emits"].getString();
-				HTREEITEM hitem = AddItemToTree(tree, (LPWSTR)wl.c_str(), (LPARAM)v, level);
+				v->emitsDocsWithType = view["emits"].getString();*/
+				HTREEITEM hitem = AddItemToTree(tree, (LPWSTR)wl.c_str(), (LPARAM)&constItem, level);
 			}
 		}
 	}
@@ -132,15 +133,25 @@ void buildData(HWND tree, HTREEITEM parent, Object& data){
 	HTREEITEM item = parent;
 
 	while ( item != NULL ){
+		Object o;
 		TVITEMEX tvi;
 		tvi.mask = TVIF_TEXT;
 		tvi.cchTextMax = 80;
 		tvi.pszText = new WCHAR[80];
 		tvi.hItem = item;
 		TreeView_GetItem(tree, &tvi);
-		items.push_back(ws2s(wstring(tvi.pszText)));
-
+		o["label"] = ws2s(wstring(tvi.pszText));
+		
 		delete tvi.pszText;
+
+		Array children;
+		HTREEITEM child = TreeView_GetChild(tree, parent);
+		if ( child != NULL ){
+			buildData(tree, child, o);
+			
+		}
+
+		items.push_back(o);
 
 		item = TreeView_GetNextSibling(tree, item);
 	}
@@ -148,11 +159,14 @@ void buildData(HWND tree, HTREEITEM parent, Object& data){
 
 }
 
-void Explorer::saveChanges(HWND tree){
-	Object obj;
-	HTREEITEM root = TreeView_GetRoot(tree);
-	buildData(tree, root, obj);
-
+bool Explorer::saveChanges(){
+	try {
+		Document updated = db.createDocument(Value(doc), id);
+		doc["_rev"] = updated.getRevision();
+	}catch(CouchDB::Exception ex){
+		return false;
+	}
+	return true;
 }
 
 
@@ -162,7 +176,7 @@ void Explorer::buildExplorer(HWND tree){
 		Array rows = results["rows"].getArray();
 		Object row = rows[0].getObject();
 		if ( row["doc"].isObject() ){
-			Object doc = row["doc"].getObject();
+			doc = row["doc"].getObject();
 			id = row["id"].getString();
 			rev = doc["_rev"].getString();
 

@@ -166,7 +166,7 @@ void Communication::getRawData(const string &_url, const string &method,
                                string data, const HeaderMap &headers){
    string url = baseURL + _url;
 
-#ifdef COUCH_DB_DEBUG
+#ifdef COUCH_DB_ANNOUNCE_URLS
    printf("%s\n", url.c_str());
 #endif
 
@@ -177,7 +177,7 @@ void Communication::getRawData(const string &_url, const string &method,
 
    if(data.size() > 0){
 #ifdef COUCH_DB_DEBUG
-      //cout << "Sending data: " << data << endl;
+      printf("Sending data: %s\n", data.c_str());
 #endif
 
       if(curl_easy_setopt(curl, CURLOPT_READFUNCTION, reader) != CURLE_OK)
@@ -225,12 +225,12 @@ void Communication::getRawData(const string &_url, const string &method,
    }
 
 #ifdef COUCH_DB_DEBUG
-   //long responseCode;
-   //if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
-      //throw Exception("Unable to get response code");
+   long responseCode;
+   if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode) != CURLE_OK)
+      throw Exception("Unable to get response code");
 
-   //cout << "Response code: " << responseCode << endl;
-   //cout << "Raw buffer: " << buffer;
+   printf("Response code: %ld\n", responseCode);
+   printf("Raw buffer: %s\n", buffer.c_str());
 #endif
 }
 

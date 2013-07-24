@@ -168,7 +168,7 @@ vector<Document> Database::listDocuments(){
 }
 
 Document Database::getDocument(const string &id, const string &rev){
-	char * escaped = curl_easy_escape(comm.curl, id.c_str(), id.size());
+   char * escaped = curl_easy_escape(comm.curl, id.c_str(), id.size());
    string url = "/" + name + "/" + escaped;
    if(rev.size() > 0)
       url += "?rev=" + rev;
@@ -186,6 +186,30 @@ Document Database::getDocument(const string &id, const string &rev){
                );
 
    return doc;
+}
+
+
+Array Database::getDocuments(const Array& ids){
+   string url = "/" + name + "/_all_docs?include_docs=true";
+   Communication::HeaderMap headers;
+   stringstream data;
+   Object o;
+   o["keys"] = ids;
+   data << o;
+   string d = data.str();
+   Value var = comm.getData(url, headers, "POST", d);
+   Object obj = var.getObject();
+   Array result;
+   if ( obj["rows"].isArray() ){
+	   Array rows = obj["rows"].getArray();
+	   for(unsigned int i=0; i<rows.size(); i++){
+		   Object row = rows[i].getObject();
+		   if ( row["doc"].isObject() ){
+			   result.push_back(row["doc"].getObject());
+		   }
+	   }
+   }
+   return result;
 }
 
 static string createJSON(const Value &data){
