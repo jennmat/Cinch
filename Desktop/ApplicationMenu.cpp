@@ -116,11 +116,6 @@ void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 
 				string label = view["label"].getString();
 				wstring wl = s2ws(label);
-				
-				/*ViewPair* v = new ViewPair;
-				v->design = "_design/" + view["design_name"].getString();
-				v->view = view["view_name"].getString();
-				v->emitsDocsWithType = view["emits"].getString();*/
 				HTREEITEM hitem = AddItemToTree(tree, (LPWSTR)wl.c_str(), (LPARAM)&constItem, level);
 			}
 		}

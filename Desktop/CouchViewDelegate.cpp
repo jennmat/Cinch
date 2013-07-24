@@ -15,7 +15,7 @@ CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 	viewInitialized = false;
 }
 
-void CouchViewDelegate::setView(const wstring& _design, const wstring& _view)
+void CouchViewDelegate::setView(const string& _design, const string& _view)
 {
 	view = _view;
 	design = _design;
@@ -28,13 +28,7 @@ void CouchViewDelegate::loadViewResults(){
 	if ( viewInitialized == false ) return;
 
 	
-
-	string s = ws2s(design);
-	int ix = s.find("/");
-	s = s.substr(ix);
-
-
-	viewResults = db.viewResults(s, ws2s(view), PAGESIZE, 0);
+	viewResults = db.viewResults(design, view, PAGESIZE, 0);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wchar_t*[PAGESIZE];
@@ -89,10 +83,6 @@ void CouchViewDelegate::headerContent(int col, wstring &content)
 void CouchViewDelegate::loadPage(int row){
 	/* Load some more documents  */
 	
-		
-	string s = ws2s(design);
-	int ix = s.find("/");
-	s = s.substr(ix);
 
 	int j = row - 1;
 	int skip = 1;
@@ -105,10 +95,10 @@ void CouchViewDelegate::loadPage(int row){
 	Object obj;
 	int i;
 	if ( j < 0 ){
-		obj = db.viewResults(s, ws2s(view), PAGESIZE, skip-1, false);
+		obj = db.viewResults(design, view, PAGESIZE, skip-1, false);
 		i = skip-1;
 	} else {
-		obj = db.viewResultsFromStartDocId(s, ws2s(view), Value(ws2s(data[j%PAGESIZE])), docids[j%PAGESIZE], PAGESIZE, skip);
+		obj = db.viewResultsFromStartDocId(design, view, Value(ws2s(data[j%PAGESIZE])), docids[j%PAGESIZE], PAGESIZE, skip);
 		i = rownums[j%PAGESIZE] + skip;
 	}
 

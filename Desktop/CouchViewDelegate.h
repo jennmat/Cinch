@@ -13,8 +13,8 @@ private:
 	wchar_t** data;
 	string* docids;
 	int* rownums;
-	wstring view;
-	wstring design;
+	string view;
+	string design;
 	bool viewInitialized;
 	Object viewResults;
 
@@ -68,7 +68,7 @@ public:
 
 	void headerContextClick(HWND hwnd, int x, int y);
 
-	void setView(const wstring&, const wstring&);
+	void setView(const string&, const string&);
 	void loadViewResults();
 
 	void setGrid(CinchGrid*);

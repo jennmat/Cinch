@@ -361,11 +361,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				TreeView_GetItem(tree, &tvitem);
 
 				if ( tvitem.lParam != NULL ){
-					ViewPair * v = (ViewPair *)tvitem.lParam;
-			
-					delegate->setView(s2ws(v->design), s2ws(v->view));
-					CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-					gridcontrol->reloadData();
+					Object* o = (Object*)tvitem.lParam;
+					
+					Object viewObj = db.getDocument((*o)["view"].getString()).getData().getObject();
+
+					if ( (*o)["type"].getString().compare("view") == 0 ){
+						string design = viewObj["design_name"].getString();
+						string view = viewObj["view_name"].getString();
+						delegate->setView(design, view);
+						CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+						gridcontrol->reloadData();
+					}
 				}
 
 			}
