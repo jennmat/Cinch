@@ -185,6 +185,7 @@ void Explorer::buildExplorer(HWND tree){
 
 
 	HandleExplorerRenames(tree);
+	HandleDragDrop(tree);
 }
 
 void CreateApplicationExplorer(HWND tree){

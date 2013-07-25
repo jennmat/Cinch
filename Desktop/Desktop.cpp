@@ -361,11 +361,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				TreeView_GetItem(tree, &tvitem);
 
 				if ( tvitem.lParam != NULL ){
-					Object* o = (Object*)tvitem.lParam;
+					Object o = *(Object*)tvitem.lParam;
 					
-					Object viewObj = db.getDocument((*o)["view"].getString()).getData().getObject();
+					Object viewObj = db.getDocument(o["view"].getString()).getData().getObject();
 
-					if ( (*o)["type"].getString().compare("view") == 0 ){
+					if ( o["type"].getString().compare("view") == 0 ){
 						string design = viewObj["design_name"].getString();
 						string view = viewObj["view_name"].getString();
 						delegate->setView(design, view);

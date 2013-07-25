@@ -1,8 +1,8 @@
 
 #include "stdafx.h"
 
-void HandleExplorerRenames(HWND){
-	SetWindowSubclass(hWnd, HandleExplorerRenamesProc, 0, 0);
+void HandleExplorerRenames(HWND hwnd){
+	SetWindowSubclass(GetParent(hwnd), HandleExplorerRenamesProc, 0, 0);
 }
 
 

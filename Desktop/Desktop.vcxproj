@@ -150,6 +150,7 @@
     <ClCompile Include="FormField.cpp" />
     <ClCompile Include="FormLayout.cpp" />
     <ClCompile Include="ApplicationMenu.cpp" />
+    <ClCompile Include="HandleDragDrop.cpp" />
     <ClCompile Include="MaskEdit.cpp" />
     <ClCompile Include="NotifyParent.cpp" />
     <ClCompile Include="PropertySet.cpp" />
