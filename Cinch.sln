@@ -11,8 +11,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CinchGrid", "Projects\Cinch
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcurl", "curl\lib\libcurl.vcxproj", "{87EE9DA4-DE1E-4448-8324-183C98DCA588}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TreeViewExample", "TreeViewExample\TreeViewExample.vcxproj", "{AD465BAA-F82D-4693-B150-367C431D0411}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -55,12 +53,6 @@ Global
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Release|Win32.ActiveCfg = Release|Win32
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Release|Win32.Build.0 = Release|Win32
 		{87EE9DA4-DE1E-4448-8324-183C98DCA588}.Release|x64.ActiveCfg = Release|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Debug|Win32.Build.0 = Debug|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Debug|x64.ActiveCfg = Debug|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Release|Win32.ActiveCfg = Release|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Release|Win32.Build.0 = Release|Win32
-		{AD465BAA-F82D-4693-B150-367C431D0411}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,6 +28,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -52,7 +53,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CURL_STATICLIB;CARES_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(IntDir);..\JsonBox\include;..\CinchDesigner\Designer2;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);..\JsonBox\include;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -73,7 +74,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\JsonBox\include;..\CinchDesigner\Designer2;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);..\JsonBox\include;..\curl\include;..\couchdbpp\;..\CinchGrid\CinchGrid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -81,7 +82,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msimg32.lib;comctl32.lib;ws2_32.lib;wldap32.lib;Rpcrt4.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -89,10 +90,13 @@
     <None Include="LIST.BMP" />
     <None Include="New.ico" />
     <CustomBuild Include="SimpleRibbon.xml">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)/SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)/SimpleRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)/SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)/SimpleRibbon.rc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)SimpleRibbon.rc</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)SimpleRibbon.rc;%(Outputs)</Outputs>
       <SubType>Designer</SubType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SimpleRibbon.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)SimpleRibbon.rc</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)SimpleRibbon.rc;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SimpleRibbon.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="res\AddTableS.bmp" />
     <None Include="res\DeleteL.bmp" />
