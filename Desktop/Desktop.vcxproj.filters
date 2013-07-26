@@ -229,6 +229,9 @@
     <ClCompile Include="HandleDragDrop.cpp">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
+    <ClCompile Include="ContextMenuHandler.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Desktop.rc">

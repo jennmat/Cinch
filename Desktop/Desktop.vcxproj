@@ -146,6 +146,7 @@
     <ClCompile Include="CommandHandler.cpp" />
     <ClCompile Include="ConditionManager.cpp" />
     <ClCompile Include="console.cpp" />
+    <ClCompile Include="ContextMenuHandler.cpp" />
     <ClCompile Include="CouchViewDelegate.cpp" />
     <ClCompile Include="Desktop.cpp" />
     <ClCompile Include="Detail.cpp" />

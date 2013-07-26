@@ -186,6 +186,7 @@ void Explorer::buildExplorer(HWND tree){
 
 	HandleExplorerRenames(tree);
 	HandleDragDrop(tree);
+	HandleContextMenu(tree);
 }
 
 void CreateApplicationExplorer(HWND tree){

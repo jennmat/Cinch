@@ -6,15 +6,19 @@
 void HandleExplorerRenames(HWND);
 LRESULT CALLBACK HandleExplorerRenamesProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-void CreateApplicationExplorer(HWND tree);
-void DestroyApplicationExplorer(HWND tree);
-
 /*DragDropHandler.cpp */
 void HandleDragDrop(HWND);
 LRESULT CALLBACK HandleDragDropProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
+/*ContextMenuHandler.cpp */
+void HandleContextMenu(HWND);
+LRESULT CALLBACK HandleContextMenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 
 /* Explorer.cpp */
+void CreateApplicationExplorer(HWND tree);
+void DestroyApplicationExplorer(HWND tree);
+
 class Explorer {
 private:
 	Object doc;
