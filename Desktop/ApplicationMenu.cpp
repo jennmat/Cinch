@@ -1,14 +1,11 @@
 
 #include "stdafx.h"
 
-HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
+HTREEITEM AddItemToTree(HWND hwndTV, HTREEITEM parent, LPWSTR lpszItem, LPARAM data, int nLevel)
 { 
     TVITEM tvi; 
     TVINSERTSTRUCT tvins; 
-    static HTREEITEM hPrev = (HTREEITEM)TVI_FIRST; 
-    static HTREEITEM hPrevRootItem = NULL; 
-    static HTREEITEM hPrevLev2Item = NULL; 
-
+  
 	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	// Set the text of the item. 
     tvi.pszText = lpszItem; 
@@ -18,42 +15,33 @@ HTREEITEM AddItemToTree(HWND hwndTV, LPWSTR lpszItem, LPARAM data, int nLevel)
         
 	tvi.lParam = data;
     tvins.item = tvi; 
-    tvins.hInsertAfter = hPrev; 
+    tvins.hInsertAfter = TVI_LAST; 
 	
-    // Set the parent item based on the specified level. 
-    if (nLevel == 1) 
-        tvins.hParent = TVI_ROOT; 
-    else if (nLevel == 2) 
-        tvins.hParent = hPrevRootItem; 
-    else 
-        tvins.hParent = hPrevLev2Item; 
-
+	if ( parent == NULL ){
+		tvins.hParent = TVI_ROOT; 
+	} else {
+		tvins.hParent = parent;
+	}
+    
     // Add the item to the tree-view control. 
-    hPrev = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 
+    return (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 
         0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
 
-    if (hPrev == NULL)
-        return NULL;
-
-	// Save the handle to the item. 
-    if (nLevel == 1) 
-        hPrevRootItem = hPrev; 
-    else if (nLevel == 2) 
-        hPrevLev2Item = hPrev; 
-
-    // The new item is a child item. Give the parent item a 
-    // closed folder bitmap to indicate it now has child items. 
-    /*if (nLevel > 1)
-    { 
-        hti = TreeView_GetParent(hwndTV, hPrev); 
-	    tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-        tvi.hItem = hti; 
-		tvi.iImage = 0; 
-        tvi.iSelectedImage = 0;
-        TreeView_SetItem(hwndTV, &tvi); 
-		*/
-    return hPrev; 
 } 
+
+
+void EnumerateChildrenRecursively(HWND tree, HTREEITEM parent, std::function<void (HWND,HTREEITEM)> func) {
+	Array items;
+	HTREEITEM item = parent;
+
+	HTREEITEM child = TreeView_GetChild(tree, parent);
+	while ( child != NULL ){
+		func(tree, child);
+		EnumerateChildrenRecursively(tree, child, func);
+		child = TreeView_GetNextSibling(tree, child);
+	}
+}
+
 
 BOOL InitTreeViewImageLists(HWND hwndTV) 
 { 
@@ -89,7 +77,7 @@ Explorer::Explorer(){
 Explorer::~Explorer(){
 }
 
-void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
+void Explorer::AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int level){
 	for(unsigned int i=0; i<items.size(); i++){
 		Object item = items[i].getObject();
 		const Object& constItem = items[i].getObject();
@@ -99,15 +87,20 @@ void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 				string folder = item["label"].getString();
 				wstring wl = s2ws(folder);
 				int len = folder.length() + sizeof(wchar_t);
+				
 				wchar_t* clabel = new wchar_t[len];
 				wcscpy_s(clabel, len, wl.c_str());
 
-				ULONG_PTR ptr = (ULONG_PTR)&constItem;
-				HTREEITEM hitem = AddItemToTree(tree, clabel, ptr, level);	
+				Object obj = Object();
+				obj["type"] = item["type"];
+				obj["label"] = item["label"];
+				HTREEITEM hitem = AddItemToTree(tree, parent, clabel, (LPARAM)new Object(obj), level);	
+				
+				delete clabel;
 				
 				Object::const_iterator it = constItem.find("items");
 				if ( it != constItem.end() ){
-					AddMenuItems(tree, it->second.getArray(), level+1);
+					AddMenuItems(tree, hitem, it->second.getArray(), level+1);
 				}
 
 			} else if (  item["type"].getString().compare("view") == 0 ){
@@ -116,7 +109,10 @@ void Explorer::AddMenuItems(HWND tree, const Array& items, int level){
 
 				string label = view["label"].getString();
 				wstring wl = s2ws(label);
-				HTREEITEM hitem = AddItemToTree(tree, (LPWSTR)wl.c_str(), (LPARAM)&constItem, level);
+				Object obj = Object();
+				obj["type"] = item["type"];
+				obj["view"] = item["view"];
+				hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)new Object(obj), level);
 			}
 		}
 	}
@@ -130,15 +126,13 @@ void buildData(HWND tree, HTREEITEM parent, Object& data){
 	while ( item != NULL ){
 		Object o;
 		TVITEMEX tvi;
-		tvi.mask = TVIF_TEXT;
-		tvi.cchTextMax = 80;
-		tvi.pszText = new WCHAR[80];
+		tvi.mask = TVIF_PARAM;
 		tvi.hItem = item;
 		TreeView_GetItem(tree, &tvi);
-		o["label"] = ws2s(wstring(tvi.pszText));
+		Object* objPtr = (Object *)tvi.lParam;
+		o = Object(*objPtr);
 		
-		delete tvi.pszText;
-
+		
 		Array children;
 		HTREEITEM child = TreeView_GetChild(tree, parent);
 		if ( child != NULL ){
@@ -154,16 +148,41 @@ void buildData(HWND tree, HTREEITEM parent, Object& data){
 
 }
 
-bool Explorer::saveChanges(){
+bool Explorer::saveChanges(HWND tree){
 	try {
-		Document updated = db.createDocument(Value(doc), id);
-		doc["_rev"] = updated.getRevision();
+		Object obj;
+		buildData(tree, TreeView_GetRoot(tree), obj);
+		cout << obj;
+		obj["_rev"] = rev;
+		obj["cinch_type"] = "menu_definition";
+		obj["target_perspective"] = "abc";
+		Document updated = db.createDocument(Value(obj), id);
+		rev = updated.getRevision();
 	}catch(CouchDB::Exception ex){
 		return false;
 	}
 	return true;
 }
 
+void Explorer::deleteRoot(){
+	if ( doc["items"].isArray() ){
+		doc["items"] = Array();
+	}
+}
+
+void Explorer::addRoot(char* label){
+	if( !doc["items"].isArray() ){
+		doc["items"] = Array();
+	}
+	Object newRootObj = Object();
+	newRootObj["type"] = "folder";
+	newRootObj["label"] = label;
+	doc["items"].push(newRootObj);
+}
+
+Object* Explorer::getRoot(){
+	return &doc;
+}
 
 void Explorer::buildExplorer(HWND tree){
 	Object results = db.viewResults("all-menu-definitions", "by-perspective", 25, 0, true);
@@ -178,7 +197,7 @@ void Explorer::buildExplorer(HWND tree){
 			
 			if( doc["items"].isArray() ){
 				const Array& items = doc["items"].getArray();
-				AddMenuItems(tree, items, 1);
+				AddMenuItems(tree, TVI_ROOT, items, 1);
 			}
 		}
 	}
@@ -190,7 +209,7 @@ void Explorer::buildExplorer(HWND tree){
 }
 
 void CreateApplicationExplorer(HWND tree){
-	TreeView_DeleteAllItems(tree);
+	DestroyApplicationExplorer(tree);
 	InitTreeViewImageLists(tree);
 	
 	Explorer* explorer = new Explorer;
@@ -200,6 +219,13 @@ void CreateApplicationExplorer(HWND tree){
 }
 
 void DestroyApplicationExplorer(HWND tree){
+	
+	HTREEITEM root = TreeView_GetRoot(tree);
+	EnumerateChildrenRecursively(tree, root, CleanupItemData);
+	CleanupItemData(tree, root);
+	TreeView_DeleteAllItems(tree);
+	
+	
 	Explorer* explorer = (Explorer *)GetWindowLongPtr(tree, GWLP_USERDATA);
 	delete explorer;
 }

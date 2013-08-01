@@ -42,7 +42,7 @@ LRESULT CALLBACK HandleExplorerRenamesProc(HWND hWnd, UINT message, WPARAM wPara
 				(*obj)["label"] = label;
 
 				Explorer* explorer = (Explorer*)GetWindowLongPtr(tree, GWLP_USERDATA);
-				return explorer->saveChanges();
+				return explorer->saveChanges(tree);
 		
 			}
 		}

@@ -15,7 +15,9 @@
 #define IDD_ADD_TAB                             118
 #define IDD_ADD_VIEW                            159
 #define IDD_ADD_DOCUMENT_TYPE                   298
+#define IDD_ADD_EXISTING_VIEW                   301
 #define IDC_ADD_FIELD_CHOOSE_FROM_LABEL         1000
+#define IDC_PICK_VIEW_COMBO                     1001
 #define IDC_RELATIONSHIP_COMBO                  1001
 #define IDC_RELATIONSHIP_LABEL                  1002
 #define IDC_STATIC1                             1002
@@ -53,5 +55,5 @@
 #define IDC_CONTENT_COMBO                       40021
 #define IDC_NEW_TAB_LABEL                       40022
 #define IDC_NEW_TAB_NAME                        40023
-#define IDR_SMALL_ADD_BITMAP					40024
-#define IDB_FOLDER								40025
+#define IDR_SMALL_ADD_BITMAP                    40024
+#define IDB_FOLDER                              40025

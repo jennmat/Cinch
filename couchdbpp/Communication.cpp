@@ -167,7 +167,7 @@ void Communication::getRawData(const string &_url, const string &method,
    string url = baseURL + _url;
 
 #ifdef COUCH_DB_ANNOUNCE_URLS
-   printf("%s\n", url.c_str());
+   printf("%s %s\n", method.c_str(), url.c_str());
 #endif
 
    buffer.clear();

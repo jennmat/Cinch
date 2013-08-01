@@ -89,6 +89,7 @@ struct FileWatchController {
 #include <objbase.h>
 #include <shlobj.h>             // shell stuff
 #include <sstream>
+#include <functional>
 
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"

@@ -13,7 +13,21 @@ LRESULT CALLBACK HandleDragDropProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 /*ContextMenuHandler.cpp */
 void HandleContextMenu(HWND);
 LRESULT CALLBACK HandleContextMenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+INT_PTR CALLBACK HandleAddExistingDialogFunc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+void EnumerateChildrenRecursively(HWND tree, HTREEITEM parent, std::function<void (HWND,HTREEITEM)> func);
+
+auto CleanupItemData = [](HWND tree, HTREEITEM hitem){
+	if ( hitem == NULL ) return;
+	TVITEMEX item;
+	item.mask = TVIF_PARAM;
+	item.hItem = hitem;
+	TreeView_GetItem(tree, &item);
+
+	Object* obj = (Object *)item.lParam;
+	delete obj;
+	
+};
 
 /* Explorer.cpp */
 void CreateApplicationExplorer(HWND tree);
@@ -24,11 +38,14 @@ private:
 	Object doc;
 	string id;
 	string rev;
-	void AddMenuItems(HWND tree, const Array& items, int level);
+	void AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int level);
 
 public:
 	Explorer();
 	~Explorer();
 	void buildExplorer(HWND tree);
-	bool saveChanges();
+	bool saveChanges(HWND tree);
+	void deleteRoot();
+	void addRoot(char* label);
+	Object* getRoot();
 };
