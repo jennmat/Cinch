@@ -1,6 +1,8 @@
 
 #include "stdafx.h"
 
+Explorer* explorer;
+
 HTREEITEM AddItemToTree(HWND hwndTV, HTREEITEM parent, LPWSTR lpszItem, LPARAM data, int nLevel)
 { 
     TVITEM tvi; 
@@ -112,7 +114,8 @@ void Explorer::AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int
 				Object obj = Object();
 				obj["type"] = item["type"];
 				obj["view"] = item["view"];
-				HTREEITEM hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)new Object(obj), level);
+				Object *ptr = new Object(obj);
+				HTREEITEM hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)ptr, level);
 			}
 		}
 	}
@@ -211,9 +214,7 @@ void CreateApplicationExplorer(HWND tree){
 	DestroyApplicationExplorer(tree);
 	InitTreeViewImageLists(tree);
 	
-	Explorer* explorer = new Explorer;
-	SetWindowLongPtr(tree, GWLP_USERDATA, (ULONG_PTR)explorer);
-
+	explorer = new Explorer;
 	explorer->buildExplorer(tree);
 }
 
@@ -222,9 +223,6 @@ void DestroyApplicationExplorer(HWND tree){
 	HTREEITEM root = TreeView_GetRoot(tree);
 	EnumerateChildrenRecursively(tree, root, CleanupItemData);
 	CleanupItemData(tree, root);
-	TreeView_DeleteAllItems(tree);
 	
-	
-	Explorer* explorer = (Explorer *)GetWindowLongPtr(tree, GWLP_USERDATA);
 	delete explorer;
 }

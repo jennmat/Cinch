@@ -42,6 +42,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
+	//_CrtSetBreakAlloc(3692);
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -84,8 +86,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	CoUninitialize();
-
-	DestroyInstance();
 
 	_CrtDumpMemoryLeaks();
 
@@ -297,7 +297,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 void DestroyInstance() {
 	//CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-	DestroyWindow(tree);
+	DestroyApplicationExplorer(tree);
 	delete delegate;
 }
 
@@ -449,6 +449,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		DestroyInstance();
 		DestroyFramework();
 		PostQuitMessage(0);
 		break;
@@ -835,7 +836,6 @@ DWORD WINAPI ChangesListener(LPVOID lParam){
 	conn.setTimeout(0);
 	Database db = conn.getDatabase(DATABASE);
 	db.listenForChanges(changesArrived);
-
 	return 0;
 }
 
