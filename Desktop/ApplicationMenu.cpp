@@ -112,7 +112,7 @@ void Explorer::AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int
 				Object obj = Object();
 				obj["type"] = item["type"];
 				obj["view"] = item["view"];
-				hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)new Object(obj), level);
+				HTREEITEM hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)new Object(obj), level);
 			}
 		}
 	}
@@ -171,13 +171,12 @@ void Explorer::deleteRoot(){
 }
 
 void Explorer::addRoot(char* label){
-	if( !doc["items"].isArray() ){
-		doc["items"] = Array();
-	}
+	Array items = Array();
 	Object newRootObj = Object();
 	newRootObj["type"] = "folder";
 	newRootObj["label"] = label;
-	doc["items"].push(newRootObj);
+	items.push_back(newRootObj);
+	doc["items"] = items;
 }
 
 Object* Explorer::getRoot(){

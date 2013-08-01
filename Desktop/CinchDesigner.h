@@ -16,8 +16,6 @@ private:
 	HBRUSH hbrBkgnd;
 	Form* form;
 	string type;
-	
-	;
 	void loadForm(string database, string type);
 public:
 	ConditionManager* conditionManager;
@@ -26,7 +24,7 @@ public:
 	Object loadedForm;
 	
 	CinchDesigner(HWND);
-
+	~CinchDesigner();
 	Form* getForm();
 	void AddField(HWND hWndParent);
 	void MoveField(HWND parent);

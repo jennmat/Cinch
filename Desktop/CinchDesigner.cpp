@@ -141,6 +141,10 @@ CinchDesigner::CinchDesigner(HWND _hWnd){
 	form = new Form();
 }
 
+CinchDesigner::~CinchDesigner(){
+	delete form;
+}
+
 Form* CinchDesigner::getForm(){
 	return form;
 }
@@ -177,7 +181,7 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 	case WM_NCCREATE:
 		{
 		CREATESTRUCT* c = (CREATESTRUCT*)lParam;
-		CinchDesigner * designer = new CinchDesigner(hWnd);
+		CinchDesigner *designer = new CinchDesigner(hWnd);
 		SetWindowLong(hWnd, GWL_USERDATA, (LONG)designer);
 		return TRUE;
 		}
@@ -249,7 +253,11 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		{
+		CinchDesigner* designer = (CinchDesigner*)GetWindowLong(hWnd, GWL_USERDATA);
+		delete designer;
 		PostQuitMessage(0);
+		}
 		break;
 	case WM_SIZE:
 		self->getForm()->show(hWnd, GetModuleHandle(0));

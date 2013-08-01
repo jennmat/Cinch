@@ -232,6 +232,9 @@
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files\Menu</Filter>
     </ClCompile>
+    <ClCompile Include="CreateDestroyHandler.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Desktop.rc">

@@ -297,7 +297,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 void DestroyInstance() {
 	//CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
-	DestroyApplicationExplorer(tree);
+	DestroyWindow(tree);
+	delete delegate;
 }
 
 
@@ -448,6 +449,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		DestroyFramework();
 		PostQuitMessage(0);
 		break;
 	default:
