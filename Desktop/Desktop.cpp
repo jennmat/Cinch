@@ -42,7 +42,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
-	//_CrtSetBreakAlloc(3692);
+	//_CrtSetBreakAlloc(3134);
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -87,6 +87,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	CoUninitialize();
 
+	conn.cleanup();
 	_CrtDumpMemoryLeaks();
 
 	return (int) msg.wParam;
@@ -832,10 +833,10 @@ void changesArrived(){
 
 DWORD WINAPI ChangesListener(LPVOID lParam){
 
-	Connection conn;
-	conn.setTimeout(0);
-	Database db = conn.getDatabase(DATABASE);
-	db.listenForChanges(changesArrived);
+	//Connection conn;
+	//conn.setTimeout(0);
+	//Database db = conn.getDatabase(DATABASE);
+	//db.listenForChanges(changesArrived);
 	return 0;
 }
 

@@ -30,7 +30,7 @@ class Connection{
       Connection();
       Connection(const std::string&);
       ~Connection();
-
+	  void cleanup();
       std::string getCouchDBVersion() const;
 
       std::vector<std::string> listDatabases();

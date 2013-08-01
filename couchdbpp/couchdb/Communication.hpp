@@ -51,6 +51,7 @@ class Communication{
       Communication();
       Communication(const std::string&);
       ~Communication();
+	  void cleanup();
 
       Value getData(const std::string&, const std::string &method = "GET",
                       const std::string &data = "");

@@ -110,10 +110,13 @@ void Communication::init(const string &url){
    baseURL = url;
 }
 
-Communication::~Communication(){
+void Communication::cleanup(){
    if(curl)
       curl_easy_cleanup(curl);
    curl_global_cleanup();
+}
+
+Communication::~Communication(){
 }
 
 Value Communication::getData(const string &url, const string &method,

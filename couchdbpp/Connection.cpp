@@ -38,6 +38,10 @@ void Connection::getInfo(){
 Connection::~Connection(){
 }
 
+void Connection::cleanup(){
+	comm.cleanup();
+}
+
 string Connection::getCouchDBVersion() const{
    return couchDBVersion;
 }
