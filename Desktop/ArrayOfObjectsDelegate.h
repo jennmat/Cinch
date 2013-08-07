@@ -23,6 +23,7 @@ private:
 	int fieldId;
 public:
 	ArrayOfObjectsDelegate(Detail *, int);
+	~ArrayOfObjectsDelegate();
 	void setData(Array array);
 	void addColumn(string field, wstring label, string editorType, Value config);
 

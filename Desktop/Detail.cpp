@@ -45,6 +45,10 @@ Detail::Detail() {
 	pageCount = 0;
 }
 
+Detail::~Detail(){
+	
+}
+
 
 
 void Detail::ShowPage(int i){
@@ -59,6 +63,15 @@ void Detail::ShowPage(int i){
 		InitializePage(i);
 	}
 
+}
+
+void Detail::DestroyPage(int i){
+	if ( contentType[i] == TABLE_CONTENT || contentType[i] == VIEW_CONTENT || contentType[i] == VIEW_WITH_DOCUMENTS_CONTENT ){
+		CinchGrid* grid = (CinchGrid*)GetWindowLong(detailPages[i], GWL_USERDATA);
+		delete grid->getDelegate();
+	}
+	DestroyWindow(detailPages[i]);
+	delete fieldName[i];
 }
 
 void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, int i){
@@ -401,9 +414,7 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 	{
 	case WM_INITDIALOG:
 		{
-			;
-			
-
+	
 			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
 			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
 
@@ -602,20 +613,21 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 void Detail::removeAllDetailPages(){
 	for(int i=0; i<getDetailPageCount(); i++){
-		DestroyWindow(detailPages[i]);
+		DestroyPage(i);
 	}
 	TabCtrl_DeleteAllItems(tabControl);
 }
 
 void Detail::addDetailPage(LPWSTR title){
-	LPTCITEM tie = (LPTCITEM)malloc(sizeof(TCITEM));
+	LPTCITEM tie = new TCITEM;
 	tie->mask = TCIF_TEXT;
-	tie->pszText = (wchar_t*)malloc(80*sizeof(wchar_t));
+	tie->pszText = new wchar_t[80];
 	wcscpy_s(tie->pszText, 80, title);
 	
 	int total = TabCtrl_GetItemCount(tabControl);
 	TabCtrl_InsertItem(tabControl, total, tie);
-
+	delete tie->pszText;
+	delete tie;
 	ShowWindow(detail, SW_SHOW);
 }
 

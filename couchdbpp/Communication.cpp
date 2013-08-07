@@ -110,13 +110,11 @@ void Communication::init(const string &url){
    baseURL = url;
 }
 
-void Communication::cleanup(){
+
+Communication::~Communication(){
    if(curl)
       curl_easy_cleanup(curl);
    curl_global_cleanup();
-}
-
-Communication::~Communication(){
 }
 
 Value Communication::getData(const string &url, const string &method,
@@ -130,29 +128,30 @@ Value Communication::getData(const string &url, const HeaderMap &headers,
    return getData(url, method, data, headers);
 }
 
-string Communication::getRawData(const string &url){
+string Communication::getRawData(const string &url, bool ignoreTimeout){
    HeaderMap headers;
-   getRawData(url, "GET", "", headers);
+   getRawData(url, "GET", "", headers, ignoreTimeout);
    return buffer;
 }
 
 void Communication::readChangesFeed(const std::string& database, void (*newDataArrived)()){
 	int last_seq = 0;
-	while(true){
+	listenFlag = true;
+	while(listenFlag){
 		std::stringstream s;
 		s << "/" << database << "/_changes?feed=longpoll&since=" << last_seq;
 		string url = s.str();
-		string data = getRawData(s.str());
+		string data = getRawData(s.str(), true);
 		Value value = parseData(data);
 		if ( value.isObject() ){
-			newDataArrived();
-	
+			
 			Object obj = value.getObject();
 			if ( obj["last_seq"].isInteger() ){
 				last_seq = obj["last_seq"].getInt();
+				newDataArrived();
 			}
 		}
-
+	
 		if ( last_seq == 0 ){
 			return;
 		}
@@ -166,7 +165,7 @@ Value Communication::getData(const string &url, const string &method,
 }
 
 void Communication::getRawData(const string &_url, const string &method,
-                               string data, const HeaderMap &headers){
+                               string data, const HeaderMap &headers, bool ignoreTimeout){
    string url = baseURL + _url;
 
 #ifdef COUCH_DB_ANNOUNCE_URLS
@@ -216,8 +215,11 @@ void Communication::getRawData(const string &_url, const string &method,
    if(curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str()) != CURLE_OK)
       throw Exception("Unable to set HTTP method: " + method);
 
-   if(curl_easy_perform(curl) != CURLE_OK)
-      throw Exception("Unable to load URL: " + url);
+   CURLcode rc = curl_easy_perform(curl);
+   if ( !(ignoreTimeout && rc == CURLE_OPERATION_TIMEDOUT) ){
+	   if( rc != CURLE_OK)
+		   throw Exception("Unable to load URL: " + url);
+   }
 
    if(data.size() > 0 || headers.size() > 0){
       if(curl_easy_setopt(curl, CURLOPT_UPLOAD, 0L) != CURLE_OK)

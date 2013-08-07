@@ -14,6 +14,7 @@ public:
 	string view;
 	
 	ViewAutocompleteSource(){
+		refCount = 0;
 		setup();
 	}
 

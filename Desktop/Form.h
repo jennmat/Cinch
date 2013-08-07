@@ -10,13 +10,13 @@ private:
 	FormLayout layout;
 	Detail detail;
 	HWND parent;
-	;
 	string id;
 	Object obj;
 	bool hasDocument;
 	FormDelegate* delegate;
 public:
 	Form();
+	~Form();
 	void setDelegate(FormDelegate *);
 	FormDelegate* getDelegate();
 	void NewDocument(string type);

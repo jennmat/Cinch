@@ -267,5 +267,8 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	} else {
 		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
 	}
+
+	delete wclabel;
+
 	return formField;
 }

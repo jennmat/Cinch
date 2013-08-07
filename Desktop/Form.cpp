@@ -13,6 +13,11 @@ Form::Form(){
 
 }
 
+Form::~Form(){
+	removeAllDetailPages();
+	removeAllFields();
+}
+
 void Form::addField(FormField* field){
 	layout.addField(field);
 }

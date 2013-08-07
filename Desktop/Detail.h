@@ -38,6 +38,7 @@ public:
 	
 
 	Detail();
+	~Detail();
 	void setForm(Form *);
 	Form* getForm();
 	Array serializeUIElements();
@@ -52,6 +53,7 @@ public:
 	void CreateTextareaForPage(const wchar_t*, int i);
 	void CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* delegate, int i);
 	void CreateAttachmentsForPage(int i);
+	void DestroyPage(int i);
 	void InitializePage(int i);
 	HWND GetDetailPage(int i);
 	void ShowPage(int i);

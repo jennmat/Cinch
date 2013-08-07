@@ -540,8 +540,6 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Date and Time");
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
-
-		;
 		Database d = conn.getDatabase(DATABASE);
 		Object obj = d.viewResults("all-document-types", "by-label", 10, 0);
 		if ( obj["rows"].isArray() ){

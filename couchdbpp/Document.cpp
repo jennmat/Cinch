@@ -77,16 +77,15 @@ const string& Document::getRevision() const{
    return revision;
 }
 
-const string Document::getEscapedID() const {
-	char* escaped = curl_easy_escape(comm.curl, getID().c_str(), getID().length());
-	return string(escaped);
-}
 
 string Document::getURL(bool withRevision) const{
-   string url = "/" + getDatabase() + "/" + getEscapedID();
-   if(withRevision && revision.size() > 0)
-      url += "?rev=" + revision;
-   return url;
+	char* escaped = curl_easy_escape(comm.curl, getID().c_str(), getID().length());
+	string url = "/" + getDatabase() + "/" + escaped;
+	if(withRevision && revision.size() > 0)
+		url += "?rev=" + revision;	
+
+	curl_free(escaped);
+	return url;
 }
 
 vector<Revision> Document::getAllRevisions(){

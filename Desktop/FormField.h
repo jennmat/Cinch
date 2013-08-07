@@ -8,6 +8,7 @@ using namespace JsonBox;
 
 class EditField;
 class DatePickerField;
+class ViewAutocompleteSource;
 
 using namespace std;
 
@@ -22,6 +23,7 @@ protected:
 	Value config;
 
 public:
+	virtual ~FormField();
 	int controlChildId;
 
 	void setLabel(HWND label);
@@ -55,6 +57,7 @@ public:
 
 class DatePickerField : public FormField {
 public:
+	~DatePickerField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -63,6 +66,9 @@ public:
 
 class EditField : public FormField {
 public:
+	ViewAutocompleteSource* autoCompleteSource;
+	EditField();
+	~EditField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -72,6 +78,7 @@ public:
 
 class IdentifierField : public FormField {
 public:
+	~IdentifierField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -81,6 +88,7 @@ public:
 
 class NumberField : public FormField {
 public:
+	~NumberField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -93,6 +101,7 @@ public:
 
 class YesNoField : public FormField {
 public:
+	~YesNoField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -101,6 +110,7 @@ public:
 
 class ReferenceField : public FormField {
 public:
+	~ReferenceField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);
@@ -112,6 +122,7 @@ public:
 
 class ComboBoxField : public FormField {
 public:
+	~ComboBoxField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);

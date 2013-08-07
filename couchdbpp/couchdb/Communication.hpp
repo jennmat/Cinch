@@ -45,14 +45,15 @@ class Communication{
 	friend class Database;
 	friend class Document;
 	friend class Attachment;
+   private:
+	  bool listenFlag;  
    public:
       typedef std::map<std::string, std::string> HeaderMap;
 
       Communication();
       Communication(const std::string&);
       ~Communication();
-	  void cleanup();
-
+	 
       Value getData(const std::string&, const std::string &method = "GET",
                       const std::string &data = "");
       Value getData(const std::string&, const HeaderMap&,
@@ -64,7 +65,7 @@ class Communication{
 
 	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
 
-      std::string getRawData(const std::string&);
+      std::string getRawData(const std::string&, bool ignoreTimeout = false);
 
 	  void saveRawData(std::string url, std::string filename);
 
@@ -74,7 +75,7 @@ class Communication{
       Value getData(const std::string&, const std::string&,
                       std::string, const HeaderMap&);
       void getRawData(const std::string&, const std::string&,
-                      std::string, const HeaderMap&);
+                      std::string, const HeaderMap&, bool ignoreTimeout=false);
 
 	  std::string getHead(std::string url);
 

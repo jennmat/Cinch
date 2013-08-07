@@ -29,7 +29,6 @@ namespace CouchDB{
 
 class Database{
    friend class Connection;
-
    protected:
       Database(Communication&, const std::string&);
 
@@ -58,6 +57,7 @@ class Database{
 	  vector<Document> documentsVectorFromValue(const Value& value);
 
 	  void listenForChanges(void (*)());
+	  void stopListening();
 	  void startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password);
       
 	  Communication& getCommunication();

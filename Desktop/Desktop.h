@@ -20,5 +20,10 @@ Desktop desktop;
 CouchDB::Connection conn;
 CouchDB::Database db = conn.getDatabase(DATABASE);
 
+CouchDB::Connection listenerConn;
+CouchDB::Database listenerDb = listenerConn.getDatabase(DATABASE);
+
+
 DWORD WINAPI ChangesListener(LPVOID lParam);
 
+HANDLE listenerThread;

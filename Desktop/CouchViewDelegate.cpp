@@ -12,7 +12,20 @@ using namespace CouchDB;
 CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 {
 	rowCount = 0;
+	data = NULL;
+	rownums = NULL;
+	docids = NULL;
 	viewInitialized = false;
+}
+
+CouchViewDelegate::~CouchViewDelegate(){
+	if ( viewInitialized == true ){
+		//for(int i=0; i<PAGESIZE; i++) 
+//			delete data[i];
+		delete rownums;
+		delete[] data;
+		delete[] docids;
+	}
 }
 
 void CouchViewDelegate::setView(const string& _design, const string& _view)
@@ -27,30 +40,29 @@ void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	
+	delete rownums;
+	delete[] data;
+	delete[] docids;
+
 	viewResults = db.viewResults(design, view, PAGESIZE, 0);
 	
 	rowCount = viewResults["total_rows"].getInt();
-	data = new wchar_t*[PAGESIZE];
+	data = new wstring[PAGESIZE];
 	rownums = new int[PAGESIZE];
 	docids = new string[PAGESIZE];
 
-	memset(data, NULL, PAGESIZE);
-
+	
 	int i = 0;
 	if ( viewResults["total_rows"].getInt() > 0 ){
 	   Array rows = viewResults["rows"].getArray();
 	   for(unsigned int j=0; j<rows.size(); j++){
-		   Object o = rows[j].getObject();
-		   wstring w = s2ws(o["key"].getString());
-
-			data[i] = new wchar_t[80];
+			Object o = rows[j].getObject();
+			wstring w = s2ws(o["key"].getString());
+			data[i] = w;
 			rownums[i] = i;
 			docids[i] = o["id"].getString();
 
-			wcscpy_s(data[i], 80, w.c_str());
 			i++;
-			
 		}
 	}
 }
@@ -108,9 +120,10 @@ void CouchViewDelegate::loadPage(int row){
 		for(unsigned int j=0; j<rows.size(); j++){
 			Object o = rows[j].getObject();
 			wstring w = s2ws(o["key"].getString());
-			delete data[i%PAGESIZE];
-			data[i%PAGESIZE] = new wchar_t[80];
-			wcscpy_s(data[i%PAGESIZE], 80, w.c_str());
+			//delete data[i%PAGESIZE];
+			//data[i%PAGESIZE] = new wchar_t[80];
+			//wcscpy_s(data[i%PAGESIZE], 80, w.c_str());
+			data[i] = w;
 			rownums[i%PAGESIZE] = i;
 			docids[i%PAGESIZE] = o["id"].getString();
 			i++;
@@ -124,9 +137,7 @@ void CouchViewDelegate::cellContent(int row, int col, wstring &content)
 		loadPage(row);
 	}
 
-	wchar_t* d = data[row % PAGESIZE];
-
-	content = d;
+	content = data[row % PAGESIZE];
 }
 
 bool CouchViewDelegate::stickyHeaders(){

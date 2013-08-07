@@ -10,7 +10,7 @@ class CouchViewDelegate : public GridDelegate {
 private:
 	Connection& conn;
 	int rowCount;
-	wchar_t** data;
+	wstring* data;
 	string* docids;
 	int* rownums;
 	string view;
@@ -29,6 +29,7 @@ private:
 	void loadPage(int);
 public:
 	CouchViewDelegate(Connection&);
+	~CouchViewDelegate();
 	int totalRows();
 	int totalColumns();
 	string getDocumentIdForRow(int);

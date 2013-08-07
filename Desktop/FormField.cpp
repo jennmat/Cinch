@@ -33,6 +33,9 @@ Value FormField::getConfig(){
 	return config;
 }
 
+FormField::~FormField(){
+}
+
 FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 12002;
@@ -108,8 +111,6 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	ViewAutocompleteSource *pcacs = new ViewAutocompleteSource();
 
 	/* Find an appropriate view */
-	;
-	
 	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", Value(name), Value(name), true);
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
@@ -162,6 +163,7 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	{
 		hr = pac->Init(field->control, punkSource, NULL, NULL);
 		pac->SetOptions(ACO_AUTOSUGGEST | ACO_AUTOAPPEND | ACO_UPDOWNKEYDROPSLIST);
+		field->autoCompleteSource = pcacs;
 	}
 
 	pcacs->Release();
@@ -169,7 +171,7 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	//SHAutoComplete(field->control, SHACF_FILESYSTEM);
 	
 	//NotifyParentOfEnterKey(field->control);
-
+	
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 	
 	return field;
@@ -208,6 +210,11 @@ FormField* FormField::createIdentifierField(HWND parent, HINSTANCE hInst, string
 }
 
 void ReferenceField::setupValues(){
+	vector<string>* ptr = (vector<string>*) GetWindowLongPtr(getControl(), GWLP_USERDATA);
+	if ( ptr != NULL ){
+		ptr->clear();
+		delete ptr;
+	}
 	vector<string>* ids = new vector<string>();
 
 	if ( config.isObject() ){
@@ -218,8 +225,6 @@ void ReferenceField::setupValues(){
 			view = pick["view"].getString();
 
 			if ( design.length() > 0 && view.length() > 0 ){
-				;
-				
 				Object results = db.viewResults(design, view, 500, 0);
 
 				ComboBox_ResetContent(getControl());
@@ -237,7 +242,7 @@ void ReferenceField::setupValues(){
 		}
 	}
 
-	SetWindowLong(getControl(), GWL_USERDATA, (ULONG_PTR)ids);
+	SetWindowLongPtr(getControl(), GWLP_USERDATA, (ULONG_PTR)ids);
 
 }
 
@@ -311,9 +316,6 @@ string FormField::toString(Object obj){
 string ReferenceField::toString(Object obj){
 	string id = obj[getName()].getString();
 
-	;
-	
-
 	Object o = db.getDocument(id).getData().getObject();
 	return o["label"].getString();
 }
@@ -341,7 +343,6 @@ FormField* FormField::createComboBox(HWND parent, HINSTANCE hInst, string name, 
 
 	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
 
-	;
 	
 	Object obj = db.getDocument(type).getData().getObject();
 
@@ -538,6 +539,14 @@ string EditField::serializeForJS(){
 
 }
 
+EditField::EditField(){
+	autoCompleteSource = NULL;
+}
+
+EditField::~EditField(){
+	if( autoCompleteSource != NULL )
+		autoCompleteSource->Release();
+}
 
 
 void IdentifierField::loadValue(Object obj){
@@ -578,9 +587,8 @@ string IdentifierField::serializeForJS(){
 
 }
 
-
-
-
+IdentifierField::~IdentifierField(){
+}
 
 
 void DatePickerField::loadValue(Object obj){
@@ -641,6 +649,8 @@ string DatePickerField::serializeForJS(){
 	return rc.str();
 }
 
+DatePickerField::~DatePickerField(){
+}
 
 string NumberField::toString(Object obj){
 	string n = getName();
@@ -723,6 +733,9 @@ string NumberField::serializeForJS(){
 
 }
 
+NumberField::~NumberField(){
+}
+
 
 void YesNoField::loadValue(Object obj){
 	string n = getName();
@@ -761,6 +774,9 @@ string YesNoField::serializeForJS(){
 	} else {
 		return "false";
 	}
+}
+
+YesNoField::~YesNoField(){
 }
 
 
@@ -821,6 +837,13 @@ string ReferenceField::serializeForJS(){
 	return "";
 }
 
+ReferenceField::~ReferenceField(){
+	vector<string>* ptr = (vector<string>*) GetWindowLongPtr(getControl(), GWLP_USERDATA);
+	if ( ptr != NULL ){
+		ptr->clear();
+		delete ptr;
+	}
+}
 
 void ComboBoxField::clearValue(){
 	ComboBox_SetCurSel(getControl(), -1);
@@ -880,3 +903,5 @@ void ComboBoxField::loadValue(Object obj){
 	}
 }
 
+ComboBoxField::~ComboBoxField(){
+}

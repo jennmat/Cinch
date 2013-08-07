@@ -179,6 +179,7 @@ Document Database::getDocument(const string &id, const string &rev){
    if(obj.find("error") != obj.end())
 	   throw Exception("Document " + id + " (v" + rev + ") not found: " + obj["error"].getString());
 
+   curl_free(escaped);
    Document doc(comm,  obj, name,
 				obj["_id"].getString(),
                 "", // no key returned here
@@ -270,6 +271,9 @@ void Database::listenForChanges(void (*changesArrivedFunc)()){
 	comm.readChangesFeed(name, changesArrivedFunc);
 }
 
+void Database::stopListening(){
+	comm.listenFlag = false;
+}
 
 void Database::startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password)
 {

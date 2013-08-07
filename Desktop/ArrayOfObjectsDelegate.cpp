@@ -13,6 +13,14 @@ ArrayOfObjectsDelegate::ArrayOfObjectsDelegate(Detail * _d, int _fieldId){
 	fieldId = _fieldId;
 }
 
+ArrayOfObjectsDelegate::~ArrayOfObjectsDelegate(){
+	for(int i=0; i<totalColumns(); i++){
+		if ( editors[i] != NULL ){
+			delete editors[i];
+		}
+	}
+}
+
 int ArrayOfObjectsDelegate::totalRows()
 {
 	return rowCount;
@@ -204,9 +212,6 @@ void ArrayOfObjectsDelegate::deserializeUIElements(HWND _parent, Object obj){
 	editorConfigs.clear();
 	editorTypes.clear();
 	editors.clear();
-
-	;
-	
 
 	if( obj["columns"].isArray() ){
 		Array columns = obj["columns"].getArray();

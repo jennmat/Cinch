@@ -42,7 +42,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
-	//_CrtSetBreakAlloc(3134);
+	//_CrtSetBreakAlloc(5913);
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -86,9 +87,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	CoUninitialize();
-
-	conn.cleanup();
-	_CrtDumpMemoryLeaks();
 
 	return (int) msg.wParam;
 }
@@ -287,7 +285,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SizeWindows(hWnd);
 
 	DWORD threadId;
-	CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
 	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
@@ -450,8 +448,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		listenerDb.stopListening();
 		DestroyInstance();
 		DestroyFramework();
+		WaitForSingleObject(listenerThread, 1000);
 		PostQuitMessage(0);
 		break;
 	default:
@@ -832,11 +832,8 @@ void changesArrived(){
 }
 
 DWORD WINAPI ChangesListener(LPVOID lParam){
-
-	//Connection conn;
-	//conn.setTimeout(0);
-	//Database db = conn.getDatabase(DATABASE);
-	//db.listenForChanges(changesArrived);
+	listenerConn.setTimeout(200);
+	listenerDb.listenForChanges(changesArrived);
 	return 0;
 }
 
