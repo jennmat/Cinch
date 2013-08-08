@@ -79,6 +79,10 @@ Explorer::Explorer(){
 Explorer::~Explorer(){
 }
 
+bool Explorer::isInitialized(){
+	return perspective.length() > 0;
+}
+
 void Explorer::AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int level){
 	for(unsigned int i=0; i<items.size(); i++){
 		Object item = items[i].getObject();
@@ -156,11 +160,14 @@ bool Explorer::saveChanges(HWND tree){
 		Object obj;
 		buildData(tree, TreeView_GetRoot(tree), obj);
 		cout << obj;
-		obj["_rev"] = rev;
+		if ( rev.length() > 0 ){
+			obj["_rev"] = rev;
+		}
 		obj["cinch_type"] = "menu_definition";
-		obj["target_perspective"] = "abc";
+		obj["target_perspective"] = perspective;
 		Document updated = db.createDocument(Value(obj), id);
 		rev = updated.getRevision();
+		id = updated.getID();
 	}catch(CouchDB::Exception ex){
 		return false;
 	}
@@ -186,20 +193,39 @@ Object* Explorer::getRoot(){
 	return &doc;
 }
 
-void Explorer::buildExplorer(HWND tree){
-	Object results = db.viewResults("all-menu-definitions", "by-perspective", 25, 0, true);
+void CleanupExplorerItems(HWND tree){
+	HTREEITEM root = TreeView_GetRoot(tree);
+	EnumerateChildrenRecursively(tree, root, CleanupItemData);
+	CleanupItemData(tree, root);
+	TreeView_DeleteAllItems(tree);
+}
+
+void Explorer::buildExplorer(HWND tree, const string& perspective){
+	CleanupExplorerItems(tree);
+	id = "";
+	rev = "";
+	this->perspective = perspective;
+	doc = Object();
+	Object results;
+	if ( perspective.length() == 0 ){
+		results = db.viewResults("all-menu-definitions", "by-perspective", 1, 0, true);
+	} else {
+		results = db.viewResults("all-menu-definitions", "by-perspective", Value(perspective), Value(perspective), true);
+	}
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
-		Object row = rows[0].getObject();
-		if ( row["doc"].isObject() ){
-			doc = row["doc"].getObject();
-			id = row["id"].getString();
-			rev = doc["_rev"].getString();
+		if ( rows.size() > 0 ){
+			Object row = rows[0].getObject();
+			if ( row["doc"].isObject() ){
+				doc = row["doc"].getObject();
+				id = row["id"].getString();
+				rev = doc["_rev"].getString();
 
 			
-			if( doc["items"].isArray() ){
-				const Array& items = doc["items"].getArray();
-				AddMenuItems(tree, TVI_ROOT, items, 1);
+				if( doc["items"].isArray() ){
+					const Array& items = doc["items"].getArray();
+					AddMenuItems(tree, TVI_ROOT, items, 1);
+				}
 			}
 		}
 	}
@@ -215,14 +241,11 @@ void CreateApplicationExplorer(HWND tree){
 	InitTreeViewImageLists(tree);
 	
 	explorer = new Explorer;
-	explorer->buildExplorer(tree);
+	//explorer->buildExplorer(tree, "");
 }
 
 void DestroyApplicationExplorer(HWND tree){
-	
-	HTREEITEM root = TreeView_GetRoot(tree);
-	EnumerateChildrenRecursively(tree, root, CleanupItemData);
-	CleanupItemData(tree, root);
+	CleanupExplorerItems(tree);
 	
 	delete explorer;
 }

@@ -131,6 +131,7 @@
     <ClInclude Include="RibbonFramework.h" />
     <ClInclude Include="NewDocumentHandler.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SwitchPerspectiveHandler.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Toolbar.h" />
     <ClInclude Include="util.h" />
@@ -167,6 +168,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SwitchPerspectiveHandler.cpp" />
     <ClCompile Include="Toolbar.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>

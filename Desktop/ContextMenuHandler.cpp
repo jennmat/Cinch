@@ -5,6 +5,7 @@
 #define IDD_EXPLORER_ADD_VIEW 15067
 
 extern HWND tree;
+extern Explorer* explorer;
 
 void HandleContextMenu(HWND hwnd) {
 	SetWindowSubclass(hwnd, HandleContextMenuProc, 0, 0);
@@ -13,17 +14,19 @@ void HandleContextMenu(HWND hwnd) {
 LRESULT CALLBACK HandleContextMenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData){
 
 	if ( message == WM_RBUTTONDOWN ){
-		POINT point;
-		point.x = GET_X_LPARAM(lParam);
-		point.y = GET_Y_LPARAM(lParam);
-		HMENU hPopupMenu = CreatePopupMenu();
-		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_DELETE_FOLDER, L"Delete Folder");
-		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_NEW_FOLDER, L"New Folder");
-		InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_ADD_VIEW, L"Add View");
+		if ( explorer->isInitialized() ){
+			POINT point;
+			point.x = GET_X_LPARAM(lParam);
+			point.y = GET_Y_LPARAM(lParam);
+			HMENU hPopupMenu = CreatePopupMenu();
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_DELETE_FOLDER, L"Delete");
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_NEW_FOLDER, L"New Folder");
+			InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EXPLORER_ADD_VIEW, L"Add View");
 		
-        ClientToScreen(hWnd, &point);
-		TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, hWnd, NULL);
-		DestroyMenu(hPopupMenu);
+			ClientToScreen(hWnd, &point);
+			TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, hWnd, NULL);
+			DestroyMenu(hPopupMenu);
+		}
 	}
 
 	if ( message == WM_COMMAND ) {
@@ -41,8 +44,6 @@ LRESULT CALLBACK HandleContextMenuProc(HWND hWnd, UINT message, WPARAM wParam, L
 			}
 			case IDD_EXPLORER_NEW_FOLDER:
 			{
-				Explorer* explorer = (Explorer*)GetWindowLongPtr(tree, GWLP_USERDATA);
-				
 				HTREEITEM current = TreeView_GetSelection(tree);
 				
 				Object newFolder;
@@ -80,8 +81,6 @@ LRESULT CALLBACK HandleContextMenuProc(HWND hWnd, UINT message, WPARAM wParam, L
 				EnumerateChildrenRecursively(tree, current, CleanupItemData);
 				CleanupItemData(tree, current);
 
-				Explorer* explorer = (Explorer*)GetWindowLongPtr(tree, GWLP_USERDATA);
-					
 				TreeView_DeleteItem(tree, current);
 				return explorer->saveChanges(tree);
 			}
@@ -166,7 +165,6 @@ INT_PTR CALLBACK HandleAddExistingDialogFunc(HWND hDlg, UINT message, WPARAM wPa
 
 				delete label;
 				
-				Explorer* explorer = (Explorer*)GetWindowLongPtr(tree, GWLP_USERDATA);
 				explorer->saveChanges(tree);
 			}
 		}

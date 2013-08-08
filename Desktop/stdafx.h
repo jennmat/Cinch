@@ -95,7 +95,8 @@ struct FileWatchController {
 //#define DATABASE "cinch-customer-contact-plugin-starter"
 //#define DATABASE "cinch-business-starter"
 //#define DATABASE "cinch-inventory-starter"
-#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-starter"
+#define DATABASE "cinch-real-estate-starter"
 //#define DATABASE "hvac"
 //#define DATABASE "zebra"
 
@@ -121,7 +122,7 @@ struct FileWatchController {
 #include "AttachmentViewer.h"
 #include "SimpleRibbon.h"
 #include "NewDocumentHandler.h"
-
+#include "SwitchPerspectiveHandler.h"
 
 #include "console.h"
 

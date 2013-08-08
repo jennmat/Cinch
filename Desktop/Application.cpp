@@ -106,6 +106,17 @@ STDMETHODIMP CApplication::OnCreateUICommand(
         }
         break;
     }
+	case IDR_CMD_SWITCHPERSPECTIVE:
+	{
+		CSwitchPerspectiveHandler *pHandler = NULL;
+        hr = CSwitchPerspectiveHandler::CreateInstance(&pHandler);
+        if (SUCCEEDED(hr))
+        {
+            hr = pHandler->QueryInterface(IID_PPV_ARGS(ppCommandHandler));
+            pHandler->Release();
+        }
+		break;
+	}
 	default:
     {
 		IUICommandHandler *pButtonHandler = NULL;

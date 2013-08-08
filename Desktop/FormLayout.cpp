@@ -26,9 +26,11 @@ int FormLayout::minWidth()
 
 void FormLayout::removeAllFields(){
 	for(unsigned int j=0; j<fields.size(); j++){
+		HWND control = fields[j]->getControl();
+		HWND label = fields[j]->getLabel();
 		delete fields[j];
-		DestroyWindow(fields[j]->getControl());
-		DestroyWindow(fields[j]->getLabel());
+		DestroyWindow(control);
+		DestroyWindow(label);
 		
 	}
 

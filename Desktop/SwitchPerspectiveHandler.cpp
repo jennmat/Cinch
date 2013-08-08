@@ -17,7 +17,11 @@
 //    button, not the handler for the gallery. This function will never actually be called.
 //
 //
-STDMETHODIMP CNewDocumentHandler::Execute(UINT nCmdID,
+
+extern Explorer* explorer;
+extern HWND tree;
+
+STDMETHODIMP CSwitchPerspectiveHandler::Execute(UINT nCmdID,
                    UI_EXECUTIONVERB verb, 
                    __in_opt const PROPERTYKEY* key,
                    __in_opt const PROPVARIANT* ppropvarValue,
@@ -28,10 +32,8 @@ STDMETHODIMP CNewDocumentHandler::Execute(UINT nCmdID,
     UNREFERENCED_PARAMETER(pCommandExecutionProperties);
 
 	if ( verb == UI_EXECUTIONVERB_EXECUTE ){
-		Object objectDefinition = objectTypes[ppropvarValue->intVal];
-		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
-		designercontrol->NewDocument(DATABASE, objectDefinition["_id"].getString());
-
+		Object perspective = perspectiveDefinitions[ppropvarValue->intVal];
+		explorer->buildExplorer(tree, perspective["_id"].getString());
 	}
 
    	
@@ -39,7 +41,7 @@ STDMETHODIMP CNewDocumentHandler::Execute(UINT nCmdID,
 }
 
 // Factory method to create IUIImages from resource identifiers.
-HRESULT CNewDocumentHandler::CreateUIImageFromBitmapResource(
+HRESULT CSwitchPerspectiveHandler::CreateUIImageFromBitmapResource(
                          LPCTSTR pszResource, __out IUIImage **ppimg)
 {
     HRESULT hr = E_FAIL;
@@ -93,7 +95,7 @@ HRESULT CNewDocumentHandler::CreateUIImageFromBitmapResource(
 //    This function is used to populate the gallery.
 //
 //
-STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
+STDMETHODIMP CSwitchPerspectiveHandler::UpdateProperty(UINT nCmdID,
                               __in REFPROPERTYKEY key,
                               __in_opt const PROPVARIANT* ppropvarCurrentValue,
                               __out PROPVARIANT* ppropvarNewValue)
@@ -102,30 +104,26 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
 	
     if (key == UI_PKEY_ItemsSource)
     {
-		objectTypes.clear();
+		perspectiveDefinitions.clear();
 	    IUICollection* pCollection;
         hr = ppropvarCurrentValue->punkVal->QueryInterface( 
                                                       IID_PPV_ARGS(&pCollection));
-        
-		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
+     
+
+		
+		Object r = db.viewResults("all-perspectives", "by-role", 100, 0, true);
 		Array rows = r["rows"].getArray();
 		unsigned int i = 0;
 		for(; i<rows.size(); i++){
 			Object row = rows[i].getObject();
-			string key = row["key"].getString();
-			wstring wkey = s2ws(key);
-				
-			Document doc = db.getDocument(row["id"].getString());
-
-			objectTypes.push_back(doc.getData().getObject());
+			Object doc = row["doc"].getObject();
+			wstring label = s2ws(doc["label"].getString());
+			perspectiveDefinitions.push_back(doc);
 
 			// Create a new property set for each item.
             CPropertySet* pItem;
             hr = CPropertySet::CreateInstance(&pItem);
               
-            // Load the label from the resource file.
-            WCHAR wszLabel[MAX_RESOURCE_LENGTH];
-			wcscpy_s(wszLabel, MAX_RESOURCE_LENGTH, wkey.c_str());
             
 			IUIImage* pImg;
 			MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP);
@@ -135,10 +133,11 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
 
 			// Initialize the property set with no image, the label that was just
             // loaded, and no category.
-            pItem->InitializeItemProperties(pImg, wszLabel, UI_COLLECTION_INVALIDINDEX);
+            pItem->InitializeItemProperties(pImg, label.c_str(), UI_COLLECTION_INVALIDINDEX);
 
             pCollection->Add(pItem);
 
+			pItem->Release();
         }
         
      
@@ -149,7 +148,7 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
     return hr;
 }
 
-HRESULT CNewDocumentHandler::CreateInstance(__deref_out CNewDocumentHandler **ppHandler)
+HRESULT CSwitchPerspectiveHandler::CreateInstance(__deref_out CSwitchPerspectiveHandler **ppHandler)
 {
     if (!ppHandler)
     {
@@ -160,7 +159,7 @@ HRESULT CNewDocumentHandler::CreateInstance(__deref_out CNewDocumentHandler **pp
 
     HRESULT hr = S_OK;
 
-    CNewDocumentHandler* pHandler = new CNewDocumentHandler();
+    CSwitchPerspectiveHandler* pHandler = new CSwitchPerspectiveHandler();
 
     if (pHandler != NULL)
     {
@@ -176,12 +175,12 @@ HRESULT CNewDocumentHandler::CreateInstance(__deref_out CNewDocumentHandler **pp
 }
 
 // IUnknown methods.
-STDMETHODIMP_(ULONG) CNewDocumentHandler::AddRef()
+STDMETHODIMP_(ULONG) CSwitchPerspectiveHandler::AddRef()
 {
     return InterlockedIncrement(&m_cRef);
 }
 
-STDMETHODIMP_(ULONG) CNewDocumentHandler::Release()
+STDMETHODIMP_(ULONG) CSwitchPerspectiveHandler::Release()
 {
     LONG cRef = InterlockedDecrement(&m_cRef);
     if (cRef == 0)
@@ -192,7 +191,7 @@ STDMETHODIMP_(ULONG) CNewDocumentHandler::Release()
     return cRef;
 }
 
-STDMETHODIMP CNewDocumentHandler::QueryInterface(REFIID iid, void** ppv)
+STDMETHODIMP CSwitchPerspectiveHandler::QueryInterface(REFIID iid, void** ppv)
 {
     if (!ppv)
     {

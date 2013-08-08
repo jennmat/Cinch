@@ -143,6 +143,9 @@
     <ClInclude Include="Explorer.h">
       <Filter>Header Files\Explorer</Filter>
     </ClInclude>
+    <ClInclude Include="SwitchPerspectiveHandler.h">
+      <Filter>Header Files\Handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -231,6 +234,9 @@
     </ClCompile>
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="SwitchPerspectiveHandler.cpp">
+      <Filter>Source Files\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

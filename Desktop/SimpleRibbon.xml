@@ -64,6 +64,8 @@
         <Image Id ="291">res/AddTableL.bmp</Image>
       </Command.LargeImages>
     </Command>
+    <Command Name="cmdSwitchPerspective" Symbol="IDR_CMD_SWITCHPERSPECTIVE">
+    </Command>
     <Command Name="cmdDelete" Symbol="IDR_CMD_DELETE">
       <Command.LabelTitle>
         <String Id="251">Delete</String>
@@ -122,8 +124,9 @@
           <Group CommandName="cmdViewGroup" SizeDefinition="OneButton">
             <Button CommandName="cmdNewView"></Button>
           </Group>
-          <Group CommandName="cmdPerspectivesGroup" >
-            
+          <Group CommandName="cmdPerspectivesGroup" SizeDefinition="OneInRibbonGallery">
+            <InRibbonGallery CommandName="cmdSwitchPerspective" Type="Items" MaxColumns="2" MaxRows="3">
+            </InRibbonGallery>
           </Group>
         </Tab>
         <Tab CommandName="cmdTabUsers">

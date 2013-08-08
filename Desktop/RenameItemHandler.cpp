@@ -1,6 +1,8 @@
 
 #include "stdafx.h"
 
+extern Explorer* explorer;
+
 void HandleExplorerRenames(HWND hwnd){
 	SetWindowSubclass(GetParent(hwnd), HandleExplorerRenamesProc, 0, 0);
 }
@@ -41,7 +43,6 @@ LRESULT CALLBACK HandleExplorerRenamesProc(HWND hWnd, UINT message, WPARAM wPara
 				string label = ws2s(wstring(ptvdi->item.pszText));
 				(*obj)["label"] = label;
 
-				Explorer* explorer = (Explorer*)GetWindowLongPtr(tree, GWLP_USERDATA);
 				return explorer->saveChanges(tree);
 		
 			}

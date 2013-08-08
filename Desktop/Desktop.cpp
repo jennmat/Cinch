@@ -37,12 +37,14 @@ INT_PTR CALLBACK	NewView(HWND, UINT, WPARAM, LPARAM);
 
 INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+extern Explorer* explorer;
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
-	//_CrtSetBreakAlloc(78557);
+	//_CrtSetBreakAlloc(45661);
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
@@ -832,7 +834,7 @@ void changesArrived(){
 }
 
 DWORD WINAPI ChangesListener(LPVOID lParam){
-	listenerConn.setTimeout(200);
+	listenerConn.setTimeout(1000);
 	listenerDb.listenForChanges(changesArrived);
 	return 0;
 }

@@ -39,12 +39,14 @@ private:
 	Object doc;
 	string id;
 	string rev;
+	string perspective;
 	void AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int level);
 
 public:
 	Explorer();
 	~Explorer();
-	void buildExplorer(HWND tree);
+	bool isInitialized();
+	void buildExplorer(HWND tree, const string& perspective);
 	bool saveChanges(HWND tree);
 	void deleteRoot();
 	void addRoot(char* label);
