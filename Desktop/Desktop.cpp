@@ -365,17 +365,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if ( tvitem.lParam != NULL ){
 					Object o = *(Object*)tvitem.lParam;
 					
-					Object viewObj = db.getDocument(o["view"].getString()).getData().getObject();
-
 					if ( o["type"].getString().compare("view") == 0 ){
-						string design = viewObj["design_name"].getString();
-						string view = viewObj["view_name"].getString();
+						string design = o["design"].getString();
+						string view = o["view"].getString();
 						delegate->setView(design, view);
 						CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 						gridcontrol->reloadData();
 					}
 				}
-
 			}
 			break;
 		case TVN_ENDLABELEDIT:
@@ -547,9 +544,6 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 					/* Setup the sort combo */
-
- 					;
-					
 					vector<Object>* fieldsVector = new vector<Object>();
 
 					Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);

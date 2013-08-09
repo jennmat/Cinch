@@ -140,7 +140,8 @@ INT_PTR CALLBACK HandleAddExistingDialogFunc(HWND hDlg, UINT message, WPARAM wPa
 
 				Object newView = Object();
 				newView["type"] = "view";
-				newView["view"] = id;
+				newView["design"] = viewDefinition["design_name"];
+				newView["view"] = viewDefinition["default_view"];
 				newView["label"] = viewDefinition["label"];
 
 				TVITEM tvi; 

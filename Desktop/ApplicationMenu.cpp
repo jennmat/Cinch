@@ -110,15 +110,9 @@ void Explorer::AddMenuItems(HWND tree, HTREEITEM parent, const Array& items, int
 				}
 
 			} else if (  item["type"].getString().compare("view") == 0 ){
-				string viewId = item["view"].getString();
-				Object view = db.getDocument(viewId).getData().getObject();
-
-				string label = view["label"].getString();
+				string label = item["label"].getString();
 				wstring wl = s2ws(label);
-				Object obj = Object();
-				obj["type"] = item["type"];
-				obj["view"] = item["view"];
-				Object *ptr = new Object(obj);
+				Object *ptr = new Object(item);
 				HTREEITEM hitem = AddItemToTree(tree, parent, (LPWSTR)wl.c_str(), (LPARAM)ptr, level);
 			}
 		}

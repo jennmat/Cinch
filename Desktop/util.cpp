@@ -173,15 +173,15 @@ Object getDefaultViewDefinition(string t){
 	Array rows;
 	string type = t;
 	do { 
-		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type), true);
+		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type));
 		rows = results["rows"].getArray();
 		type = getSuperType(type);
 	} while ( rows.size() == 0 );
 
 	if ( rows[0].isObject() ){
 		Object result = rows[0].getObject();
-		if ( result["doc"].isObject() ) {
-			defaultViewDefinitions[t] = result["doc"].getObject();
+		if ( result["value"].isObject() ) {
+			defaultViewDefinitions[t] = result["value"].getObject();
 		}
 	}
 
@@ -253,8 +253,8 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	
 		Object conf;
 		Object doc = getDefaultViewDefinition(name);
-		string design = doc["design_name"].getString();
-		string view = doc["view_name"].getString();
+		string design = doc["design"].getString();
+		string view = doc["view"].getString();
 
 		Object pick;
 		pick["design"] = design;

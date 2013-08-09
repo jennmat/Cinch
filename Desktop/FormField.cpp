@@ -148,10 +148,10 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 			pcacs->view = viewname.str();
 		} else {
 			Object row = rows[0].getObject();
-			Object doc = row["doc"].getObject();
+			Object doc = row["value"].getObject();
 
-			pcacs->design = doc["design_name"].getString();
-			pcacs->view = doc["view_name"] .getString();
+			pcacs->design = doc["design"].getString();
+			pcacs->view = doc["view"] .getString();
 		}
 	}
 
