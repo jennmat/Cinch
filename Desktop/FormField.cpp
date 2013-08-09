@@ -107,9 +107,9 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
                       CLSCTX_INPROC_SERVER,
                       IID_PPV_ARGS(&punkSource));
 
-
-	ViewAutocompleteSource *pcacs = new ViewAutocompleteSource();
-
+	string design;
+	string viewstr;
+	
 	/* Find an appropriate view */
 	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", Value(name), Value(name), true);
 	if ( results["rows"].isArray() ){
@@ -144,18 +144,21 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 			db.createDocument(Value(view));
 			db.createDocument(Value(viewDefinition));
 
-			pcacs->design = designname.str();
-			pcacs->view = viewname.str();
+			design = designname.str();
+			viewstr = viewname.str();
 		} else {
 			Object row = rows[0].getObject();
 			Object doc = row["value"].getObject();
 
-			pcacs->design = doc["design"].getString();
-			pcacs->view = doc["view"] .getString();
+			design = doc["design"].getString();
+			viewstr = doc["view"] .getString();
 		}
 	}
 
-
+	ViewAutocompleteSource *pcacs = new ViewAutocompleteSource();
+	pcacs->design = design;
+	pcacs->view = viewstr;
+	pcacs->setup();
 
 
 	hr = pcacs->QueryInterface(IID_PPV_ARGS(&punkSource));

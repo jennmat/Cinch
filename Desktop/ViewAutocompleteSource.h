@@ -15,12 +15,13 @@ public:
 	
 	ViewAutocompleteSource(){
 		refCount = 0;
-		setup();
 	}
 
 	void setup(){
 		currentElement = 0;
-		
+
+		if ( design.length() == 0 ) return;
+
 		Object results = db.viewResults(design, view, 500, 0, false, true, 1);
 
 		elements.clear();
