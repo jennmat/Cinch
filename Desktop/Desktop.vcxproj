@@ -90,12 +90,12 @@
     <None Include="LIST.BMP" />
     <None Include="New.ico" />
     <CustomBuild Include="SimpleRibbon.xml">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)SimpleRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)SimpleRibbon.rc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)SimpleRibbon.bml /header:SimpleRibbon.h /res:SimpleRibbon.rc</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)SimpleRibbon.bml;SimpleRibbon.h;SimpleRibbon.rc;%(Outputs)</Outputs>
       <SubType>Designer</SubType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SimpleRibbon.xml;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uicc.exe SimpleRibbon.xml $(IntDir)SimpleRibbon.bml /header:$(IntDir)SimpleRibbon.h /res:$(IntDir)SimpleRibbon.rc</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)SimpleRibbon.bml;$(IntDir)SimpleRibbon.h;$(IntDir)SimpleRibbon.rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)SimpleRibbon.bml;SimpleRibbon.h;SimpleRibbon.rc;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SimpleRibbon.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="res\AddTableS.bmp" />
@@ -174,6 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Desktop.rc" />
+    <ResourceCompile Include="SimpleRibbon.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\couchdbpp\couchdbpp.vcxproj">

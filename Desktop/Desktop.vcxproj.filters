@@ -243,6 +243,9 @@
     <ResourceCompile Include="Desktop.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="SimpleRibbon.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="Desktop.exe.manifest" />

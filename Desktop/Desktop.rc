@@ -239,5 +239,3 @@ IDI_SMALL          ICON           "small.ico"
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST    "Desktop.exe.manifest"
 
-
-#include "SimpleRibbon.rc"

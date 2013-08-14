@@ -1,0 +1,83 @@
+// ******************************************************************************
+// * This is an automatically generated file containing the ribbon resource for *
+// * your application.                                                          *
+// ******************************************************************************
+
+#include ".\SimpleRibbon.h"
+
+STRINGTABLE 
+BEGIN
+    cmdTabHome_LabelTitle_RESID L"Home" /* LabelTitle cmdTabHome_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdTabUsers_LabelTitle_RESID L"Users" /* LabelTitle cmdTabUsers_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdTabDebug_LabelTitle_RESID L"Debug" /* LabelTitle cmdTabDebug_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdShapesGroup_LabelTitle_RESID L"Documents" /* LabelTitle cmdShapesGroup_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdDebugGroup_LabelTitle_RESID L"Debug" /* LabelTitle cmdDebugGroup_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdViewGroup_LabelTitle_RESID L"Views" /* LabelTitle cmdViewGroup_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    cmdPerspectivesGroup_LabelTitle_RESID L"Perspectives" /* LabelTitle cmdPerspectivesGroup_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_CMD_DEBUGOUTPUT_LabelTitle_RESID L"Show Debug Output" /* LabelTitle IDR_CMD_DEBUGOUTPUT_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_CMD_SIZEANDCOLOR_LabelTitle_RESID L"New" /* LabelTitle IDR_CMD_SIZEANDCOLOR_LabelTitle_RESID: (null) */
+END
+
+IDR_CMD_SIZEANDCOLOR_LargeImages_RESID    BITMAP    "res\\AddTableL.bmp" /* LargeImages IDR_CMD_SIZEANDCOLOR_LargeImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    IDR_CMD_DELETE_LabelTitle_RESID L"Delete" /* LabelTitle IDR_CMD_DELETE_LabelTitle_RESID: (null) */
+END
+
+IDR_CMD_DELETE_LargeImages_RESID    BITMAP    "res\\DeleteTableL.bmp" /* LargeImages IDR_CMD_DELETE_LargeImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    IDR_CMD_NEW_VIEW_LabelTitle_RESID L"New View" /* LabelTitle IDR_CMD_NEW_VIEW_LabelTitle_RESID: (null) */
+END
+
+IDR_CMD_NEW_VIEW_LargeImages_RESID    BITMAP    "res\\Button_Image.bmp" /* LargeImages IDR_CMD_NEW_VIEW_LargeImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    IDR_CMD_NEW_PERSPECTIVE_LabelTitle_RESID L"New Perspective" /* LabelTitle IDR_CMD_NEW_PERSPECTIVE_LabelTitle_RESID: (null) */
+END
+
+IDR_CMD_NEW_PERSPECTIVE_LargeImages_RESID    BITMAP    "res\\AddTableL.bmp" /* LargeImages IDR_CMD_NEW_PERSPECTIVE_LargeImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    cmdMRUList_LabelTitle_RESID L"MRU List" /* LabelTitle cmdMRUList_LabelTitle_RESID: (null) */
+END
+
+STRINGTABLE 
+BEGIN
+    IDC_CMD_EXIT_LabelTitle_RESID L"Exit Button" /* LabelTitle IDC_CMD_EXIT_LabelTitle_RESID: (null) */
+END
+
+IDC_CMD_EXIT_LargeImages_RESID    BITMAP    "res\\ExitL.bmp" /* LargeImages IDC_CMD_EXIT_LargeImages_RESID: (null) */
+APPLICATION_RIBBON    UIFILE    "Debug\\SimpleRibbon.bml"
