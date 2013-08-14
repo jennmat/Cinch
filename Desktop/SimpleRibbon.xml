@@ -82,7 +82,14 @@
         <Image Id ="293">res/Button_Image.bmp</Image>
       </Command.LargeImages>
     </Command>
-
+    <Command Name="cmdNewPerspective" Symbol="IDR_CMD_NEW_PERSPECTIVE">
+      <Command.LabelTitle>
+        <String Id="253">New Perspective</String>
+      </Command.LabelTitle>
+      <Command.LargeImages>
+        <Image Id ="295">res/AddTableL.bmp</Image>
+      </Command.LargeImages>
+    </Command>
     <Command Name="cmdQat"/>
     <Command Name="cmdFileMenu"/>
     <Command Name="cmdMRUList">
@@ -124,9 +131,10 @@
           <Group CommandName="cmdViewGroup" SizeDefinition="OneButton">
             <Button CommandName="cmdNewView"></Button>
           </Group>
-          <Group CommandName="cmdPerspectivesGroup" SizeDefinition="OneInRibbonGallery">
+          <Group CommandName="cmdPerspectivesGroup" SizeDefinition="InRibbonGalleryAndBigButton">
             <InRibbonGallery CommandName="cmdSwitchPerspective" Type="Items" MaxColumns="2" MaxRows="3">
             </InRibbonGallery>
+            <Button CommandName="cmdNewPerspective"/>
           </Group>
         </Tab>
         <Tab CommandName="cmdTabUsers">
