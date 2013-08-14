@@ -228,7 +228,7 @@ void ReferenceField::setupValues(){
 			view = pick["view"].getString();
 
 			if ( design.length() > 0 && view.length() > 0 ){
-				Object results = db.viewResults(design, view, 500, 0);
+				Object results = db.viewResults(design, view, false, 500, 0);
 
 				ComboBox_ResetContent(getControl());
 
@@ -526,6 +526,7 @@ Object EditField::storeValue(Object obj){
 	string key = getName();
 	string value =ws2s(str);
 	obj[key.c_str()] = value;	
+	delete str;
 	return obj;
 }
 
@@ -538,6 +539,7 @@ string EditField::serializeForJS(){
 	string value =ws2s(str);
 	stringstream rc;
 	rc << "'" << value << "'";
+	delete str;
 	return rc.str();
 
 }
@@ -574,6 +576,7 @@ Object IdentifierField::storeValue(Object obj){
 	string key = "_id";
 	string value =ws2s(str);
 	obj[key.c_str()] = value;	
+	delete str;
 	return obj;
 }
 
@@ -586,6 +589,7 @@ string IdentifierField::serializeForJS(){
 	string value =ws2s(str);
 	stringstream rc;
 	rc << "'" << value << "'";
+	delete str;
 	return rc.str();
 
 }
@@ -632,7 +636,8 @@ Object DatePickerField::storeValue(Object obj){
 	LPWSTR str = new wchar_t[80];
 	string key = getName();
 	string value =ws2s(date);
-	obj[key.c_str()] = value;	
+	obj[key.c_str()] = value;
+	delete date;
 	return obj;
 	
 }
@@ -649,6 +654,7 @@ string DatePickerField::serializeForJS(){
 
 	stringstream rc;
 	rc << "'" << value << "'";
+	delete date;
 	return rc.str();
 }
 
@@ -665,14 +671,16 @@ string NumberField::toString(Object obj){
 		_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
 		string s = string(buffer);
 		s.insert(decimal, ".");
+		delete buffer;
 		return s;
 	} else if ( obj[n.c_str()].isInteger() ){
 		int val = obj[n.c_str()].getInt();
 		char* buf = new char[100];
 		memset(buf, 0, 100);
 		_itoa_s(val, buf, 100, 10);
-
-		return string(buf);
+		string s = string(buf);
+		delete buf;
+		return s;
 	}
 
 	return "NaN";

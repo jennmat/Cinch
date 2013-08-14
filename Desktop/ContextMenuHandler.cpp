@@ -101,7 +101,7 @@ INT_PTR CALLBACK HandleAddExistingDialogFunc(HWND hDlg, UINT message, WPARAM wPa
 	case WM_INITDIALOG:
 		{
 			HWND combo = GetDlgItem(hDlg, IDC_PICK_VIEW_COMBO);
-			Object results = db.viewResults("all-view-definitions", "by-label", 100, 0);
+			Object results = db.viewResults("all-view-definitions", "by-label", false, 100, 0);
 			Object* storedPtr = new Object(results);
 			SetWindowLongPtr(hDlg, GWLP_USERDATA, (ULONG_PTR)storedPtr);
 			if ( results["rows"].isArray() ){

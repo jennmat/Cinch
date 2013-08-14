@@ -16,6 +16,7 @@ CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 	rownums = NULL;
 	docids = NULL;
 	viewInitialized = false;
+	descending = false;
 }
 
 CouchViewDelegate::~CouchViewDelegate(){
@@ -44,7 +45,7 @@ void CouchViewDelegate::loadViewResults(){
 	delete[] data;
 	delete[] docids;
 
-	viewResults = db.viewResults(design, view, PAGESIZE, 0);
+	viewResults = db.viewResults(design, view, descending, PAGESIZE, 0);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wstring[PAGESIZE];
@@ -79,7 +80,7 @@ int CouchViewDelegate::totalColumns(){
 
 
 int CouchViewDelegate::columnWidth(int col){
-	return 200;
+	return 185;
 }
 
 
@@ -107,7 +108,7 @@ void CouchViewDelegate::loadPage(int row){
 	Object obj;
 	int i;
 	if ( j < 0 ){
-		obj = db.viewResults(design, view, PAGESIZE, skip-1, false);
+		obj = db.viewResults(design, view, descending, PAGESIZE, skip-1, false);
 		i = skip-1;
 	} else {
 		obj = db.viewResultsFromStartDocId(design, view, Value(ws2s(data[j%PAGESIZE])), docids[j%PAGESIZE], PAGESIZE, skip);
@@ -157,8 +158,7 @@ bool CouchViewDelegate::rowSelection(){
 }
 
 
-void CouchViewDelegate::setupEditorForCell(HWND editor, int row, int col)
-{
+void CouchViewDelegate::setupEditorForCell(HWND editor, int row, int col){
 }
 
 bool CouchViewDelegate::allowEditing(int col){
@@ -167,7 +167,7 @@ bool CouchViewDelegate::allowEditing(int col){
 
 
 bool CouchViewDelegate::allowHeaderTitleEditing(int col){
-	return true;
+	return false;
 }
 
 HWND CouchViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
@@ -221,6 +221,7 @@ void CouchViewDelegate::headerContextClick(HWND grid, int x, int y){
 
 
 void CouchViewDelegate::willReloadData(){
+	loadViewResults();
 }
 
 void CouchViewDelegate::didReloadData(){
@@ -255,4 +256,21 @@ void CouchViewDelegate::setGrid(CinchGrid* g){
 }
 
 void CouchViewDelegate::didChangeColumnWidth(int, int){
+}
+
+bool CouchViewDelegate::allowSorting(int col){
+	return true;
+}
+
+void CouchViewDelegate::sortAscending(int col){
+	descending = false;
+}
+
+
+void CouchViewDelegate::sortDescending(int col){
+	descending = true;
+}
+
+void CouchViewDelegate::sortOff(int col){
+	descending = false;
 }

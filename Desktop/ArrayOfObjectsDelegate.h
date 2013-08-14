@@ -71,4 +71,9 @@ public:
 	void didChangeColumnWidth(int, int);
 
 	void setGrid(CinchGrid *);
+
+	bool allowSorting(int col);
+	void sortAscending(int col);
+	void sortDescending(int col);
+	void sortOff(int col);
 };

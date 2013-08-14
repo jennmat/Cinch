@@ -429,8 +429,6 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 					Object obj = db.getDocument(tabName).getData().getObject();
 					string array_contents = obj["array_contents"].getString();
-
-
 					
 
 					Object config = tab["config"].getObject();

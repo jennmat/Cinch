@@ -298,3 +298,16 @@ void DetailViewDelegate::setGrid(CinchGrid *){
 
 void DetailViewDelegate::didChangeColumnWidth(int, int){
 }
+
+bool DetailViewDelegate::allowSorting(int col){
+	return false;
+}
+
+void DetailViewDelegate::sortAscending(int col){
+}
+
+void DetailViewDelegate::sortDescending(int col){
+}
+
+void DetailViewDelegate::sortOff(int col){
+}

@@ -493,7 +493,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 		
-		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
+		Object r = db.viewResults("all-document-types", "by-label", false, 100, 0);
 	
 		vector<string>* ids = new vector<string>();
 

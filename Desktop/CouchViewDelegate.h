@@ -16,6 +16,7 @@ private:
 	string view;
 	string design;
 	bool viewInitialized;
+	bool descending;
 	Object viewResults;
 
 	Value highValue;
@@ -52,6 +53,11 @@ public:
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
 	void editingFinished(HWND editor, int row, int col);
 	void willLoseFocus();
+
+	bool allowSorting(int col);
+	void sortAscending(int col);
+	void sortDescending(int col);
+	void sortOff(int col);
 
 	void willReloadData();
 	void didReloadData();

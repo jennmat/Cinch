@@ -277,3 +277,17 @@ void ArrayOfObjectsDelegate::didChangeColumnWidth(int col, int newWidth){
 	widths[col] = newWidth;
 	detail->getForm()->getDelegate()->formModified();
 }
+
+
+bool ArrayOfObjectsDelegate::allowSorting(int col){
+	return false;
+}
+
+void ArrayOfObjectsDelegate::sortAscending(int col){
+}
+
+void ArrayOfObjectsDelegate::sortDescending(int col){
+}
+
+void ArrayOfObjectsDelegate::sortOff(int col){
+}

@@ -43,8 +43,8 @@ class Database{
       vector<Document> listDocuments();
 	  Object listViews();
 	  
-	  Object viewResults(const string& design, const string& view, int limit=25, bool includeDocs=false, bool reduce=false, int group_level=0);
-      Object viewResults(const string& design, const string& view, int limit=25, int skip=0, bool includeDocs=false, bool reduce=false, int group_level=0);
+	  Object viewResults(const string& design, const string& view, bool descending=false, int limit=25, bool includeDocs=false, bool reduce=false, int group_level=0);
+      Object viewResults(const string& design, const string& view, bool descending=false, int limit=25, int skip=0, bool includeDocs=false, bool reduce=false, int group_level=0);
 	  Object viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs=false, bool reduce=false);
       Object viewResultsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit, int skip);
 

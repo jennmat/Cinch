@@ -107,7 +107,7 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
         hr = ppropvarCurrentValue->punkVal->QueryInterface( 
                                                       IID_PPV_ARGS(&pCollection));
         
-		Object r = db.viewResults("all-document-types", "by-label", 100, 0);
+		Object r = db.viewResults("all-document-types", "by-label", false, 100, 0);
 		Array rows = r["rows"].getArray();
 		unsigned int i = 0;
 		for(; i<rows.size(); i++){

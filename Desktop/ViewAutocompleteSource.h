@@ -22,7 +22,7 @@ public:
 
 		if ( design.length() == 0 ) return;
 
-		Object results = db.viewResults(design, view, 500, 0, false, true, 1);
+		Object results = db.viewResults(design, view, false, 500, 0, false, true, 1);
 
 		elements.clear();
 	

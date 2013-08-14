@@ -111,7 +111,7 @@ STDMETHODIMP CSwitchPerspectiveHandler::UpdateProperty(UINT nCmdID,
      
 
 		
-		Object r = db.viewResults("all-perspectives", "by-role", 100, 0, true);
+		Object r = db.viewResults("all-perspectives", "by-role", false, 100, 0, true);
 		Array rows = r["rows"].getArray();
 		unsigned int i = 0;
 		for(; i<rows.size(); i++){

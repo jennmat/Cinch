@@ -51,6 +51,11 @@ public:
 	void editingFinished(HWND editor, int row, int col);
 	void willLoseFocus();
 
+	bool allowSorting(int col);
+	void sortAscending(int col);
+	void sortDescending(int col);
+	void sortOff(int col);
+
 	bool allowNewRows();
 	bool allowNewColumns();
 	void prepareNewRow(int row);

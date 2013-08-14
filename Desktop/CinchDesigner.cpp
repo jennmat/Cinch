@@ -541,7 +541,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
 		Database d = conn.getDatabase(DATABASE);
-		Object obj = d.viewResults("all-document-types", "by-label", 10, 0);
+		Object obj = d.viewResults("all-document-types", "by-label", false, 10, 0);
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
 			for(unsigned int i=0; i<results.size(); i++){
@@ -989,10 +989,6 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			
 			loadTabLabels(self->tabsForUpdate, visibleTabs);
 
-
-			;
-			
-
 			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
 			
 			vector<string> attributes = collectAttributes(self->getType());
@@ -1033,12 +1029,13 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			results = db.viewResults("all-view-definitions-emitting-ids", "by-emitted-type", Value(self->getType()), Value(self->getType()), true);
+			/*
+			results = db.viewResults("all-view-definitions-emitting-ids", "by-emitted-type", Value(self->getType()), Value(self->getType()));
 			if ( results["rows"].isArray() ){
 				Array rows = results["rows"].getArray();
 				for(unsigned int i=0; i<rows.size(); i++){
 					Object row = rows[i].getObject();
-					Object doc = row["doc"].getObject();
+					Object doc = row["value"].getObject();
 					string label = doc["label"].getString();
 					int len = label.size() + sizeof(wchar_t);
 					wchar_t* t = new wchar_t[len];
@@ -1049,16 +1046,13 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-
+			*/
 
 			
 		return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDOK ){
-
-			;
-			
 
 			Object form = self->getLoadedForm();
 			
