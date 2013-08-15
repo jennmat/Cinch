@@ -122,6 +122,7 @@
     <ClInclude Include="FormField.h" />
     <ClInclude Include="FormLayout.h" />
     <ClInclude Include="MaskEdit.h" />
+    <ClInclude Include="NewPerspective.h" />
     <ClInclude Include="NotifyParent.h" />
     <ClInclude Include="PropertySet.h" />
     <ClInclude Include="ReadOnlyDelegate.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="ApplicationMenu.cpp" />
     <ClCompile Include="HandleDragDrop.cpp" />
     <ClCompile Include="MaskEdit.cpp" />
+    <ClCompile Include="NewPerspective.cpp" />
     <ClCompile Include="NotifyParent.cpp" />
     <ClCompile Include="PropertySet.cpp" />
     <ClCompile Include="ReadOnlyDelegate.cpp" />

@@ -16,13 +16,17 @@
 #define IDD_ADD_VIEW                            159
 #define IDD_ADD_DOCUMENT_TYPE                   298
 #define IDD_ADD_EXISTING_VIEW                   301
+#define IDD_CREATE_PERSPECTIVE                  303
 #define IDC_ADD_FIELD_CHOOSE_FROM_LABEL         1000
 #define IDC_PICK_VIEW_COMBO                     1001
 #define IDC_RELATIONSHIP_COMBO                  1001
+#define IDC_BUTTON1                             1002
 #define IDC_RELATIONSHIP_LABEL                  1002
 #define IDC_STATIC1                             1002
 #define IDC_CONDITIONS_LABEL                    1003
+#define IDC_ROLE_COMBO                          1003
 #define IDC_ADD_DOCUMENT_TYPE_NAME              1004
+#define IDC_NAME_COMBO                          1004
 #define IDC_ADD_DOCUMENT_TYPE_LABEL             1005
 #define IDC_ADD_VIEW_DOC_TYPE                   1006
 #define IDC_HIDDEN_FIELDS                       1007

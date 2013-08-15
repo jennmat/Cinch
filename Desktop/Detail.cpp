@@ -204,7 +204,12 @@ void Detail::deserializeUIElements(Object obj)
 
 			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
 			if ( !config["columns"].isArray() ){
-				Object results = db.viewResults("all-document-types", "by-name", Value(docs_of_type), Value(docs_of_type));
+
+				QueryOptions options;
+				options.startKey = Value(docs_of_type);
+				options.endKey = Value(docs_of_type);
+
+				Object results = db.viewResults("all-document-types", "by-name", options);
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
 					if ( rows.size() > 0 ){

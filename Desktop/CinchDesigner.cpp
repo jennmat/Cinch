@@ -312,11 +312,11 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 			self->formWithUpdates = self->loadedForm;
 			
-
-			;
-			
-
-			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
+			QueryOptions options;
+			options.startKey = Value(self->getType());
+			options.endKey = Value(self->getType());
+			options.includeDocs = true;
+			Object results = db.viewResults("all-templates", "by-target-type", options);
 			
 			int count = self->getForm()->getLayout()->getFieldCount();
 			
@@ -359,8 +359,11 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 					fields = Array();
 				}
 
-
-				results = db.viewResults("all-attributes", "by-type", Value(self->getType()), Value(self->getType()), true);
+				QueryOptions options;
+				options.startKey = Value(self->getType());
+				options.endKey = Value(self->getType());
+				options.includeDocs = true;
+				results = db.viewResults("all-attributes", "by-type", options);
 			
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
@@ -541,7 +544,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(combo, CB_ADDSTRING, 0, (LPARAM)L"Number");
 
 		Database d = conn.getDatabase(DATABASE);
-		Object obj = d.viewResults("all-document-types", "by-label", false, 10, 0);
+		Object obj = d.viewResults("all-document-types", "by-label");
 		if ( obj["rows"].isArray() ){
 			Array results = obj["rows"].getArray();
 			for(unsigned int i=0; i<results.size(); i++){
@@ -772,9 +775,11 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						ShowWindow(GetDlgItem(hDlg, IDC_RELATIONSHIP_LABEL), SW_SHOW);
 						ShowWindow(GetDlgItem(hDlg, IDC_CONDITIONS_LABEL), SW_SHOW);
 						ComboBox_ResetContent(relcombo);
-						;
 						
-						Object results = db.viewResults("all-relationships", "by-destination-document-type", Value(self->getType()), Value(self->getType()));
+						QueryOptions options;
+						options.startKey = Value(self->getType());
+						options.endKey = Value(self->getType());
+						Object results = db.viewResults("all-relationships", "by-destination-document-type", options);
 				
 						vector<string>* ids = new vector<string>();
 
@@ -791,8 +796,10 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								string source_document_type = obj["source_document_type"].getString();
 
 								stringstream label;
-
-								Object objectResults = db.viewResults("all-document-types", "by-name", Value(source_document_type), Value(source_document_type));
+								QueryOptions options;
+								options.startKey = Value(source_document_type);
+								options.endKey = Value(source_document_type);
+								Object objectResults = db.viewResults("all-document-types", "by-name", options);
 								if ( objectResults["rows"].isArray() ){
 									Array rows = objectResults["rows"].getArray();
 									if ( rows.size() > 0 ){
@@ -989,7 +996,11 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			
 			loadTabLabels(self->tabsForUpdate, visibleTabs);
 
-			Object results = db.viewResults("all-templates", "by-target-type", Value(self->getType()), Value(self->getType()), true);
+			QueryOptions options;
+			options.startKey = Value(self->getType());
+			options.endKey = Value(self->getType());
+			options.includeDocs = true;
+			Object results = db.viewResults("all-templates", "by-target-type", options);
 			
 			vector<string> attributes = collectAttributes(self->getType());
 
@@ -1081,8 +1092,11 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						tab["label"] = obj["label"];
 						tabs.push_back(tab);
 					} else {
-
-						Object results = db.viewResults("all-attributes", "by-type", Value(array_content_type), Value(array_content_type), true);
+						QueryOptions options;
+						options.startKey = Value(array_content_type);
+						options.endKey = Value(array_content_type);
+						options.includeDocs = true;
+						Object results = db.viewResults("all-attributes", "by-type", options);
 						if ( results["rows"].isArray() ){
 							Array rows = results["rows"].getArray();
 							Array columns;
@@ -1116,8 +1130,11 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					Object tab;
 					Object config;
 					Array columns;
-
-					Object results = db.viewResults("all-attributes", "by-type", obj["emits"], obj["emits"], true);
+					QueryOptions options;
+					options.startKey = obj["emits"];
+					options.endKey = obj["emits"];
+					options.includeDocs = true;
+					Object results = db.viewResults("all-attributes", "by-type", options);
 					if ( results["rows"].isArray() ){
 						Array rows = results["rows"].getArray();
 						for(unsigned int i=0; i<rows.size(); i++){
@@ -1250,9 +1267,12 @@ void CinchDesigner::loadForm(string database, string t){
 		/* TODO: Check here if the form has been changed */
 	} else {
 		type = t;
-		;
 		
-		Object results = db.viewResults("all-templates", "by-target-type", Value(type), Value(type), true);
+		QueryOptions options;
+		options.startKey = Value(type);
+		options.endKey = Value(type);
+		options.includeDocs = true;
+		Object results = db.viewResults("all-templates", "by-target-type", options);
 		Array rows = results["rows"].getArray();
 		if ( rows.size() > 0 ){
 			Object row = rows[0].getObject();

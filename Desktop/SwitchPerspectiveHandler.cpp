@@ -85,6 +85,32 @@ HRESULT CSwitchPerspectiveHandler::CreateUIImageFromBitmapResource(
     return hr;
 }
 
+
+void CSwitchPerspectiveHandler::AddPerspective(IUICollection* pCollection, Object& doc) {
+	wstring label = s2ws(doc["label"].getString());
+	perspectiveDefinitions.push_back(doc);
+
+	// Create a new property set for each item.
+    CPropertySet* pItem;
+    HRESULT hr = CPropertySet::CreateInstance(&pItem);
+              
+            
+	IUIImage* pImg;
+	MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP);
+
+    HRESULT a = CreateUIImageFromBitmapResource(MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP), &pImg);
+
+
+	// Initialize the property set with no image, the label that was just
+    // loaded, and no category.
+    pItem->InitializeItemProperties(pImg, label.c_str(), UI_COLLECTION_INVALIDINDEX);
+
+    pCollection->Add(pItem);
+
+	pItem->Release();	
+}
+
+
 //
 //  FUNCTION: UpdateProperty()
 //
@@ -110,34 +136,16 @@ STDMETHODIMP CSwitchPerspectiveHandler::UpdateProperty(UINT nCmdID,
                                                       IID_PPV_ARGS(&pCollection));
      
 
-		
-		Object r = db.viewResults("all-perspectives", "by-role", false, 100, 0, true);
+		QueryOptions options;
+		options.includeDocs = true;
+		Object r = db.viewResults("all-perspectives", "by-role", options);
 		Array rows = r["rows"].getArray();
 		unsigned int i = 0;
 		for(; i<rows.size(); i++){
 			Object row = rows[i].getObject();
 			Object doc = row["doc"].getObject();
-			wstring label = s2ws(doc["label"].getString());
-			perspectiveDefinitions.push_back(doc);
-
-			// Create a new property set for each item.
-            CPropertySet* pItem;
-            hr = CPropertySet::CreateInstance(&pItem);
-              
-            
-			IUIImage* pImg;
-			MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP);
-
-            HRESULT a = CreateUIImageFromBitmapResource(MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP), &pImg);
-
-
-			// Initialize the property set with no image, the label that was just
-            // loaded, and no category.
-            pItem->InitializeItemProperties(pImg, label.c_str(), UI_COLLECTION_INVALIDINDEX);
-
-            pCollection->Add(pItem);
-
-			pItem->Release();
+			
+			AddPerspective(pCollection, doc);
         }
         
      

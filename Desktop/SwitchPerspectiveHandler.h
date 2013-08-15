@@ -27,6 +27,8 @@ class CSwitchPerspectiveHandler
     : public IUICommandHandler // Command handlers must implement IUICommandHandler.
 {
 public:
+	void AddPerspective(IUICollection* collection, Object& doc);
+
     STDMETHOD(Execute)(UINT nCmdID,
                        UI_EXECUTIONVERB verb, 
                        __in_opt const PROPERTYKEY* key,

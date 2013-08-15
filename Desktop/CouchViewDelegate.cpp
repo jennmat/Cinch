@@ -45,7 +45,11 @@ void CouchViewDelegate::loadViewResults(){
 	delete[] data;
 	delete[] docids;
 
-	viewResults = db.viewResults(design, view, descending, PAGESIZE, 0);
+	QueryOptions options;
+	options.descending = descending;
+	options.limit = PAGESIZE;
+
+	viewResults = db.viewResults(design, view, options);
 	
 	rowCount = viewResults["total_rows"].getInt();
 	data = new wstring[PAGESIZE];
@@ -108,10 +112,19 @@ void CouchViewDelegate::loadPage(int row){
 	Object obj;
 	int i;
 	if ( j < 0 ){
-		obj = db.viewResults(design, view, descending, PAGESIZE, skip-1, false);
+		QueryOptions options;
+		options.descending = true;
+		options.limit = PAGESIZE;
+		options.skip = skip - 1;
+		obj = db.viewResults(design, view, options);
 		i = skip-1;
 	} else {
-		obj = db.viewResultsFromStartDocId(design, view, Value(ws2s(data[j%PAGESIZE])), docids[j%PAGESIZE], PAGESIZE, skip);
+		QueryOptions options;
+		options.startKey = Value(ws2s(data[j%PAGESIZE]));
+		options.startKeyDocId = docids[j%PAGESIZE];
+		options.limit = PAGESIZE;
+		options.skip = skip;
+		obj = db.viewResults(design, view);
 		i = rownums[j%PAGESIZE] + skip;
 	}
 

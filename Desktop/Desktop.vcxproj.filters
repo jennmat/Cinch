@@ -25,6 +25,9 @@
     <Filter Include="Header Files\Explorer">
       <UniqueIdentifier>{db33b7f8-6b83-4375-a4be-23614f8c13b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Dialogs">
+      <UniqueIdentifier>{a356944a-5727-47a3-bee2-0ac02f815d83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">
@@ -146,6 +149,9 @@
     <ClInclude Include="SwitchPerspectiveHandler.h">
       <Filter>Header Files\Handlers</Filter>
     </ClInclude>
+    <ClInclude Include="NewPerspective.h">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -237,6 +243,9 @@
     </ClCompile>
     <ClCompile Include="SwitchPerspectiveHandler.cpp">
       <Filter>Source Files\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="NewPerspective.cpp">
+      <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

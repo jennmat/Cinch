@@ -37,12 +37,14 @@ int DetailViewDelegate::totalRows()
 }
 
 void DetailViewDelegate::LoadDocument(string database, Object o){
-	;
 	
 	Value startkey = o[startkey_from];
 	Value endkey = o[endkey_from];
-
-	obj = new Object(db.viewResults(design, view, startkey, endkey, includeDocs));
+	QueryOptions options;
+	options.includeDocs = includeDocs;
+	options.startKey = o[startkey_from];
+	options.endKey = o[endkey_from];
+	obj = new Object(db.viewResults(design, view, options));
 	
 }
 

@@ -22,7 +22,11 @@ public:
 
 		if ( design.length() == 0 ) return;
 
-		Object results = db.viewResults(design, view, false, 500, 0, false, true, 1);
+		QueryOptions options;
+		options.group_level = 1;
+		options.reduce = true;
+		options.limit = 500;
+		Object results = db.viewResults(design, view, options);
 
 		elements.clear();
 	

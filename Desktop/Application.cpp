@@ -7,6 +7,8 @@
 
 #include "stdafx.h"
 
+CSwitchPerspectiveHandler *perspectiveHandler = NULL;
+
 // Static method to create an instance of the object.
 __checkReturn HRESULT CApplication::CreateInstance(__deref_out IUIApplication **ppApplication)
 {
@@ -108,12 +110,11 @@ STDMETHODIMP CApplication::OnCreateUICommand(
     }
 	case IDR_CMD_SWITCHPERSPECTIVE:
 	{
-		CSwitchPerspectiveHandler *pHandler = NULL;
-        hr = CSwitchPerspectiveHandler::CreateInstance(&pHandler);
+		hr = CSwitchPerspectiveHandler::CreateInstance(&perspectiveHandler);
         if (SUCCEEDED(hr))
         {
-            hr = pHandler->QueryInterface(IID_PPV_ARGS(ppCommandHandler));
-            pHandler->Release();
+            hr = perspectiveHandler->QueryInterface(IID_PPV_ARGS(ppCommandHandler));
+            perspectiveHandler->Release();
         }
 		break;
 	}

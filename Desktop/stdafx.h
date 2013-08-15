@@ -131,6 +131,7 @@ struct FileWatchController {
 #include <cassert>
 #include <iostream>
 
+#include "NewPerspective.h"
 
 
 #define ROW_HEIGHT 25

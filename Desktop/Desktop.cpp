@@ -493,7 +493,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 		
-		Object r = db.viewResults("all-document-types", "by-label", false, 100, 0);
+		Object r = db.viewResults("all-document-types", "by-label");
 	
 		vector<string>* ids = new vector<string>();
 
@@ -546,7 +546,11 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					/* Setup the sort combo */
 					vector<Object>* fieldsVector = new vector<Object>();
 
-					Object results = db.viewResults("all-attributes", "by-type", Value(type), Value(type), true);
+					QueryOptions options;
+					options.startKey = Value(type);
+					options.endKey = Value(type);
+					options.includeDocs = true;
+					Object results = db.viewResults("all-attributes", "by-type", options);
 					Array rows = results["rows"].getArray();
 					for(unsigned i=0; i<rows.size(); i++){
 						Object row = rows[i].getObject();

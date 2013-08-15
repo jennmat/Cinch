@@ -86,81 +86,75 @@ Object Database::listViews(){
 	return var.getObject();
 }
 
-Object Database::viewResults(const string& design, const string& view, bool descending, int limit, bool includeDocs, bool reduce, int group_level){
-	return viewResults(design, view, descending, limit, 0, includeDocs, reduce);
-}
 
-Object Database::viewResults(const string& design, const string& view, bool descending, int limit, int skip, bool includeDocs, bool reduce, int group_level){
-	stringstream s;
-	s << "/" << name << "/_design/";
-	s << design;
-	s << "/_view/";
-	s << view;
-	s << "?limit=";
-	s << limit;
-	s << "&descending=" << (descending ? "true" : "false");
-	s << "&skip=";
-	s << skip;
-	if ( includeDocs == true ){
-		s << "&include_docs=true";
+
+Object Database::viewResults(const string& design, const string& view, QueryOptions options){
+	stringstream url;
+	url << "/" << name << "/_design/";
+	url << design;
+	url << "/_view/";
+	url << view;
+	stringstream params;
+	params << "?";
+	if ( options.limit != UINT_MAX ){
+		params << "limit=" << options.limit << "&";
 	}
-	if ( reduce == true ){
-		s << "&reduce=true";
-		s << "&group_level=" << group_level;
+	params << "descending=" << (options.descending ? "true" : "false") << "&";
+	params << "skip=";
+	params << options.skip << "&";
+	
+	if ( options.startKey != NULL ){
+		params << "startkey=";
+		stringstream key;
+		key << "\"" << options.startKey.getString() << "\"";
+		char* escapedKey = curl_easy_escape(comm.curl, key.str().c_str(), 0);
+		params << escapedKey;
+		params << "&";
+		curl_free(escapedKey);
+	}
+
+	if ( options.startKeyDocId.length() > 0 ){
+		params << "startkey_docid=";
+		char* escaped = curl_easy_escape(comm.curl, options.startKeyDocId.c_str(), 0);
+		params << escaped;
+		params << "&";
+		curl_free(escaped);
+	}
+
+	if ( options.endKey != NULL ){
+		params << "endkey=";
+		stringstream key;
+		key << "\"" << options.endKey.getString() << "\"";
+		char* escaped = curl_easy_escape(comm.curl, key.str().c_str(), 0);
+		params << escaped;
+		params << "&";
+		curl_free(escaped);
+	}
+
+	if ( options.endKeyDocId.length() > 0 ){
+		params << "endkey_docid=";
+		char* escaped = curl_easy_escape(comm.curl, options.endKeyDocId.c_str(), 0);
+		params << escaped;
+		params << "&";
+		curl_free(escaped);
+	}
+
+	if ( options.includeDocs == true ){
+		params << "include_docs=true&";
+	}
+	if ( options.reduce == true ){
+		params << "reduce=true&";
+		params << "group_level=" << options.group_level << "&";
 	} else {
-		s << "&reduce=false";
+		params << "reduce=false&";
 	}
 
-
-	Value var = comm.getData(s.str());
-
-	return var.getObject();
-}
-
-Object Database::viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs, bool reduce){
-	stringstream s;
-	s << "/" << name << "/_design/";
-	s << design;
-	s << "/_view/";
-	s << view;
-	s << "?start_key=";
-	s << startKey;
-	s << "&end_key=";
-	s << endKey;
-	if ( includeDocs = true ){
-		s << "&include_docs=true";
-	}
-
-	Value var = comm.getData(s.str());
+	string p = params.str();
+	p = p.substr(0, p.length()-1);
+	url << p;
+	Value var = comm.getData(url.str());
 
 	return var.getObject();
-}
-
-
-Object Database::viewResultsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit, int skip)
-{
-	stringstream s;
-	s << "/" << name << "/_design/";
-	s << design;
-	s << "/_view/";
-	s << view;
-	s << "?startkey=";
-	stringstream key;
-	key << "\"" << startKey.getString() << "\"";
-	char* escapedKey = curl_easy_escape(comm.curl, key.str().c_str(), 0);
-	s << escapedKey;
-	s << "&startkey_docid=";
-	s << startKeyDocId;
-	s << "&limit=";
-	s << limit;
-	s << "&skip=";
-	s << skip;
-
-	Value var = comm.getData(s.str());
-
-	return var.getObject();
-
-
 }
 
 vector<Document> Database::listDocuments(){

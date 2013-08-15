@@ -54,7 +54,13 @@ string CreateUUID(){
 
 vector<string> collectAttributesSingle(Database& db, string field){
 	vector<string> attributes;
-	Object results = db.viewResults("all-attributes", "by-type", Value(field), Value(field), true);
+	
+	QueryOptions options;
+	options.startKey = Value(field);
+	options.endKey = Value(field);
+	options.includeDocs = true;
+	Object results = db.viewResults("all-attributes", "by-type", options);
+
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
 		for(unsigned int i=0; i<rows.size(); i++){
@@ -148,7 +154,10 @@ void preloadTypeDefinitions(){
 		return;
 	}
 
-	Object results = db.viewResults("all-data-definitions", "by-id", 25, 0, true);
+	QueryOptions options;
+	options.includeDocs = true;
+	Object results = db.viewResults("all-data-definitions", "by-id", options);
+
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
 		for(unsigned int i=0; i<rows.size(); i++){
@@ -173,7 +182,12 @@ Object getDefaultViewDefinition(string t){
 	Array rows;
 	string type = t;
 	do { 
-		Object results = db.viewResults("all-default-view-definitions", "by-document-type", Value(type), Value(type));
+		
+		QueryOptions options;
+		options.startKey = Value(type);
+		options.endKey = Value(type);
+		Object results = db.viewResults("all-default-view-definitions", "by-document-type", options);
+
 		rows = results["rows"].getArray();
 		type = getSuperType(type);
 	} while ( rows.size() == 0 );

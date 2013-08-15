@@ -111,7 +111,10 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	string viewstr;
 	
 	/* Find an appropriate view */
-	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", Value(name), Value(name), true);
+	QueryOptions options;
+	options.startKey = Value(name);
+	options.endKey = Value(name);
+	Object results = db.viewResults("all-grouping-view-definitions", "by-grouped-field", options);
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();
 		if ( rows.size() == 0 ){
@@ -228,7 +231,7 @@ void ReferenceField::setupValues(){
 			view = pick["view"].getString();
 
 			if ( design.length() > 0 && view.length() > 0 ){
-				Object results = db.viewResults(design, view, false, 500, 0);
+				Object results = db.viewResults(design, view);
 
 				ComboBox_ResetContent(getControl());
 

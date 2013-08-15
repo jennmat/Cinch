@@ -202,9 +202,16 @@ void Explorer::buildExplorer(HWND tree, const string& perspective){
 	doc = Object();
 	Object results;
 	if ( perspective.length() == 0 ){
-		results = db.viewResults("all-menu-definitions", "by-perspective", 1, 0, true);
+		QueryOptions options;
+		options.limit = 1;
+		options.includeDocs	= true;
+		results = db.viewResults("all-menu-definitions", "by-perspective");
 	} else {
-		results = db.viewResults("all-menu-definitions", "by-perspective", Value(perspective), Value(perspective), true);
+		QueryOptions options;
+		options.startKey = Value(perspective);
+		options.endKey = Value(perspective);
+		options.includeDocs = true;
+		results = db.viewResults("all-menu-definitions", "by-perspective", options);
 	}
 	if ( results["rows"].isArray() ){
 		Array rows = results["rows"].getArray();

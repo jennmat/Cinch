@@ -195,6 +195,9 @@ STDMETHODIMP CCommandHandler::Execute(
 		case IDR_CMD_DEBUGOUTPUT:
 			stu::Console::Create(500, 200);
 			break;
+		case IDR_CMD_NEW_PERSPECTIVE:
+			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_CREATE_PERSPECTIVE), hWnd, NewPerspective);
+			break;
 		}
 	}
     return S_OK;

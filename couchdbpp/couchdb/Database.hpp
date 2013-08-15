@@ -27,6 +27,22 @@ using namespace std;
 
 namespace CouchDB{
 
+struct QueryOptions {
+	int limit;
+	bool descending;
+	bool includeDocs;
+	bool reduce;
+	int skip;
+	int group_level;
+	Value startKey;
+	Value endKey;
+	string startKeyDocId;
+	string endKeyDocId;
+
+	QueryOptions(): limit(UINT_MAX), descending(false), includeDocs(false), reduce(false),
+		skip(0), group_level(0), startKey(NULL), endKey(NULL), startKeyDocId(""), endKeyDocId(""){}
+};
+
 class Database{
    friend class Connection;
    protected:
@@ -43,10 +59,7 @@ class Database{
       vector<Document> listDocuments();
 	  Object listViews();
 	  
-	  Object viewResults(const string& design, const string& view, bool descending=false, int limit=25, bool includeDocs=false, bool reduce=false, int group_level=0);
-      Object viewResults(const string& design, const string& view, bool descending=false, int limit=25, int skip=0, bool includeDocs=false, bool reduce=false, int group_level=0);
-	  Object viewResults(const string& design, const string& view, Value& startKey, Value& endKey, bool includeDocs=false, bool reduce=false);
-      Object viewResultsFromStartDocId(const string& design, const string& view, Value& startKey, const string& startKeyDocId, int limit, int skip);
+	  Object viewResults(const string& design, const string& view, QueryOptions options = QueryOptions());
 
 	  Document getDocument(const string&, const string &rev="");
 	  Array getDocuments(const Array& ids);
