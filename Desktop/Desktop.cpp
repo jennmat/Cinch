@@ -643,16 +643,12 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			viewlabelstream << sortbylabel;
 
 			Object v = Object();
-			v["label"] = viewlabelstream.str();
 			v["map"] = map;
-			v["cinch_view"] = true;
-			v["emits_docs_with_type"] = type.c_str();
-
+			
 			view[viewname.str()] = v;
 			
 			stringstream labelstream;
 			labelstream << name;
-			design["label"] = labelstream.str();
 			design["views"] = view;
 
 			stringstream design_id;
@@ -660,6 +656,24 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			design_id << viewnamesanitized;
 
 			db.createDocument(Value(design), design_id.str());
+
+			/* Create a view definition document */
+			Object viewDef;
+			viewDef["cinch_type"] = "view_definition";
+			viewDef["design_name"] = viewnamesanitized;
+			viewDef["label"] = name;
+			viewDef["emits"] = type;
+			viewDef["default_view"] = viewname.str();
+			Array views;
+			Object sortDef;
+			sortDef["key"] = sortby;
+			sortDef["view"] = viewname.str();
+			sortDef["default"] = true;
+			views.push_back(sortDef);
+			viewDef["views"] = views;
+
+			db.createDocument(Value(viewDef));
+
 
 			//LoadViews(tree);
 

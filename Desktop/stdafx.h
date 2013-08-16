@@ -93,9 +93,9 @@ struct FileWatchController {
 
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
-//#define DATABASE "cinch-business-starter"
+#define DATABASE "cinch-business-starter"
 //#define DATABASE "cinch-inventory-starter"
-#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-starter"
 //#define DATABASE "cinch-real-estate-starter"
 //#define DATABASE "hvac"
 //#define DATABASE "zebra"

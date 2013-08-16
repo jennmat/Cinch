@@ -60,18 +60,21 @@ INT_PTR CALLBACK NewPerspective(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			appliesTo.push_back(roleDoc["name"]);
 			newPerspective["applies_to_roles"] = appliesTo;
 
-			db.createDocument(Value(newPerspective));
+			Document doc = db.createDocument(Value(newPerspective));
+			Object updatedObj = doc.getData().getObject();
 			PROPVARIANT val;
 			HRESULT res = g_pFramework->GetUICommandProperty(IDR_CMD_SWITCHPERSPECTIVE, UI_PKEY_ItemsSource, &val);
 			if ( res == S_OK ){
 				IUICollection* pCollection;
 				res = val.punkVal->QueryInterface(IID_PPV_ARGS(&pCollection));
 			
-				perspectiveHandler->AddPerspective(pCollection, newPerspective);
+				perspectiveHandler->AddPerspective(pCollection, updatedObj);
 				 
-
+				pCollection->Release();
+				val.punkVal->Release();
 			}
 			delete nameStr;
+			
 
 		}
 
