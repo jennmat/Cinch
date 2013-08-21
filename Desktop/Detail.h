@@ -52,7 +52,7 @@ public:
 	void CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegate, int i);
 	void CreateTextareaForPage(const wchar_t*, int i);
 	void CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* delegate, int i);
-	void CreateAttachmentsForPage(int i);
+	void CreateAttachmentsForPage(const wchar_t*, int i);
 	void DestroyPage(int i);
 	void InitializePage(int i);
 	HWND GetDetailPage(int i);

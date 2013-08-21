@@ -1021,7 +1021,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					bool found = false;
 					for(unsigned i=0; i<tabs.size(); i++){
 						Object config = tabs[i].getObject();
-						if ( name.compare(config["field"].getString()) == 0){
+						if ( name.compare(config["field"].getString()) == 0 ){
 							found = true;
 						}
 					}
@@ -1125,6 +1125,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					Object tab;
 					tab["content"] = ATTACHMENTS_DETAIL;
 					tab["label"] = "Attachments";
+					tab["field"] = "attachments";
 					tabs.push_back(tab);
 				} else if ( obj["cinch_type"].getString().compare("view_definition") == 0 ){
 					Object tab;

@@ -387,7 +387,6 @@ void ProcessChanges(wchar_t* dir){
 					doc.addAttachmentFromFile(ws2s(ffd.cFileName), "", ws2s(filename));
 					hasUploadedAttachments = true;
 				}
-				
 			}
 		}
 	}

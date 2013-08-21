@@ -49,8 +49,6 @@ Detail::~Detail(){
 	
 }
 
-
-
 void Detail::ShowPage(int i){
 	RECT tabs;
 	RECT tabControlClient;
@@ -71,9 +69,7 @@ void Detail::DestroyPage(int i){
 		delete grid->getDelegate();
 	}
 	DestroyWindow(detailPages[i]);
-	if (contentType[i] != ATTACHMENTS ){
-		delete fieldName[i];
-	}
+	delete fieldName[i];
 }
 
 void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, int i){
@@ -130,9 +126,15 @@ void Detail::CreateTextareaForPage(const wchar_t* field, int i){
 	ShowPage(i);
 }
 
-void Detail::CreateAttachmentsForPage(int i){
+void Detail::CreateAttachmentsForPage(const wchar_t* field, int i){
 	RegisterAttachmentViewer();
 	pageCount++;
+
+	int len = wcslen(field) + sizeof(wchar_t);
+	fieldName[i] = new wchar_t[len];
+	memset(fieldName[i], 0, len);
+	wcscpy_s(fieldName[i], len, field);
+
 	detailPages[i] = CreateWindowEx(0, L"CinchAttachments", L"", WS_CHILD, 0, 0, CONTROL_WIDTH, 200, detail, NULL, GetModuleHandle(0), this);
 	contentType[i] = ATTACHMENTS;
 	initialized[i] = 0;
@@ -244,7 +246,7 @@ void Detail::deserializeUIElements(Object obj)
 		} else if ( content.compare(TEXT_DETAIL) == 0 ){
 			CreateTextareaForPage(s2ws(name).c_str(), i);
 		} else if ( content.compare(ATTACHMENTS_DETAIL) == 0 ){
-			CreateAttachmentsForPage(i);
+			CreateAttachmentsForPage(s2ws(name).c_str(), i);
 		}
 	}
 
@@ -291,6 +293,7 @@ Array Detail::serializeUIElements()
 			tab["config"] = delegate->serializeUIElements();
 		} else if ( contentType[i] == ATTACHMENTS ){
 			tab["content"] = ATTACHMENTS_DETAIL;
+			tab["field"] = "attachments";
 		}
 		tabs.push_back(tab);
 
