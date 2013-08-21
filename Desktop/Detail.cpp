@@ -71,7 +71,9 @@ void Detail::DestroyPage(int i){
 		delete grid->getDelegate();
 	}
 	DestroyWindow(detailPages[i]);
-	delete fieldName[i];
+	if (contentType[i] != ATTACHMENTS ){
+		delete fieldName[i];
+	}
 }
 
 void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, int i){

@@ -66,7 +66,7 @@ class Database{
       Document createDocument(const Value&, const string &id="");
       Document createDocument(Value, vector<Attachment>,
                               const string &id="");
-
+	  void deleteDocument(const string& id, const string& rev = "");
 	  vector<Document> documentsVectorFromValue(const Value& value);
 
 	  void listenForChanges(void (*)());

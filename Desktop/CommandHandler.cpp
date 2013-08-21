@@ -7,6 +7,8 @@
 
 #include "stdafx.h"
 
+extern Desktop desktop;
+
 // Static method to create an instance of the object.
 __checkReturn HRESULT CCommandHandler::CreateInstance(__deref_out IUICommandHandler **ppCommandHandler)
 {
@@ -191,6 +193,12 @@ STDMETHODIMP CCommandHandler::Execute(
 		switch (nCmdID) {
 		case IDR_CMD_NEW_VIEW:
 			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_ADD_VIEW), hWnd, NewView);
+			break;
+		case IDR_CMD_DELETE:
+			if ( IDYES == MessageBox(hWnd, L"Are you sure you wish to delete this document?", L"Confirm Delete.", MB_YESNOCANCEL | MB_ICONWARNING) ){
+				desktop.deleteSelected();
+			}
+			
 			break;
 		case IDR_CMD_DEBUGOUTPUT:
 			stu::Console::Create(500, 200);

@@ -2,6 +2,8 @@
 #include "stdafx.h"
 
 HWND attachmentsHwnd;
+HANDLE fileWatchThread;
+
 
 void RegisterAttachmentViewer()
 {
@@ -26,6 +28,12 @@ void RegisterAttachmentViewer()
 AttachmentViewer::AttachmentViewer(HWND _wnd){
 	initialized= false;	
 	wnd = _wnd;
+	fileWatchController = NULL;
+}
+
+AttachmentViewer::~AttachmentViewer(){
+	if ( fileWatchController != NULL ) delete fileWatchController->directory;
+	delete fileWatchController;
 	fileWatchController = NULL;
 }
 
@@ -66,8 +74,6 @@ void AttachmentViewer::PrepareAttachments(){
 		if ( fileWatchController != NULL ){
 			fileWatchController->pause = TRUE;  //Needs work but this is to prevent me from getting into an infinite loop
 		}
-		;
-		
 		Document doc = db.getDocument(_id, _rev);
 
 		wchar_t tempdir[MAX_PATH];
@@ -154,6 +160,8 @@ LRESULT CALLBACK AttachmentViewer::WndProc(HWND hWnd, UINT message, WPARAM wPara
 	case WM_NCDESTROY:
 		{
 		AttachmentViewer* v = (AttachmentViewer *)GetWindowLong(hWnd, GWL_USERDATA);
+		v->fileWatchController->exit = TRUE;
+		WaitForSingleObject(fileWatchThread, 1000);
 		delete v;
 		break;
 		}
@@ -190,7 +198,7 @@ void AttachmentViewer::WatchDirectory(LPCWSTR lpDir)
 		memset(fileWatchController->directory, 0, len);
 		wcscpy_s(fileWatchController->directory, len, lpDir);
 
-		CreateThread(NULL, 0, FileWatchWorker, (LPVOID)fileWatchController, 0, &threadId); 
+		fileWatchThread = CreateThread(NULL, 0, FileWatchWorker, (LPVOID)fileWatchController, 0, &threadId); 
 	} else {
 		delete fileWatchController->directory;
 
@@ -203,8 +211,8 @@ void AttachmentViewer::WatchDirectory(LPCWSTR lpDir)
 
 }
 
-char* md5file(wchar_t* file){
-	 DWORD dwStatus = 0;
+string md5file(wchar_t* file){
+	DWORD dwStatus = 0;
     BOOL bResult = FALSE;
     HCRYPTPROV hProv = 0;
     HCRYPTHASH hHash = 0;
@@ -291,8 +299,9 @@ char* md5file(wchar_t* file){
     CryptDestroyHash(hHash);
     CryptReleaseContext(hProv, 0);
     CloseHandle(hFile);
-
-	return rc;
+	string s = string(rc);
+	delete rc;
+	return s;
 
 }
 
@@ -311,8 +320,9 @@ string readSingleLine(const char *filename){
 		memset(c, 0, size+1);
 		fread_s(c, size, sizeof(char), size, f);
 		fclose(f);
-		return string(c);
-
+		string rc = string(c);
+		delete c;
+		return rc;
 	} else {
 		return "";
 	}
@@ -320,9 +330,7 @@ string readSingleLine(const char *filename){
 }
 
 void ProcessChanges(wchar_t* dir){
-	;
 	
-
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
 	TCHAR szDir[MAX_PATH];
@@ -362,7 +370,7 @@ void ProcessChanges(wchar_t* dir){
 				StringCchCat(filename, MAX_PATH, L"\\");
 				StringCchCat(filename, MAX_PATH, ffd.cFileName);
 
-				char* c = md5file(filename);
+				string c = md5file(filename);
 
 				/* Compare to content md5 of attachment in the db */
 				Document doc = db.getDocument(id, rev);
@@ -370,7 +378,7 @@ void ProcessChanges(wchar_t* dir){
 					Attachment a = doc.getAttachment(ws2s(ffd.cFileName));
 					string serverMD5 = a.getContentMD5();
 					const char* j = serverMD5.c_str();
-					int i = strcmp(c, j);
+					int i = strcmp(c.c_str(), j);
 					if ( i != 0 ) {
 						doc.updateAttachmentFromFile(a.getID(), ws2s(filename));
 						hasUploadedAttachments = true;
@@ -379,6 +387,7 @@ void ProcessChanges(wchar_t* dir){
 					doc.addAttachmentFromFile(ws2s(ffd.cFileName), "", ws2s(filename));
 					hasUploadedAttachments = true;
 				}
+				
 			}
 		}
 	}
@@ -410,7 +419,7 @@ DWORD WINAPI FileWatchWorker(LPVOID param){
 	  ); 
 
 
-   wchar_t* watchedDir = new wchar_t[MAX_PATH];
+   wchar_t watchedDir[MAX_PATH];
    memset(watchedDir, 0, MAX_PATH);
    wcscpy_s(watchedDir, MAX_PATH, controller->directory);
 
@@ -451,7 +460,6 @@ DWORD WINAPI FileWatchWorker(LPVOID param){
 			 /* See if the controller wants me to switch to watching a different directory
 			  * This corresponds to the user accessing a different document */
 
-         
 			if ( wcscmp(controller->directory, watchedDir) != 0 ){
 				memset(watchedDir, 0, MAX_PATH);
 				wcscpy_s(watchedDir, MAX_PATH, controller->directory);
@@ -461,7 +469,6 @@ DWORD WINAPI FileWatchWorker(LPVOID param){
 				); 
 
 			}
-
             break;
 
          default: 

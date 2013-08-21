@@ -17,9 +17,10 @@ private:
 	
 	FileWatchController* fileWatchController;
 public:
-	IExplorerBrowser *_peb;
-
 	AttachmentViewer(HWND);
+	~AttachmentViewer();
+
+	IExplorerBrowser *_peb;
 
 	void initialize();
 	void LoadDocument(Object obj);

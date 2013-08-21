@@ -133,19 +133,23 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 			view["views"][viewname.str()]["map"] = map.str();
 			view["views"][viewname.str()]["reduce"] = "function(key, value){ return true; }";
 			
+			Object designDefinition;
+			designDefinition["cinch_type"] = "view_definition";
+			designDefinition["design_name"] = designname.str();
+			//viewDefinition["view_name"] = viewname.str();
+			designDefinition["emits"] = enclosingType;
+			//viewDefinition["key_field"] =  name;
 			Object viewDefinition;
-			viewDefinition["cinch_type"] = "view_definition";
-			viewDefinition["design_name"] = designname.str();
-			viewDefinition["view_name"] = viewname.str();
-			viewDefinition["emits"] = enclosingType;
-			viewDefinition["key_field"] =  name;
-			viewDefinition["default"] = false;
-			viewDefinition["includes_docs"] = false;
-			viewDefinition["reduce"] = true;
-			viewDefinition["groups_by_key_field"] = true;
+			viewDefinition["key"] = name;
+			viewDefinition["view"] = viewname.str();
+			viewDefinition["groups"] = true;
+			viewDefinition["reduces"] = true;
+			Array viewDefinitions = Array();
+			viewDefinitions.push_back(viewDefinition);
+			designDefinition["views"] = viewDefinitions;
 
+			db.createDocument(Value(designDefinition));
 			db.createDocument(Value(view));
-			db.createDocument(Value(viewDefinition));
 
 			design = designname.str();
 			viewstr = viewname.str();

@@ -2,14 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "Desktop.h"
-#include <sstream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <unordered_set>
 
 using namespace std;
 using namespace JsonBox;
@@ -26,6 +18,30 @@ using namespace CouchDB;
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+
+
+CouchViewDelegate* delegate;
+
+
+
+HWND hWnd; //Main window
+HWND grid;
+HWND tree;
+HWND designer;
+
+
+Desktop desktop;
+
+CouchDB::Connection conn;
+CouchDB::Database db = conn.getDatabase(DATABASE);
+
+CouchDB::Connection listenerConn;
+CouchDB::Database listenerDb = listenerConn.getDatabase(DATABASE);
+
+
+DWORD WINAPI ChangesListener(LPVOID lParam);
+
+HANDLE listenerThread;
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -261,7 +277,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	//SendMessage(hWnd,IDC_TREE1,TVM_SETIMAGELIST,0,(LPARAM)hImageList); // put it onto the tree control
 	//TreeView_SetImageList(tree, hImageList, 0);
   
-	ShowWindow(hWnd, nCmdShow);
+	ShowWindow(hWnd, SW_MAXIMIZE);
 	UpdateWindow(hWnd);
 
 	delegate = new CouchViewDelegate(conn);
@@ -855,4 +871,10 @@ void Desktop::formModified(){
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
 	d->SaveForm();
+}
+
+void Desktop::deleteSelected(){
+	CinchGrid* g = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
+	string id = delegate->getDocumentIdForRow(g->GetActiveRow());
+	db.deleteDocument(id);
 }

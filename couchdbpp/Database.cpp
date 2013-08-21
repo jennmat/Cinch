@@ -261,6 +261,33 @@ Document Database::createDocument(Value data,
    return doc;
 }
 
+void Database::deleteDocument(const string& id, const string& rev){
+	char* escapedId = curl_easy_escape(comm.curl, id.c_str(), id.length());
+
+	char * escaped = curl_easy_escape(comm.curl, id.c_str(), id.size());
+	string url = "/" + name + "/" + escaped;
+
+	if ( rev.size() == 0 ){
+		/* Must have a rev to delete */
+		Value var = comm.getData(url);
+		Object obj = var.getObject();
+		if(obj.find("error") != obj.end())
+		   throw Exception("Latest revision could not be found: " + obj["error"].getString());
+
+		const string& rev = obj["_rev"].getString();
+		url += "?rev=" + rev;
+	} else {
+		url += "?rev=" + rev;
+	}
+	Value var = comm.getData(url, "DELETE");
+
+	Object obj = var.getObject();
+
+	if(obj.find("error") != obj.end())
+		throw Exception("Document could not be created: " + obj["error"].getString());
+
+	curl_free(escapedId);
+}
 
 void Database::listenForChanges(void (*changesArrivedFunc)()){
 	comm.readChangesFeed(name, changesArrivedFunc);

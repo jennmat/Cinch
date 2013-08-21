@@ -17,6 +17,15 @@
 #include <memory.h>
 #include <tchar.h>
 
+#include <sstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <unordered_set>
+
+
 #include <Shlwapi.h>
 
 #include <stdint.h>
@@ -29,7 +38,6 @@
 #include <string>
 
 #include <Wincrypt.h>
-#include <unordered_set>
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -106,6 +114,7 @@ struct FileWatchController {
 #include "FormField.h"
 #include "FormLayout.h"
 #include "FormDelegate.h"
+#include "Desktop.h"
 #include "Detail.h"
 #include "Form.h"
 #include "ReadOnlyDelegate.h"
@@ -129,7 +138,6 @@ struct FileWatchController {
 #include <conio.h>
 #include <limits>	// For SHRT_MAX
 #include <cassert>
-#include <iostream>
 
 #include "NewPerspective.h"
 
@@ -187,3 +195,4 @@ struct FileWatchController {
 
 extern Connection conn;
 extern Database db;
+
