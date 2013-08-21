@@ -16,13 +16,17 @@ private:
 	HBRUSH hbrBkgnd;
 	Form* form;
 	string type;
+
 	void loadForm(string database, string type);
 public:
 	ConditionManager* conditionManager;
 	Array tabsForUpdate;
 	Object formWithUpdates;
 	Object loadedForm;
-	
+
+	vector<Object> hiddenTabDefinitions;
+	vector<Object> visibleTabDefinitions;
+
 	CinchDesigner(HWND);
 	~CinchDesigner();
 	Form* getForm();

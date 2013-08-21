@@ -115,8 +115,9 @@ HWND CinchDesigner::CreateCinchDesigner(HWND parent){
 */
 
 
-void loadTabLabels(Array tabs, HWND tabList){
+void loadVisibleTabLabels(CinchDesigner* des, Array tabs, HWND tabList){
 
+	des->visibleTabDefinitions.clear();
 	ListBox_ResetContent(tabList);
 
 	for(unsigned i=0; i<tabs.size(); i++){
@@ -125,13 +126,11 @@ void loadTabLabels(Array tabs, HWND tabList){
 		string field = config["field"].getString();
 		wstring l =s2ws(label);
 		
-		;
-		
 		Object doc = db.getDocument(field).getData().getObject();
 
 		int pos = SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
-		ListBox_SetItemData(tabList, pos, new Object(doc));
-	
+		
+		des->visibleTabDefinitions.push_back(doc);
 	}	
 }
 
@@ -940,7 +939,7 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 			HWND visibleTabs = GetDlgItem(GetParent(hDlg), IDC_VISIBLE_TABS);
 			
-			loadTabLabels(self->tabsForUpdate, visibleTabs);
+			loadVisibleTabLabels(self, self->tabsForUpdate, visibleTabs);
 
 			EndDialog(hDlg, LOWORD(wParam));
 			break;
@@ -964,8 +963,6 @@ void CinchDesigner::ChooseForm()
 
 void CinchDesigner::SaveForm(){
 	Object o = getForm()->serializeFormToObject(getLoadedForm());
-
-	;
 	
 	o["target_type"] = getType();
 	Document newDoc = db.createDocument(Value(o));
@@ -994,7 +991,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			HWND visibleTabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
 			HWND hiddenTabs = GetDlgItem(hDlg, IDC_HIDDEN_TABS);
 			
-			loadTabLabels(self->tabsForUpdate, visibleTabs);
+			loadVisibleTabLabels(self, self->tabsForUpdate, visibleTabs);
 
 			QueryOptions options;
 			options.startKey = Value(self->getType());
@@ -1028,15 +1025,45 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					if ( !found ){
 						string baseType = getBaseType(name);
 						if ( baseType.compare("array") == 0 || baseType.compare("attachments") == 0 ){
-							int len = label.size() + sizeof(wchar_t);
-							wchar_t* t = new wchar_t[len];
+							
+							int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
+							self->hiddenTabDefinitions.push_back(doc);
 
-							wcscpy_s(t, len, s2ws(label).c_str());
-
-							int index = ListBox_AddString(hiddenTabs, t);
-							ListBox_SetItemData(hiddenTabs, index, new Object(doc));
 						}
 					}
+				}
+			}
+
+			/* Now add views for documents which may reference this document */
+			QueryOptions attributesQueryOptions;
+			attributesQueryOptions.startKey = self->getType();
+			attributesQueryOptions.endKey = self->getType();
+			results = db.viewResults("all-attributes", "by-id", attributesQueryOptions);
+			if ( results["rows"].isArray() ){
+				Array rows = results["rows"].getArray();
+			
+				for(unsigned int i=0; i<rows.size(); i++){
+					Object row = rows[i].getObject();
+					Object value = row["value"].getObject();
+					string id = value["_id"].getString();
+
+					QueryOptions viewQueryOptions;
+					viewQueryOptions.startKey = id;
+					viewQueryOptions.endKey = id;
+					viewQueryOptions.includeDocs = true;
+					Object views = db.viewResults("all-view-definitions", "by-emitted-type", viewQueryOptions);
+					if ( views["rows"].isArray() ){
+						Array viewRows = views["rows"].getArray();
+
+						for(unsigned int i=0; i<viewRows.size(); i++){
+							Object view = viewRows[i].getObject();
+							Object doc = view["doc"].getObject();
+							string label = doc["label"].getString();
+
+							int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
+						}
+					}
+
 				}
 			}
 
@@ -1071,9 +1098,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			HWND visibleTabs = GetDlgItem(hDlg, IDC_VISIBLE_TABS);
 			int count = ListBox_GetCount(visibleTabs);
 			for(int i=0; i<count; i++){
-				ULONG_PTR data = ListBox_GetItemData(visibleTabs, i);
-				Object* doc = (Object* )data;
-				Object obj = *doc;
+				Object obj = self->visibleTabDefinitions[i];
 				if( obj["type"].getString().compare("array") == 0 ){
 					string array_content_type = obj["array_contents"].getString();
 					string baseType = getBaseType(array_content_type);
@@ -1189,12 +1214,10 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ListBox_GetText(hiddenTabs, selected, text);
 				
 				int pos = (int)SendMessage(visibleTabs, LB_ADDSTRING, 0, (LPARAM)text); 
-				ULONG_PTR data = ListBox_GetItemData(hiddenTabs, selected);
 
-				ListBox_SetItemData(visibleTabs, pos, data);
+				self->visibleTabDefinitions.push_back(self->hiddenTabDefinitions[pos]);
+				self->hiddenTabDefinitions.erase(self->hiddenTabDefinitions.begin()+pos);
 				
-
-
 				ListBox_DeleteString(hiddenTabs, selected);
 
 				
@@ -1214,7 +1237,10 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ListBox_GetText(visibleTabs, selected, text);
 				
 				int pos = (int)SendMessage(hiddenTabs, LB_ADDSTRING, 0, (LPARAM)text); 
-
+				
+				self->hiddenTabDefinitions.push_back(self->visibleTabDefinitions[pos]);
+				self->visibleTabDefinitions.erase(self->visibleTabDefinitions.begin()+pos);
+				
 				ListBox_DeleteString(visibleTabs, selected);
 
 			}
@@ -1231,6 +1257,9 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ListBox_GetText(visibleTabs, selected, text);
 				ListBox_DeleteString(visibleTabs, selected);
 				ListBox_InsertString(visibleTabs, selected-1, text);
+
+				swap(self->visibleTabDefinitions[selected], self->visibleTabDefinitions[selected-1]);
+
 				ListBox_SetCurSel(visibleTabs, selected-1);
 			}
 
@@ -1249,6 +1278,9 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				ListBox_GetText(visibleTabs, selected, text);
 				ListBox_DeleteString(visibleTabs, selected);
 				ListBox_InsertString(visibleTabs, selected+1, text);
+
+				swap(self->visibleTabDefinitions[selected], self->visibleTabDefinitions[selected+1]);
+
 				ListBox_SetCurSel(visibleTabs, selected+1);
 			}
 

@@ -646,13 +646,15 @@ int Detail::getDetailPageCount(){
 
 void Detail::getDetailPageTitle(int page, wchar_t* buffer){
 	LPTCITEM item = new TCITEM();
-	item->pszText = (wchar_t*)malloc(80 * sizeof(wchar_t));
+	item->pszText = new wchar_t[80];
 	memset(item->pszText, 0, 80 * sizeof(wchar_t));
 	item->cchTextMax = 80;
 	item->mask = TCIF_TEXT;
 	TabCtrl_GetItem(tabControl, page, item);
 
 	wcscpy_s(buffer, 80, item->pszText);
+	delete item->pszText;
+	delete item;
 	
 }
 
