@@ -303,7 +303,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SizeWindows(hWnd);
 
 	DWORD threadId;
-	listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	//listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
 	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);

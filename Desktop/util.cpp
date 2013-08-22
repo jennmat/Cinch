@@ -140,6 +140,40 @@ string getBaseType(string type){
 	return baseType;
 }
 
+string convertToString(double val){
+	int decimal, sign;
+	char* buffer = new char[_CVTBUFSIZE];
+	int precision = 2;
+	_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
+	string s = string(buffer);
+	s.insert(decimal, ".");
+	delete buffer;
+	return s;
+}
+
+string convertToString(int val){
+	char* buf = new char[_CVTBUFSIZE];
+	memset(buf, 0, _CVTBUFSIZE);
+	_itoa_s(val, buf, _CVTBUFSIZE, 10);
+	string s = string(buf);
+	delete buf;
+	return s;
+}
+
+string serializeForDisplay(Value v, string type){
+	string base = getBaseType(type);
+	if( base.compare("string") == 0 ){
+		return v.getString();
+	} else if ( base.compare("date") == 0 ){
+		string date = v.getString();
+		return date;
+	} else if( base.compare("number") == 0 ){
+		if( v.isInteger() ) return convertToString(v.getInt());
+		if ( v.isDouble() ) return convertToString(v.getDouble());
+	}
+	return "";
+}
+
 Object getTypeDefinition(string type){
 	if ( typeDefinitions.find(type) != typeDefinitions.end() ){
 		return typeDefinitions[type];
@@ -285,4 +319,28 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	delete wclabel;
 
 	return formField;
+}
+
+
+
+string pluralize(string s){
+	int length = s.length();
+	string z = s.substr(0, length-1);
+	if (s[length-1]=='x'||'h'||'s')
+		s += "es";
+	else if(s[length-1]=='f') {
+		z += "ves";
+		return z;
+	}
+	else if(s[length-1]=='y')
+		if(s[length-2]=='a'||'e'||'i'||'o'||'u')
+			s += "s";
+	else {
+		z += "ies";
+		return z;
+	}
+	else
+		s += "s";
+	
+	return s;
 }

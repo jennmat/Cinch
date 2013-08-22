@@ -671,23 +671,10 @@ DatePickerField::~DatePickerField(){
 string NumberField::toString(Object obj){
 	string n = getName();
 	if ( obj[n.c_str()].isDouble() ){
-		double val = obj[n.c_str()].getDouble();
-		int decimal, sign;
-		char* buffer = new char[_CVTBUFSIZE];
-		int precision = 2;
-		_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
-		string s = string(buffer);
-		s.insert(decimal, ".");
-		delete buffer;
-		return s;
+		return convertToString(obj[n.c_str()].getDouble());
 	} else if ( obj[n.c_str()].isInteger() ){
 		int val = obj[n.c_str()].getInt();
-		char* buf = new char[100];
-		memset(buf, 0, 100);
-		_itoa_s(val, buf, 100, 10);
-		string s = string(buf);
-		delete buf;
-		return s;
+		return convertToString(val);
 	}
 
 	return "NaN";
@@ -711,6 +698,7 @@ void NumberField::loadValue(Object obj){
 		_itow_s(val, buf, 100, 10);
 
 		SetWindowText(getControl(), buf);
+		delete buf;
 	}
 }
 
@@ -909,7 +897,6 @@ void ComboBoxField::loadValue(Object obj){
 	if ( obj[n.c_str()].isString() ){
 		string value = obj[n.c_str()].getString();
 		wstring val = s2ws(value);
-		int idx = ComboBox_FindStringExact(getControl(), -1, val.c_str());
 		int count = ComboBox_GetCount(getControl());
 		for(int i=0; i<count; i++){
 			ULONG_PTR data = ComboBox_GetItemData(getControl(), i);

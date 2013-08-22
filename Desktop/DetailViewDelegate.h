@@ -25,6 +25,7 @@ private:
 	int fieldId;
 public:
 	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from, string docs_of_type);
+	~DetailViewDelegate();
 	void LoadDocument(string database, Object obj);
 	void setConfig(Object);
 	void setIncludeDocs(bool);

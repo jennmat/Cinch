@@ -24,3 +24,10 @@ Object getTypeDefinition(string type);
 Object getDefaultViewDefinition(string type);
 
 void preloadTypeDefinitions();
+
+string pluralize(string);
+
+string serializeForDisplay(Value v, string type);
+
+string convertToString(double val);
+string convertToString(int val);

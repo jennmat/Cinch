@@ -107,6 +107,8 @@ void Communication::init(const string &url){
    if(curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer) != CURLE_OK)
       throw Exception("Unable to set write buffer");
 
+   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
    baseURL = url;
 }
 

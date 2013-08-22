@@ -8,11 +8,11 @@ using namespace JsonBox;
 using namespace CouchDB;
 
 DetailViewDelegate::DetailViewDelegate(){
-	obj = NULL;
+	obj = nullptr;
 }
 
 DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _startkey_from, string _endkey_from, string _docs_of_type){
-	obj = NULL;
+	obj = nullptr;
 
 	design = _design;
 	view = _view;
@@ -32,20 +32,25 @@ void DetailViewDelegate::setIncludeDocs(bool _includeDocs){
 int DetailViewDelegate::totalRows()
 {
 	if ( obj == NULL ) return 0;
-
-	return (*obj)["total_rows"].isInteger() ? (*obj)["total_rows"].getInt() : 0;
+	if ( (*obj)["rows"].isArray() ) return (*obj)["rows"].getArray().size();
+	return 0;
 }
 
 void DetailViewDelegate::LoadDocument(string database, Object o){
-	
+	delete obj;
+
 	Value startkey = o[startkey_from];
 	Value endkey = o[endkey_from];
 	QueryOptions options;
-	options.includeDocs = includeDocs;
+	options.includeDocs = true;
 	options.startKey = o[startkey_from];
 	options.endKey = o[endkey_from];
 	obj = new Object(db.viewResults(design, view, options));
 	
+}
+
+DetailViewDelegate::~DetailViewDelegate(){
+	delete obj;
 }
 
 void DetailViewDelegate::setConfig(Object _config){
@@ -82,6 +87,8 @@ void DetailViewDelegate::headerContent(int col, wstring &content)
 
 void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 {
+	content = L"";
+
 	if ( (*obj)["rows"].isArray() ){
 		Array rows = (*obj)["rows"].getArray();
 		if ( (unsigned)row < rows.size() ){
@@ -90,38 +97,16 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 				
 				
 			string value;
-			if ( includeDocs == true ){
-				Object data = r["doc"].getObject();
-				string name = c["field"].getString();
-				value = data[name].getString();
+			Object data = r["doc"].getObject();
+			string name = c["field"].getString();
+			value = serializeForDisplay(data[name], name);
 
-			} else {
-				string id = r["id"].getString();
-				
-				Document doc = db.getDocument(id);
-				Object data = doc.getData().getObject();
-
-				string name = c["name"].getString();
-				
-				value = data[name].getString();
-
-				
-			}
-
-			if ( c["is_document_reference"].isBoolean() && c["is_document_reference"].getBoolean() == true ){
-				string fieldname = c["field_with_value"].getString();
-				Document doc = db.getDocument(value);
-
-				Object o = doc.getData().getObject();
-				value = o[fieldname].getString();
-			}
-		
 			content = s2ws(value);
 			
 		}
 	}
 	
-	content = L"";
+	
 }
 
 bool DetailViewDelegate::stickyHeaders(){

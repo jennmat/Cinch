@@ -19,5 +19,4 @@
 #include "couchdb/Connection.hpp"
 
 
-
 #endif

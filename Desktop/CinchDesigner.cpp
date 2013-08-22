@@ -876,9 +876,6 @@ INT_PTR CALLBACK AddTab(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				newTab["content"] = "Table";
 			} else if ( idx == 2 ){
 
-				;
-				
-
 				HWND relcombo = GetDlgItem(hDlg, IDC_RELATIONSHIP_COMBO);
 				vector<string>* ids = (vector<string>*)GetWindowLong(relcombo, GWL_USERDATA);
 				int relidx = ComboBox_GetCurSel(relcombo);
@@ -1061,6 +1058,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							string label = doc["label"].getString();
 
 							int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
+							self->hiddenTabDefinitions.push_back(doc);
 						}
 					}
 
@@ -1169,13 +1167,59 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							int a = 1;
 							Object column;
 							column["field"] = doc["_id"];
-							column["width"] = Value(250);
+							column["width"] = Value(50);
 							columns.push_back(column);
 						}
 					}
 
-					config["design"] = obj["design_name"];
-					config["view"] = obj["view_name"];
+					/* Check if one of the already available views uses _id as a key */
+					bool found = false;
+					Array availableViews = obj["views"].getArray();
+					for(unsigned int i=0; i<availableViews.size(); i++){
+						Object view = availableViews[i].getObject();
+						if ( view["key"].getString().compare(self->getType()) == 0 ){
+							/* This one will work */
+							found = true;
+							config["design"] = obj["design_name"];
+							config["view"] = view["view"];
+						}
+					}
+
+					if ( !found ){
+						/* We will need to create one */
+						stringstream design;
+						design << "_design/" << obj["design_name"].getString();
+						string key = design.str();
+						Object des = db.getDocument(design.str()).getData().getObject();
+
+						Object views = des["views"].getObject();
+							
+						char map[1024];
+						sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", 
+							obj["emits"].getString().c_str(), self->getType().c_str());
+
+						stringstream viewname;
+						viewname << "by-" << self->getType();
+
+						views[viewname.str()]["map"] = map;
+
+						des["views"] = views;
+
+						
+						config["design"] = obj["design_name"];
+						config["view"] = viewname.str();
+
+						Object newView;
+						newView["key"] = "_id";
+						newView["view"] = viewname.str();
+						availableViews.push_back(newView);
+						obj["views"] = availableViews;
+						
+						db.createDocument(obj);
+						db.createDocument(des, design.str());
+					}
+
+					
 					config["columns"] = columns;
 					tab["content"] = VIEW_WITH_DOCUMENTS_DETAIL;
 					tab["label"] = obj["label"];
@@ -1215,8 +1259,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				
 				int pos = (int)SendMessage(visibleTabs, LB_ADDSTRING, 0, (LPARAM)text); 
 
-				self->visibleTabDefinitions.push_back(self->hiddenTabDefinitions[pos]);
-				self->hiddenTabDefinitions.erase(self->hiddenTabDefinitions.begin()+pos);
+				self->visibleTabDefinitions.push_back(self->hiddenTabDefinitions[selected]);
+				self->hiddenTabDefinitions.erase(self->hiddenTabDefinitions.begin()+selected);
 				
 				ListBox_DeleteString(hiddenTabs, selected);
 

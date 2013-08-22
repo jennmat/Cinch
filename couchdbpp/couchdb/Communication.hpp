@@ -17,6 +17,7 @@
 #define __COUCH_DB_COMM_HPP__
 
 #define COUCH_DB_ANNOUNCE_URLS
+#define COUCH_DB_DEBUG
 
 #include <iostream>
 #include <string>
