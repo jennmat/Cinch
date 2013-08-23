@@ -1366,9 +1366,9 @@ void CinchDesigner::loadForm(string database, string t){
 
 void CinchDesigner::NewDocument(string database, string type){
 	loadForm(database, type);
-	Object* obj = new Object();
-	(*obj)["cinch_type"] = Value(type);
-	form->LoadDocument("", *obj, false);
+	Object obj = Object();
+	obj["cinch_type"] = Value(type);
+	form->LoadDocument("", obj, false);
 }
 
 void CinchDesigner::LoadDocument(string database, string _id, Document doc, Object obj){

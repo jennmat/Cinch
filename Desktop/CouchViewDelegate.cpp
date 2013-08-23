@@ -84,7 +84,7 @@ int CouchViewDelegate::totalColumns(){
 
 
 int CouchViewDelegate::columnWidth(int col){
-	return 185;
+	return CINCH_GRID_MAXIMIZE_WIDTH;
 }
 
 
