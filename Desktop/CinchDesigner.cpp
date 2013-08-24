@@ -1327,7 +1327,6 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ListBox_SetCurSel(visibleTabs, selected+1);
 			}
-
 		}
 		else if ( LOWORD(wParam) == IDC_NEW_TAB )
 		{
