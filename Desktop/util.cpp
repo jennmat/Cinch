@@ -169,7 +169,10 @@ string serializeForDisplay(Value v, string type){
 		return date;
 	} else if( base.compare("number") == 0 ){
 		if( v.isInteger() ) return convertToString(v.getInt());
-		if ( v.isDouble() ) return convertToString(v.getDouble());
+		if( v.isDouble() ) return convertToString(v.getDouble());
+	} else if ( base.compare("document") == 0 ){
+		/* This is a document reference */
+		return "Ref";
 	}
 	return "";
 }

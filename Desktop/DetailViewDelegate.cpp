@@ -118,7 +118,7 @@ bool DetailViewDelegate::drawHorizontalGridlines(){
 }
 
 bool DetailViewDelegate::drawVerticalGridlines(){
-	return false;
+	return true;
 }
 
 bool DetailViewDelegate::rowSelection(){

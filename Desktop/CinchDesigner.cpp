@@ -1029,39 +1029,48 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 					}
 				}
-			}
-
-			/* Now add views for documents which may reference this document */
-			QueryOptions attributesQueryOptions;
-			attributesQueryOptions.startKey = self->getType();
-			attributesQueryOptions.endKey = self->getType();
-			results = db.viewResults("all-attributes", "by-id", attributesQueryOptions);
-			if ( results["rows"].isArray() ){
-				Array rows = results["rows"].getArray();
 			
-				for(unsigned int i=0; i<rows.size(); i++){
-					Object row = rows[i].getObject();
-					Object value = row["value"].getObject();
-					string id = value["_id"].getString();
+				/* Now add views for documents which may reference this document */
+				QueryOptions attributesQueryOptions;
+				attributesQueryOptions.startKey = self->getType();
+				attributesQueryOptions.endKey = self->getType();
+				results = db.viewResults("all-attributes", "by-id", attributesQueryOptions);
+				if ( results["rows"].isArray() ){
+					Array rows = results["rows"].getArray();
+			
+					for(unsigned int i=0; i<rows.size(); i++){
+						Object row = rows[i].getObject();
+						Object value = row["value"].getObject();
+						string id = value["_id"].getString();
 
-					QueryOptions viewQueryOptions;
-					viewQueryOptions.startKey = id;
-					viewQueryOptions.endKey = id;
-					viewQueryOptions.includeDocs = true;
-					Object views = db.viewResults("all-view-definitions", "by-emitted-type", viewQueryOptions);
-					if ( views["rows"].isArray() ){
-						Array viewRows = views["rows"].getArray();
+						QueryOptions viewQueryOptions;
+						viewQueryOptions.startKey = id;
+						viewQueryOptions.endKey = id;
+						viewQueryOptions.includeDocs = true;
+						Object views = db.viewResults("all-view-definitions", "by-emitted-type", viewQueryOptions);
+						if ( views["rows"].isArray() ){
+							Array viewRows = views["rows"].getArray();
 
-						for(unsigned int i=0; i<viewRows.size(); i++){
-							Object view = viewRows[i].getObject();
-							Object doc = view["doc"].getObject();
-							string label = doc["label"].getString();
-
-							int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
-							self->hiddenTabDefinitions.push_back(doc);
+							for(unsigned int i=0; i<viewRows.size(); i++){
+								Object view = viewRows[i].getObject();
+								Object doc = view["doc"].getObject();
+								string label = doc["label"].getString();
+								string id = doc["_id"].getString();
+								bool found = false;
+								for(unsigned i=0; i<tabs.size(); i++){
+									Object config = tabs[i].getObject();
+									if ( id.compare(config["_id"].getString()) == 0 ){
+										found = true;
+									}
+								}
+								if ( !found ){
+									int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
+									self->hiddenTabDefinitions.push_back(doc);	
+								}
+							}
 						}
-					}
 
+					}
 				}
 			}
 
@@ -1223,6 +1232,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					config["columns"] = columns;
 					tab["content"] = VIEW_WITH_DOCUMENTS_DETAIL;
 					tab["label"] = obj["label"];
+					tab["view_id"] = obj["_id"];
 					tab["config"] = config;
 
 					tabs.push_back(tab);
@@ -1282,8 +1292,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				
 				int pos = (int)SendMessage(hiddenTabs, LB_ADDSTRING, 0, (LPARAM)text); 
 				
-				self->hiddenTabDefinitions.push_back(self->visibleTabDefinitions[pos]);
-				self->visibleTabDefinitions.erase(self->visibleTabDefinitions.begin()+pos);
+				self->hiddenTabDefinitions.push_back(self->visibleTabDefinitions[selected]);
+				self->visibleTabDefinitions.erase(self->visibleTabDefinitions.begin()+selected);
 				
 				ListBox_DeleteString(visibleTabs, selected);
 
