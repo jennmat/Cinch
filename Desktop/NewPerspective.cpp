@@ -60,7 +60,7 @@ INT_PTR CALLBACK NewPerspective(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			appliesTo.push_back(roleDoc["name"]);
 			newPerspective["applies_to_roles"] = appliesTo;
 
-			Document doc = db.createDocument(Value(newPerspective));
+			Document doc = db.createDocument(JsonBox::Value(newPerspective));
 			Object updatedObj = doc.getData().getObject();
 			PROPVARIANT val;
 			HRESULT res = g_pFramework->GetUICommandProperty(IDR_CMD_SWITCHPERSPECTIVE, UI_PKEY_ItemsSource, &val);

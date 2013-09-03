@@ -1,9 +1,5 @@
 
 #include <stdafx.h>
-#include "CinchGrid.h"
-#include "CouchDB.hpp"
-
-using namespace CouchDB;
 
 class CouchViewDelegate : public GridDelegate {
 

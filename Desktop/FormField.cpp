@@ -29,7 +29,7 @@ char* FormField::getControlType()
 	return this->controlType;
 }
 
-Value FormField::getConfig(){
+JsonBox::Value FormField::getConfig(){
 	return config;
 }
 
@@ -56,7 +56,7 @@ FormField* FormField::createEditField(HWND parent, HINSTANCE hInst, string name,
 	
 	field->controlType = "Edit";
 	field->name = name;
-	field->config = Value();
+	field->config = JsonBox::Value();
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP | ES_AUTOHSCROLL,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 
@@ -87,7 +87,7 @@ FormField* FormField::createAutocompletingEditField(HWND parent, HINSTANCE hInst
 	
 	field->controlType = "Edit";
 	field->name = name;
-	field->config = Value();
+	field->config = JsonBox::Value();
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_OVERLAPPED | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
 

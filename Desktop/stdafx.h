@@ -5,6 +5,7 @@
 
 #pragma once
 
+
 #include "targetver.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -39,6 +40,11 @@
 
 #include <Wincrypt.h>
 
+
+#include "JsonBox.h"
+
+#include "Scripting.h"
+
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -58,6 +64,8 @@
 #include "RibbonFramework.h"
 #include "PropertySet.h"
 #include <uiribbonpropertyhelpers.h>
+
+
 
 using namespace std;
 
@@ -80,9 +88,20 @@ struct FileWatchController {
 #include "Constants.h"
 #include "Resource.h"
 
+
 #include "Toolbar.h"
 #include "CinchGrid.h"
+
+#include "CinchGrid.h"
+
+#include "CouchDB.hpp"
+
+using namespace CouchDB;
+
 #include "CouchViewDelegate.h"
+
+
+
 // Comment out if you don't want replication 
 //#include "Replication.h"
 #include "CouchDB.hpp"
@@ -90,7 +109,6 @@ struct FileWatchController {
 #include "ConditionManager.h"
 // TODO: reference additional headers your program requires here
 
-#include "JsonBox.h"
 #include "util.h"
 
 
@@ -164,12 +182,12 @@ struct FileWatchController {
 #define COMBO "Combo"
 
 #define MULTILINE "multiline"
-#define STRING "string"
+#define CINCH_STRING "string"
 #define DOCUMENT "document"
 #define DATETYPE "date"
 #define CODEDVALUE "coded_value"
 #define NUMBERTYPE	"number"
-#define ID		"id"
+#define CINCH_ID "id"
 #define BOOLEAN "boolean"
 
 

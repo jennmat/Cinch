@@ -55,6 +55,7 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 
 extern Explorer* explorer;
 
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -71,6 +72,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     {
         return FALSE;
     }
+
+	SetupScripting();
 
  	// TODO: Place code here.
 	MSG msg;

@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Dialogs">
       <UniqueIdentifier>{a356944a-5727-47a3-bee2-0ac02f815d83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Javascript">
+      <UniqueIdentifier>{3d42a95e-cd7b-4e52-afb0-dd644bc3a631}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">

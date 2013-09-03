@@ -358,40 +358,33 @@ INT_PTR CALLBACK EditFields(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 					fields = Array();
 				}
 
-				QueryOptions options;
-				options.startKey = Value(self->getType());
-				options.endKey = Value(self->getType());
-				options.includeDocs = true;
-				results = db.viewResults("all-attributes", "by-type", options);
-			
-				if ( results["rows"].isArray() ){
-					Array rows = results["rows"].getArray();
-					for(unsigned int i=0; i<rows.size(); i++){
-						Object row = rows[i].getObject();
-						Object doc = row["doc"].getObject();
-						string name = doc["_id"].getString();
-						string label = doc["label"].getString();
-						bool found = false;
-						for(unsigned int j=0; j<fields.size(); j++){
-							if ( name.compare(fields[j].getString()) == 0 ){
-								found = true;
-							}
+				vector<string> attrs = collectAttributes(self->getType());
+
+				for(unsigned int i=0; i<attrs.size(); i++){
+					string name = attrs[i];
+					bool found = false;
+					for(unsigned int j=0; j<fields.size(); j++){
+						if ( name.compare(fields[j].getString()) == 0 ){
+							found = true;
 						}
-						if ( !found ){
-							string baseType = getBaseType(name);
-							if ( baseType.compare("array") != 0 ){
-								int len = label.size() + sizeof(wchar_t);
-								wchar_t* t = new wchar_t[len];
+					}
+					if ( !found ){
+						string baseType = getBaseType(name);
+						if ( baseType.compare("array") != 0  && baseType.compare("attachments") != 0 ){	
+							Object doc = db.getDocument(name).getData().getObject();
+							string label = doc["label"].getString();
 
-								wcscpy_s(t, len, s2ws(label).c_str());
+							int len = label.size() + sizeof(wchar_t);
+							wchar_t* t = new wchar_t[len];
 
-								int index = ListBox_AddString(hiddenFields, t);
-								ListBox_SetItemData(hiddenFields, index, new Object(doc));
-							}
+							wcscpy_s(t, len, s2ws(label).c_str());
+
+							int index = ListBox_AddString(hiddenFields, t);
+							ListBox_SetItemData(hiddenFields, index, new Object(doc));
 						}
 					}
 				}
-
+			
 				//SetWindowLongPtr(hiddenFields, GWL_USERDATA, (ULONG_PTR)new Array(rows));
 			}
 

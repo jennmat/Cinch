@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 
+
 wstring s2ws(const string& s)
 {
     int len;
@@ -56,8 +57,8 @@ vector<string> collectAttributesSingle(Database& db, string field){
 	vector<string> attributes;
 	
 	QueryOptions options;
-	options.startKey = Value(field);
-	options.endKey = Value(field);
+	options.startKey = JsonBox::Value(field);
+	options.endKey = JsonBox::Value(field);
 	options.includeDocs = true;
 	Object results = db.viewResults("all-attributes", "by-type", options);
 
@@ -75,9 +76,7 @@ vector<string> collectAttributesSingle(Database& db, string field){
 
 
 vector<string> collectAttributes(string field){
-	;
 	
-
 	vector<string> attributes;
 
 	string baseType = "";
@@ -172,7 +171,16 @@ string serializeForDisplay(Value v, string type){
 		if( v.isDouble() ) return convertToString(v.getDouble());
 	} else if ( base.compare("document") == 0 ){
 		/* This is a document reference */
-		return "Ref";
+		Object referencedDoc = db.getDocument(v.getString()).getData().getObject();
+		Object def = db.getDocument(type).getData().getObject();
+		
+		stringstream script;
+		script << "var obj = " << referencedDoc << ";";
+		script << def["functions"].getString();
+		script << "toString(obj);";
+
+
+		return EvaluateScript(script.str());
 	}
 	return "";
 }
@@ -221,8 +229,8 @@ Object getDefaultViewDefinition(string t){
 	do { 
 		
 		QueryOptions options;
-		options.startKey = Value(type);
-		options.endKey = Value(type);
+		options.startKey = JsonBox::Value(type);
+		options.endKey = JsonBox::Value(type);
 		Object results = db.viewResults("all-default-view-definitions", "by-document-type", options);
 
 		rows = results["rows"].getArray();
@@ -252,7 +260,7 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 
 	wstring wlabel =s2ws(label);
 	string type = field["type"].getString();
-	Value config;
+	JsonBox::Value config;
 	if ( field["config"].isObject() ){
 		config = field["config"].getObject();
 	}
@@ -282,13 +290,13 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 
 	FormField* formField;
 
-	if ( baseType.compare(STRING) == 0){
+	if ( baseType.compare(CINCH_STRING) == 0){
 		if ( autocomplete ) {
 			formField = FormField::createAutocompletingEditField(parent, GetModuleHandle(0), enclosingType, name, wclabel, bare);
 		} else {
 			formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel, bare);
 		}
-	} else if (baseType.compare(ID) == 0 ){
+	} else if (baseType.compare(CINCH_ID) == 0 ){
 		formField = FormField::createIdentifierField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(MULTILINE) == 0 ){
 		formField = FormField::createMultilineText(parent, GetModuleHandle(0), name, wclabel, bare);
@@ -313,7 +321,7 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 		conf["pick_from"] = pick;
 	
 
-		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, Value(conf), bare);
+		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, JsonBox::Value(conf), bare);
 		
 	} else {
 		formField = FormField::createEditField(parent, GetModuleHandle(0), name, wclabel);
