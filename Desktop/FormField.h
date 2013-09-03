@@ -44,7 +44,8 @@ public:
 	static FormField* createEditField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createAutocompletingEditField(HWND parent, HINSTANCE hInst, string enclosingType, string name, const wchar_t * label, bool bare=false);
 	static FormField* createIdentifierField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
-	static FormField* createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createIntegerField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
+	static FormField* createDecimalField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createComboBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, string type, bool bare=false);
 	static FormField* createDatePicker(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
 	static FormField* createCheckBox(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare=false);
@@ -86,9 +87,20 @@ public:
 };
 
 
-class NumberField : public FormField {
+class DecimalField : public FormField {
 public:
-	~NumberField();
+	~DecimalField();
+	void loadValue(Object obj);
+	void clearValue();
+	Object storeValue(Object obj);
+	string serializeForJS();
+	string toString(Object obj);
+};
+
+
+class IntegerField : public FormField {
+public:
+	~IntegerField();
 	void loadValue(Object obj);
 	void clearValue();
 	Object storeValue(Object obj);

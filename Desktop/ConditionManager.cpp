@@ -76,8 +76,10 @@ void ConditionManager::updateConditions(HWND parent){
 					formField = FormField::createDatePicker(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(RADIO) == 0 ){
 					formField = FormField::createRadioGroup(parent, GetModuleHandle(0), "", L"");
-				} else if ( type.compare(NUMBER) == 0 ){
-					formField = FormField::createNumberField(parent, GetModuleHandle(0), "", L"");
+				} else if ( type.compare(DECIMALTYPE) == 0 ){
+					formField = FormField::createDecimalField(parent, GetModuleHandle(0), "", L"");
+				} else if ( type.compare(INTEGERTYPE) == 0 ){
+					formField = FormField::createIntegerField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(YESNO) == 0 ){
 					formField = FormField::createYesNoField(parent, GetModuleHandle(0), "", L"");
 				} else if ( type.compare(MULTILINE) == 0 ){

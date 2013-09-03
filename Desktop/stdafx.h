@@ -98,6 +98,7 @@ struct FileWatchController {
 
 using namespace CouchDB;
 
+#include "BaseDelegate.h"
 #include "CouchViewDelegate.h"
 
 
@@ -174,7 +175,7 @@ using namespace CouchDB;
 
 
 #define DATEPICKER "DatePicker"
-#define NUMBER "Number"
+
 #define YESNO "YesNo"
 #define RADIO "Radio"
 #define EDIT "Edit"
@@ -186,7 +187,8 @@ using namespace CouchDB;
 #define DOCUMENT "document"
 #define DATETYPE "date"
 #define CODEDVALUE "coded_value"
-#define NUMBERTYPE	"number"
+#define INTEGERTYPE	"integer"
+#define DECIMALTYPE "decimal"
 #define CINCH_ID "id"
 #define BOOLEAN "boolean"
 

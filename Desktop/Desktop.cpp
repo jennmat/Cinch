@@ -827,7 +827,7 @@ INT_PTR CALLBACK AddDocumentType(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
 				field["cinch_type"] = DATEPICKER;
 				break;
 			case 2:
-				field["cinch_type"] = NUMBER;
+				//field["cinch_type"] = NUMBER;
 				break;
 			}
 

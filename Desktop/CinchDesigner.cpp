@@ -667,7 +667,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					field = FormField::createDatePicker(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
 					break;
 				case 7:
-					field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
+					//field = FormField::createNumberField(designerHWnd, GetModuleHandle(0), ws2s(szNewFieldName), szNewFieldLabel);
 					break;
 				default:
 					{

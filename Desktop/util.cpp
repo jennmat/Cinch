@@ -166,9 +166,10 @@ string serializeForDisplay(Value v, string type){
 	} else if ( base.compare("date") == 0 ){
 		string date = v.getString();
 		return date;
-	} else if( base.compare("number") == 0 ){
+	} else if( base.compare("integer") == 0 ){
 		if( v.isInteger() ) return convertToString(v.getInt());
-		if( v.isDouble() ) return convertToString(v.getDouble());
+	} else if ( base.compare("decimal") == 0 ){
+		if ( v.isDouble() ) return convertToString(v.getDouble());
 	} else if ( base.compare("document") == 0 ){
 		/* This is a document reference */
 		Object referencedDoc = db.getDocument(v.getString()).getData().getObject();
@@ -304,8 +305,10 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 		formField = FormField::createDatePicker(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(CODEDVALUE) == 0 ){
 		formField = FormField::createComboBox(parent, GetModuleHandle(0), name, wclabel, name, bare);
-	} else if ( baseType.compare(NUMBERTYPE) == 0 ){
-		formField = FormField::createNumberField(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(INTEGERTYPE) == 0 ){
+		formField = FormField::createIntegerField(parent, GetModuleHandle(0), name, wclabel, bare);
+	} else if ( baseType.compare(DECIMALTYPE) == 0 ){
+		formField = FormField::createDecimalField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(BOOLEAN) == 0 ){
 		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(DOCUMENT) == 0 ){

@@ -286,12 +286,11 @@ FormField* FormField::createReferenceField(HWND parent, HINSTANCE hInst, string 
 }
 
 
-
-FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
+FormField* FormField::createDecimalField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
 {
 	static int fieldId = 13001;
 
-	FormField* field = new NumberField();
+	FormField* field = new DecimalField();
 
 	field->controlChildId = fieldId++;
 	field->config = Value();
@@ -303,7 +302,37 @@ FormField* FormField::createNumberField(HWND parent, HINSTANCE hInst, string nam
 	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
 	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
 
-	field->controlType = "Number";
+	field->controlType = "Decimal";
+	field->name = name;
+	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP,
+		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
+
+	MaskEditControl(field->control, "0123456789.\b", TRUE);
+
+	SendMessage(field->control, WM_SETFONT,(WPARAM)hFont,0);
+	
+	return field;
+}
+
+
+
+FormField* FormField::createIntegerField(HWND parent, HINSTANCE hInst, string name, const wchar_t * label, bool bare)
+{
+	static int fieldId = 13001;
+
+	FormField* field = new IntegerField();
+
+	field->controlChildId = fieldId++;
+	field->config = Value();
+
+	field->label = CreateWindowEx(0, L"STATIC", L"", WS_CHILD | SS_CENTERIMAGE,
+		0, 0, LABEL_WIDTH, LABEL_HEIGHT, parent, NULL, hInst, NULL);
+
+	HFONT hFont=DEFAULT_FONT;
+	SendMessage(field->label, WM_SETFONT,(WPARAM)hFont,0);
+	SendMessage(field->label, WM_SETTEXT, 0, (LPARAM)label);
+
+	field->controlType = "Integer";
 	field->name = name;
 	field->control = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_TABSTOP,
 		0, 0, CONTROL_WIDTH, CONTROL_HEIGHT, parent, (HMENU)field->controlChildId, hInst, NULL);
@@ -668,19 +697,15 @@ string DatePickerField::serializeForJS(){
 DatePickerField::~DatePickerField(){
 }
 
-string NumberField::toString(Object obj){
+string DecimalField::toString(Object obj){
 	string n = getName();
 	if ( obj[n.c_str()].isDouble() ){
 		return convertToString(obj[n.c_str()].getDouble());
-	} else if ( obj[n.c_str()].isInteger() ){
-		int val = obj[n.c_str()].getInt();
-		return convertToString(val);
 	}
-
 	return "NaN";
 }
 
-void NumberField::loadValue(Object obj){
+void DecimalField::loadValue(Object obj){
 	string n = getName();
 	if ( obj[n.c_str()].isDouble() ){
 		double val = obj[n.c_str()].getDouble();
@@ -688,25 +713,26 @@ void NumberField::loadValue(Object obj){
 		char* buffer = new char[_CVTBUFSIZE];
 		int precision = 2;
 		_fcvt_s(buffer, _CVTBUFSIZE, val, precision, &decimal, &sign);
-		wstring w =s2ws(string(buffer));
+		wstring w = s2ws(string(buffer));
 		w.insert(decimal, L".");
 		SetWindowText(getControl(), w.c_str());
+		delete buffer;
 	} else if ( obj[n.c_str()].isInteger() ){
 		int val = obj[n.c_str()].getInt();
-		wchar_t* buf = new wchar_t[100];
-		memset(buf, 0, 100);
-		_itow_s(val, buf, 100, 10);
+		wchar_t* buf = new wchar_t[_CVTBUFSIZE];
+		memset(buf, 0, _CVTBUFSIZE);
+		_itow_s(val, buf, _CVTBUFSIZE, 10);
 
 		SetWindowText(getControl(), buf);
 		delete buf;
 	}
 }
 
-void NumberField::clearValue(){
+void DecimalField::clearValue(){
 	SetWindowText(getControl(), L"");
 }
 
-Object NumberField::storeValue(Object obj){
+Object DecimalField::storeValue(Object obj){
 	int len = GetWindowTextLength(getControl()) + 1;
 	LPWSTR str = new wchar_t[len];
 	string key = getName();
@@ -724,7 +750,7 @@ Object NumberField::storeValue(Object obj){
 	return obj;
 }
 
-string NumberField::serializeForJS(){
+string DecimalField::serializeForJS(){
 	int len = GetWindowTextLength(getControl()) + 1;
 	if ( GetWindowTextLength(getControl()) > 0 ){
 		LPWSTR str = new wchar_t[len];
@@ -739,8 +765,74 @@ string NumberField::serializeForJS(){
 
 }
 
-NumberField::~NumberField(){
+DecimalField::~DecimalField(){
 }
+
+
+
+string IntegerField::toString(Object obj){
+	string n = getName();
+	if ( obj[n.c_str()].isDouble() ){
+		return convertToString(obj[n.c_str()].getDouble());
+	} else if ( obj[n.c_str()].isInteger() ){
+		int val = obj[n.c_str()].getInt();
+		return convertToString(val);
+	}
+
+	return "NaN";
+}
+
+void IntegerField::loadValue(Object obj){
+	string n = getName();
+	int val = obj[n.c_str()].getInt();
+	wchar_t* buf = new wchar_t[100];
+	memset(buf, 0, 100);
+	_itow_s(val, buf, 100, 10);
+
+	SetWindowText(getControl(), buf);
+	delete buf;
+}
+
+void IntegerField::clearValue(){
+	SetWindowText(getControl(), L"");
+}
+
+Object IntegerField::storeValue(Object obj){
+	int len = GetWindowTextLength(getControl()) + 1;
+	LPWSTR str = new wchar_t[len];
+	string key = getName();
+	if ( GetWindowTextLength(getControl()) > 0 ){
+		GetWindowText(getControl(), str, len);
+		int val = _wtoi(str);
+		
+		obj[key.c_str()] = val;	
+	} else {
+		obj[key.c_str()] = Value();
+	}
+	
+	free(str);
+
+	return obj;
+}
+
+string IntegerField::serializeForJS(){
+	int len = GetWindowTextLength(getControl()) + 1;
+	if ( GetWindowTextLength(getControl()) > 0 ){
+		LPWSTR str = new wchar_t[len];
+		GetWindowText(getControl(), str, len);
+
+		string rc =ws2s(str);
+		free(str);
+		return rc;
+	}
+
+	return "0";
+
+}
+
+IntegerField::~IntegerField(){
+}
+
 
 
 void YesNoField::loadValue(Object obj){
@@ -909,4 +1001,9 @@ void ComboBoxField::loadValue(Object obj){
 }
 
 ComboBoxField::~ComboBoxField(){
+	int c = ComboBox_GetCount(getControl());
+	for(int i=0; i<c; i++){
+		string* p = (string *)ComboBox_GetItemData(getControl(), i);
+		delete p;
+	}
 }
