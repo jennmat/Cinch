@@ -121,16 +121,25 @@ void loadVisibleTabLabels(CinchDesigner* des, Array tabs, HWND tabList){
 	ListBox_ResetContent(tabList);
 
 	for(unsigned i=0; i<tabs.size(); i++){
-		Object config = tabs[i].getObject();
-		string label = config["label"].getString();
-		string field = config["field"].getString();
-		wstring l =s2ws(label);
-		
-		Object doc = db.getDocument(field).getData().getObject();
+		Object tab = tabs[i].getObject();
+		string label = tab["label"].getString();
+		wstring l = s2ws(label);
+
+		if( tab["field"].isString() ){
+			string field = tab["field"].getString();
+			Object doc = db.getDocument(field).getData().getObject();
+			des->visibleTabDefinitions.push_back(doc);
+		} else if ( tab["config"].isObject() ){
+			Object config = tab["config"].getObject();
+			string viewDefId = config["view_definition_id"].getString();
+			Object doc = db.getDocument(viewDefId).getData().getObject();
+			des->visibleTabDefinitions.push_back(doc);
+
+		 
+		}
 
 		int pos = SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
 		
-		des->visibleTabDefinitions.push_back(doc);
 	}	
 }
 
@@ -992,12 +1001,13 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			vector<string> attributes = collectAttributes(self->getType());
 
 			int count = self->getForm()->getLayout()->getFieldCount();
-					
+
+			
 			if ( results["rows"].isArray() ){
 				Array rows = results["rows"].getArray();
 				Object templ = rows[0]["doc"].getObject();
 				Array tabs = templ["tabs"].getArray();
-
+		
 				vector<string> attributes = collectAttributes(self->getType());
 
 				for(unsigned int i=0; i<attributes.size(); i++){
@@ -1030,7 +1040,6 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				results = db.viewResults("all-attributes", "by-id", attributesQueryOptions);
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
-			
 					for(unsigned int i=0; i<rows.size(); i++){
 						Object row = rows[i].getObject();
 						Object value = row["value"].getObject();
@@ -1179,11 +1188,12 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					Array availableViews = obj["views"].getArray();
 					for(unsigned int i=0; i<availableViews.size(); i++){
 						Object view = availableViews[i].getObject();
-						if ( view["key"].getString().compare(self->getType()) == 0 ){
+						if ( view["key"].getString().compare("_id") == 0 ){
 							/* This one will work */
 							found = true;
 							config["design"] = obj["design_name"];
 							config["view"] = view["view"];
+							config["view_definition_id"] = obj["_id"];
 						}
 					}
 
@@ -1196,9 +1206,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 						Object views = des["views"].getObject();
 							
-						char map[1024];
-						sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' ) emit(doc.%s, null); }", 
-							obj["emits"].getString().c_str(), self->getType().c_str());
+						string map = obj["function_template"].getString();
+						map = map.replace(map.find("$FIELD"), 6, self->getType());
 
 						stringstream viewname;
 						viewname << "by-" << self->getType();
@@ -1208,8 +1217,6 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						des["views"] = views;
 
 						
-						config["design"] = obj["design_name"];
-						config["view"] = viewname.str();
 
 						Object newView;
 						newView["key"] = "_id";
@@ -1217,8 +1224,12 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						availableViews.push_back(newView);
 						obj["views"] = availableViews;
 						
-						db.createDocument(obj);
+						Document viewDef = db.createDocument(obj);
 						db.createDocument(des, design.str());
+
+						config["design"] = obj["design_name"];
+						config["view"] = viewname.str();
+						config["view_definition_id"] = viewDef.getID();
 					}
 
 					

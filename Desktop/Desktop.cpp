@@ -661,7 +661,8 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			HWND sortCombo = GetDlgItem(hDlg, IDC_NEW_VIEW_SORT_BY);
 			HWND newViewNameEdit = GetDlgItem(hDlg, IDC_NEW_VIEW_NAME);
 
-			char map[1024];
+			char map[2048];
+			char function_template[2048];
 			memset(map, 0, 1024);
 			vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
 			int idx = ComboBox_GetCurSel(typeCombo);
@@ -683,7 +684,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			string viewnamesanitized = name;
 			for(unsigned i=0; i<viewnamesanitized.size(); i++){
 				viewnamesanitized[i] = tolower(viewnamesanitized[i]);
-				if ( viewnamesanitized[i] == ' ' ){
+				if ( viewnamesanitized[i] == ' ' || viewnamesanitized[i] == '_' ){
 					viewnamesanitized[i] = '-';
 				}
 			}
@@ -692,11 +693,15 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			ConditionManager* manager = (ConditionManager*)GetWindowLong(hDlg, GWL_USERDATA);
 			string conditionsJs = manager->getJavascript();
 
+			
+			sprintf_s(function_template, 2048, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.$FIELD, null); }", 
+				type.c_str(), conditionsJs.c_str());	
 
-			sprintf_s(map, 1024, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.%s, null); }", 
-				type.c_str(), conditionsJs.c_str(), sortby.c_str());	
+			
+			strcpy_s(map, 2048, function_template);
 
-
+			string map_s = string(map);
+			map_s = map_s.replace(map_s.find("$FIELD"), 6, sortby);
 			
 
 			Object design = Object();
@@ -711,7 +716,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			viewlabelstream << sortbylabel;
 
 			Object v = Object();
-			v["map"] = map;
+			v["map"] = map_s;
 			
 			view[viewname.str()] = v;
 			
@@ -731,6 +736,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			viewDef["design_name"] = viewnamesanitized;
 			viewDef["label"] = name;
 			viewDef["emits"] = type;
+			viewDef["function_template"] = function_template;
 			viewDef["default_view"] = viewname.str();
 			Array views;
 			Object sortDef;
