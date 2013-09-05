@@ -106,7 +106,7 @@ Object Database::viewResults(const string& design, const string& view, QueryOpti
 	if ( options.startKey != NULL ){
 		params << "startkey=";
 		stringstream key;
-		key << "\"" << options.startKey.getString() << "\"";
+		key << options.startKey;
 		char* escapedKey = curl_easy_escape(comm.curl, key.str().c_str(), 0);
 		params << escapedKey;
 		params << "&";
@@ -124,7 +124,7 @@ Object Database::viewResults(const string& design, const string& view, QueryOpti
 	if ( options.endKey != NULL ){
 		params << "endkey=";
 		stringstream key;
-		key << "\"" << options.endKey.getString() << "\"";
+		key << options.endKey;
 		char* escaped = curl_easy_escape(comm.curl, key.str().c_str(), 0);
 		params << escaped;
 		params << "&";

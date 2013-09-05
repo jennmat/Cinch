@@ -5,7 +5,7 @@
 
 using namespace CouchDB;
 
-class DetailViewDelegate: public GridDelegate {
+class DetailViewDelegate: public BaseDelegate {
 
 private:
 	DetailViewDelegate();
@@ -13,9 +13,11 @@ private:
 	string database;
 	string design;
 	string view;
+	bool descending;
 	string startkey_from;
 	string endkey_from;
 	string shows_docs_of_type;
+	string source_document_id;
 	Object* obj;
 	bool includeDocs;
 	bool allowEdit;
@@ -23,60 +25,32 @@ private:
 	vector<HWND> editors;
 	Object config;
 	int fieldId;
+
+	void sortByCol(int col);
+	
 public:
-	DetailViewDelegate(string design, string view, string startkey_from, string endkey_from, string docs_of_type);
+	DetailViewDelegate(Detail*, int, string design, string view, string startkey_from, string endkey_from, string docs_of_type);
 	~DetailViewDelegate();
-	void LoadDocument(string database, Object obj);
+	void LoadDocument(const string& database, Object& obj);
 	void setConfig(Object);
 	void setIncludeDocs(bool);
-	int totalRows();
-	int totalColumns();
-	int columnWidth(int column);
-	int rowHeight();
-
-	void headerContent(int, wstring &);
-
-	void cellContent(int, int, wstring &);
-
-	bool stickyHeaders();
+	void serializeUIElements(Object& obj);
 	
-	bool rowSelection();
-
-	bool drawHorizontalGridlines();
-	bool drawVerticalGridlines();
-
-	bool allowEditing(int);
-	bool allowHeaderTitleEditing(int);
+	int totalRows();
+	void cellContent(int row, int col, wstring &content);
 	void setupEditorForCell(HWND editor, int row, int col);
-	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
-	void editingFinished(HWND editor, int row, int col);
+	void editingFinished(HWND hwnd, int row, int col);
+	void prepareNewRow(int row);
+	
+	bool allowEditing(int col);
+	bool allowHeaderTitleEditing(int col);
+	HWND editorForColumn(int col, HWND parent, HINSTANCE hInst);
 	void willLoseFocus();
+	bool allowNewRows();
+	bool allowNewColumns();
 
 	bool allowSorting(int col);
 	void sortAscending(int col);
 	void sortDescending(int col);
 	void sortOff(int col);
-
-	bool allowNewRows();
-	bool allowNewColumns();
-	void prepareNewRow(int row);
-
-	HFONT getFont();
-	HFONT getEditFont();
-
-	Array storeValuesToArray(Array obj);
-
-	void headerContextClick(HWND grid, int x, int y);
-
-	void deserializeUIElements(Object obj);
-	Object serializeUIElements();
-
-	void willReloadData();
-	void didReloadData();
-
-	void didChangeColumnWidth(int, int);
-
-	void didSelectRow(int row);
-
-	void setGrid(CinchGrid*);
 };

@@ -122,7 +122,7 @@ string getBaseType(string type){
 	if ( baseTypes.find(type) != baseTypes.end() ){
 		return baseTypes[type];
 	}
-
+	string o = type;
 	string baseType = getSuperType(type);
 	while ( baseType.compare(type) != 0 ){
 		type = baseType;
@@ -134,7 +134,7 @@ string getBaseType(string type){
 		o = db.getDocument(type).getData().getObject();
 	}*/
 
-	baseTypes[type] = baseType;
+	baseTypes[o] = baseType;
 
 	return baseType;
 }
@@ -173,7 +173,7 @@ string serializeForDisplay(Value v, string type){
 	} else if ( base.compare("document") == 0 ){
 		/* This is a document reference */
 		Object referencedDoc = db.getDocument(v.getString()).getData().getObject();
-		Object def = db.getDocument(type).getData().getObject();
+		Object def = typeDefinitions[type];
 		
 		stringstream script;
 		script << "var obj = " << referencedDoc << ";";
@@ -209,7 +209,11 @@ void preloadTypeDefinitions(){
 		for(unsigned int i=0; i<rows.size(); i++){
 			Object row = rows[i].getObject();
 			Object doc = row["doc"].getObject();
-			typeDefinitions[doc["_id"].getString()] = doc;
+			string type = doc["_id"].getString();
+			string super = doc["type"].getString();
+			typeDefinitions[type] = doc;
+
+			superTypes[type] = super;
 		}
 	}
 	/*

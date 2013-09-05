@@ -29,6 +29,9 @@ HWND grid;
 HWND tree;
 HWND designer;
 
+bool sizing;
+int treeWidth;
+int gridWith;
 
 Desktop desktop;
 
@@ -149,92 +152,6 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 
-// Adds items to a tree-view control. 
-// Returns the handle to the newly added item. 
-// hwndTV - handle to the tree-view control. 
-// lpszItem - text of the item to add. 
-// nLevel - level at which to add the item. 
-//
-// g_nClosed, and g_nDocument - global indexes of the images.
-
-
-
-/*
-
-void LoadViews(HWND hwnd, string emitsDocumentsOfType = ""){
-
-	TreeView_DeleteAllItems(hwnd);
-
-	Object views = db.listViews();
-
-   if ( views["total_rows"].getInt() > 0 ){
-	   Array rows = views["rows"].getArray();
-	   for(unsigned int i=0; i<rows.size(); i++){
-		   Object row = rows[i].getObject();
-			
-		   Object doc = row["doc"].getObject();
-		   if ( doc["system_view"].isBoolean() && doc["system_view"].getBoolean() == true ){
-			   continue;
-		   }
-		   wstring name;
-		   wstring id = s2ws(row["id"].getString());
-		   if ( doc["label"].isString() ){
-				name = s2ws(doc["label"].getString());
-		   } else {
-				name = s2ws(row["id"].getString());
-		   }
-		   LPWSTR str = new wchar_t[80];
-		   wcscpy_s(str, 80, name.c_str());
-
-		   bool hasCinchView = false;
-
-		   Object views = doc["views"].getObject();
-		   Object::const_iterator it = views.begin();
-
-		   for(it=views.begin(); it != views.end(); it++){
-				pair<string, Value> p = *it;
-				Object o = p.second.getObject();
-				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
-					hasCinchView = true;
-				}
-		   }
-
-		   if ( hasCinchView ){
-				AddItemToTree(hwnd, str, NULL, 1);
-		   }
-	
-		   for(it=views.begin(); it != views.end(); it++){
-			   pair<string, Value> p = *it;
-				wstring view = s2ws(p.first);
-				wstring name = s2ws(p.first);
-				Object o = p.second.getObject();
-				if ( o["cinch_view"].isBoolean() && o["cinch_view"].getBoolean() == true && (emitsDocumentsOfType.length() == 0 || ( o["emits_docs_with_type"].isString() && o["emits_docs_with_type"].getString().compare(emitsDocumentsOfType) == 0 ) ) ){
-					if ( o["label"].isString() ){
-						name = s2ws(o["label"].getString());
-					}
-					LPWSTR str = new wchar_t[80];
-					wcscpy_s(str, 80, name.c_str());
-
-					int dlen = id.length() + sizeof(wchar_t);
-					ViewPair* v = new ViewPair;
-					v->design = row["id"].getString();
-					v->view = p.first;
-					v->emitsDocsWithType = o["emits_docs_with_type"].getString();
-					AddItemToTree(hwnd, str, (LPARAM)v, 2);
-				}
-		
-		   }
-		   //for(unsigned int j = 0; j<views.size(); j++){
-			 //  Object view = views[j].getObject();
-			  // int a = 1;
-			//}
-
-	   }
-   }
-}
-
-*/
-
 void SizeWindows(HWND hWnd);
 
 //
@@ -259,7 +176,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   
+   treeWidth = TREE_WIDTH;
+   gridWith = LIST_WIDTH;
+
    RECT client;
    GetClientRect(hWnd, &client);
 
@@ -288,16 +207,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	grid = CinchGrid::CreateCinchGrid(hWnd, delegate);
 	designer = CinchDesigner::CreateCinchDesigner(hWnd);
-   
+
 	
-   
 	CinchDesigner* d = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
    
 	d->getForm()->setDelegate(&desktop);
    
+	preloadTypeDefinitions();
    
 	ShowWindow(grid, SW_SHOW);
-	//ShowWindow(designer, SW_SHOW);
+	ShowWindow(designer, SW_SHOW);
 
 	CreateApplicationExplorer(tree);
   
@@ -306,7 +225,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SizeWindows(hWnd);
 
 	DWORD threadId;
-	listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	//listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
 	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
@@ -318,6 +237,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 void DestroyInstance() {
 	//CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 	DestroyApplicationExplorer(tree);
+	stu::Console::Destroy();
 	delete delegate;
 }
 
@@ -331,14 +251,134 @@ void SizeWindows(HWND hWnd)
 	UINT ribbonHeight;
 	GetRibbonHeight(&ribbonHeight);
 	
-	SetWindowPos(grid, HWND_TOP, TREE_WIDTH + INNER_MARGIN, ribbonHeight+TOP_MARGIN, LIST_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
-	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight+TOP_MARGIN, TREE_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN, 0);
-	SetWindowPos(designer, HWND_TOP, TREE_WIDTH + LIST_WIDTH + INNER_MARGIN + INNER_MARGIN, ribbonHeight + TOP_MARGIN, client.right - TREE_WIDTH - LIST_WIDTH - INNER_MARGIN - INNER_MARGIN - INNER_MARGIN, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
-
-	
-	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH + LIST_WIDTH, 0, client.right - TREE_WIDTH - LIST_WIDTH, TOOLBAR_HEIGHT, 0);
-	//SetWindowPos(toolbar, HWND_TOP, TREE_WIDTH+LIST_WIDTH, 10, client.right, TOOLBAR_HEIGHT, 0);
+	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight+TOP_MARGIN, treeWidth, client.bottom - ribbonHeight - TOP_MARGIN, 0);
+	SetWindowPos(grid, HWND_TOP, treeWidth + INNER_MARGIN, ribbonHeight+TOP_MARGIN, LIST_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
+	SetWindowPos(designer, HWND_TOP, treeWidth + LIST_WIDTH + INNER_MARGIN + INNER_MARGIN, ribbonHeight + TOP_MARGIN, client.right - treeWidth - LIST_WIDTH - INNER_MARGIN - INNER_MARGIN - INNER_MARGIN, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
 }
+
+void HandleMouseDown(WPARAM wParam, LPARAM lParam){
+    int xPos;
+    int yPos;
+
+    // Varible used to get the mouse cursor x and y co-ordinates
+    xPos = (int)LOWORD(lParam);
+    yPos = (int)HIWORD(lParam);
+
+    // Checks whether the mouse is over the splitter window
+    sizing = (xPos > treeWidth - INNER_MARGIN &&
+    xPos < treeWidth + INNER_MARGIN );
+
+    // If the mouse is over the splitter then set mouse cursor 
+    // image to IDC_SIZEWE which helps the user to drag the window
+    if(sizing)
+    {
+        // Api to capture mouse input
+        SetCapture(hWnd);
+        if(sizing)
+        {
+            //SetCursor(hcSizeEW);
+        }
+    }
+}
+
+void HandleMouseUp(WPARAM wParam, LPARAM lParam){
+	    if(sizing)
+        {
+            RECT    focusrect;
+            HDC     hdc;
+
+            // Releases the captured mouse input
+            ReleaseCapture();
+            // Get the main window dc to draw a focus rectangle
+            hdc = GetDC(hWnd);
+			RECT  rect;
+            GetClientRect(hWnd, &rect);
+
+			UINT ribbonHeight;
+			GetRibbonHeight(&ribbonHeight);
+	
+            if(sizing)
+            {
+				SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2), rect.top + ribbonHeight, 
+					    treeWidth + INNER_MARGIN, 
+						rect.bottom - INNER_MARGIN);
+
+                // Call api to vanish the dragging rectangle 
+                DrawFocusRect(hdc, &focusrect);
+				
+				sizing = FALSE;
+
+            }
+            // Release the dc once done 
+            ReleaseDC(hWnd, hdc);
+        }
+        // Post a WM_SIZE message to redraw the windows
+        //PostMessage(hWnd, WM_SIZE, 0, 0);
+}
+
+void HandleMouseMove(WPARAM wParam, LPARAM lParam){
+	
+	static HCURSOR	sizeEW = nullptr;
+
+    int xPos;
+    int yPos;
+
+    // Get the x and y co-ordinates of the mouse
+    xPos = (int)LOWORD(lParam);
+    yPos = (int)HIWORD(lParam);
+
+    // Checks if the left button is pressed during dragging the splitter
+    if(wParam == MK_LBUTTON)
+    {
+        // If the window is dragged using the splitter, get the
+        // cursors current postion and draws a focus rectangle
+
+        if(sizing)
+        {
+            RECT focusrect;
+            HDC hdc;
+
+            hdc = GetDC(hWnd);
+			RECT rect;
+            GetClientRect(hWnd, &rect);
+
+			UINT ribbonHeight;
+			GetRibbonHeight(&ribbonHeight);
+	
+
+            SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
+                rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
+                rect.bottom - INNER_MARGIN);
+
+            // Draw a rectangle while the window is dragged uisng 
+            // the splitter bar
+            DrawFocusRect(hdc, &focusrect);
+
+            // Get the size of the left window to increase
+            treeWidth = xPos;
+
+            // Draws a focus rectangle
+            SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
+				rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
+				rect.bottom - INNER_MARGIN);
+            DrawFocusRect(hdc, &focusrect);
+            ReleaseDC(hWnd, hdc);
+        }
+    }
+
+    // Set the cursor image to east west direction when the mouse is over 
+    // the splitter window
+	if( (xPos > (treeWidth - INNER_MARGIN) &&
+        xPos < (treeWidth + INNER_MARGIN)))
+    {
+		if ( sizeEW == nullptr ){
+			sizeEW = LoadCursor(NULL, IDC_SIZEWE);
+		}
+
+        SetCursor(sizeEW);
+    }
+}
+
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -365,6 +405,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return -1;
     }
 	break;
+	case WM_LBUTTONDOWN:
+		HandleMouseDown(wParam, lParam);
+		break;
+	case WM_MOUSEMOVE:
+		HandleMouseMove(wParam, lParam);
+		break;
+	case WM_LBUTTONUP:
+		HandleMouseUp(wParam, lParam);
+		break;
 	case WM_NOTIFY:
 		{
 		LPNMHDR pnmhdr = (LPNMHDR)lParam;

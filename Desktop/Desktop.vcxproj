@@ -104,7 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
-    <ClInclude Include="ArrayOfObjectsDelegate.h" />
+    <ClInclude Include="ArrayDelegate.h" />
     <ClInclude Include="AttachmentViewer.h" />
     <ClInclude Include="base64.h" />
     <ClInclude Include="BaseDelegate.h" />
@@ -141,10 +141,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="ArrayOfObjectsDelegate.cpp" />
+    <ClCompile Include="ArrayDelegate.cpp" />
+    <ClCompile Include="BaseDelegate.cpp" />
     <ClCompile Include="AttachmentViewer.cpp" />
     <ClCompile Include="base64.cpp" />
-    <ClCompile Include="BaseDelegate.cpp" />
     <ClCompile Include="BlankDelegate.cpp" />
     <ClCompile Include="CinchDesigner.cpp" />
     <ClCompile Include="CommandHandler.cpp" />

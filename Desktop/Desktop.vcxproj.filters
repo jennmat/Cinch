@@ -31,6 +31,9 @@
     <Filter Include="Source Files\Javascript">
       <UniqueIdentifier>{3d42a95e-cd7b-4e52-afb0-dd644bc3a631}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{f324a573-6102-477f-82dd-b71c5903d1ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">
@@ -78,9 +81,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConditionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrayOfObjectsDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BlankDelegate.h">
@@ -158,6 +158,9 @@
     <ClInclude Include="BaseDelegate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ArrayDelegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -176,9 +179,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConditionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrayOfObjectsDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BlankDelegate.cpp">
@@ -254,6 +254,9 @@
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="BaseDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

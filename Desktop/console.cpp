@@ -184,9 +184,10 @@ namespace stu
 
 	void Console::RedirectStandardIO()
 	{
-		freopen("CONIN$", "rb", stdin);   // reopen stdin handle as console window input
-		freopen("CONOUT$", "wb", stdout); // reopen stout handle as console window output
-		freopen("CONOUT$", "wb", stderr); // reopen stderr handle as console window output
+		FILE *in, *out, *err;
+		freopen_s(&in, "CONIN$", "rb", stdin);   // reopen stdin handle as console window input
+		freopen_s(&out, "CONOUT$", "wb", stdout); // reopen stout handle as console window output
+		freopen_s(&err, "CONOUT$", "wb", stderr); // reopen stderr handle as console window output
 	}
 
 	void Console::Create(const int width, const int height, const int bg_colour)
@@ -198,8 +199,6 @@ namespace stu
 
 	void Console::Destroy()
 	{
-		if (!mInstance) { throw std::exception("Tried to destroy non-existent console instance"); }
-
 		delete mInstance;
 		mInstance = nullptr;
 	}

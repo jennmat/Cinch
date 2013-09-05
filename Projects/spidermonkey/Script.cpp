@@ -41,7 +41,6 @@ string EvaluateScript(const string& script) {
       //  return 1;
 
     str = JS_ValueToString(cx, rval);	
-	JSObject* obj;
 
     return string(JS_EncodeString(cx, str));
 

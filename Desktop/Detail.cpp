@@ -192,10 +192,10 @@ void Detail::deserializeUIElements(Object obj)
 			string endkey_from = "_id";
 			string docs_of_type = "";
 
-			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
-			del->setIncludeDocs(true);
-			del->deserializeUIElements(config);
+			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, startkey_from, endkey_from, docs_of_type);
 			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
+			del->setIncludeDocs(true);
+			del->deserializeUIElements(detailPages[i], tab["config"].getObject());
 		}
 		else if ( content.compare(VIEW) == 0 ){
 			
@@ -206,7 +206,7 @@ void Detail::deserializeUIElements(Object obj)
 			string endkey_from = "_id";
 			string docs_of_type = "";
 
-			DetailViewDelegate * del = new DetailViewDelegate(design, view, startkey_from, endkey_from, docs_of_type);
+			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, startkey_from, endkey_from, docs_of_type);
 			if ( !config["columns"].isArray() ){
 
 				QueryOptions options;
@@ -234,12 +234,12 @@ void Detail::deserializeUIElements(Object obj)
 				}
 			}
 
-			del->deserializeUIElements(config);
-			//del->addColumn("title", L"Title", EDIT);
 			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
-
+			del->deserializeUIElements(detailPages[i], tab["config"].getObject());
+			//del->addColumn("title", L"Title", EDIT);
+			
 		} else if( content.compare(TABLE) == 0 ){
-			ArrayOfObjectsDelegate* delegate = new ArrayOfObjectsDelegate(this, i+DETAIL_START_ID);
+			ArrayDelegate* delegate = new ArrayDelegate(this, i+DETAIL_START_ID);
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
 			delegate->deserializeUIElements(detailPages[i], tab["config"].getObject());
 			
@@ -280,8 +280,10 @@ Array Detail::serializeUIElements()
 			tab["field"] = ws2s(fieldName[i]);
 			tab["content"] = Value(TABLE);
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
-			ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
-			tab["config"] = delegate->serializeUIElements();
+			ArrayDelegate* delegate = (ArrayDelegate *)grid->getDelegate();
+			Object config;
+			delegate->serializeUIElements(config);
+			tab["config"] = config;
 
 		} else if (contentType[i] == TEXTAREA_CONTENT ){
 			tab["name"] = ws2s(fieldName[i]);
@@ -290,7 +292,10 @@ Array Detail::serializeUIElements()
 			tab["content"] = "View";
 			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
 			DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
-			tab["config"] = delegate->serializeUIElements();
+			Object config;
+			delegate->serializeUIElements(config);
+			tab["config"] = config;
+
 		} else if ( contentType[i] == ATTACHMENTS ){
 			tab["content"] = ATTACHMENTS_DETAIL;
 			tab["field"] = "attachments";
@@ -486,6 +491,23 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 		
 			return (INT_PTR)TRUE;
 		}
+	case WM_DESTROY:
+		{
+			HWND visibleFields = GetDlgItem(hDlg, IDC_VISIBLE_FIELDS);
+			HWND hiddenFields = GetDlgItem(hDlg, IDC_HIDDEN_FIELDS);
+
+			int count = ListBox_GetCount(visibleFields);
+			for(int i=0; i<count; i++){
+				Object* o = (Object *)ListBox_GetItemData(visibleFields, i);
+				delete o;
+			}
+			count = ListBox_GetCount(hiddenFields);
+			for(int i=0; i<count; i++){
+				Object* o = (Object *)ListBox_GetItemData(hiddenFields, i);
+				delete o;
+			}
+		}
+		break;
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDCANCEL ){
 			EndDialog(hDlg, LOWORD(wParam));
@@ -518,7 +540,7 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 
 					if ( detail->contentType[currentTab] == TABLE_CONTENT ){
 						CinchGrid* grid = (CinchGrid *)GetWindowLong(detail->GetDetailPage(currentTab), GWL_USERDATA);
-						ArrayOfObjectsDelegate* delegate = (ArrayOfObjectsDelegate *)grid->getDelegate();
+						ArrayDelegate* delegate = (ArrayDelegate *)grid->getDelegate();
 						delegate->deserializeUIElements(detailHWnd, tabConfig);
 					}
 				}
@@ -767,7 +789,7 @@ void Detail::LoadDocument(Object obj){
 			d->addColumn("result", L"Result");
 			d->setData(obj[cfieldname].getArray());
 			gridcontrol->setDelegate(d);*/
-			ArrayOfObjectsDelegate * d = (ArrayOfObjectsDelegate *)gridcontrol->getDelegate();
+			ArrayDelegate * d = (ArrayDelegate *)gridcontrol->getDelegate();
 			d->setData(obj[cfieldname].getArray());
 
 			gridcontrol->reloadData();
@@ -812,7 +834,7 @@ Object Detail::StoreValuesToDocument(int changedFieldId, Object obj){
 		} else if ( contentType[page] == TABLE_CONTENT ){
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			
-			ArrayOfObjectsDelegate * d = (ArrayOfObjectsDelegate *)gridcontrol->getDelegate();
+			ArrayDelegate * d = (ArrayDelegate *)gridcontrol->getDelegate();
 
 			Array a = obj[cfieldname].getArray();
 			Array updated = d->storeValuesToArray(a);
@@ -883,7 +905,7 @@ INT_PTR CALLBACK AddColumn(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam
 				string tabName = detail->getDetailPageFieldName(currentTab);
 				HWND hwnd = detail->GetDetailPage(currentTab);
 				CinchGrid* grid = (CinchGrid*)GetWindowLong(hwnd, GWL_USERDATA);
-				ArrayOfObjectsDelegate * d = (ArrayOfObjectsDelegate *)grid->getDelegate();
+				ArrayDelegate * d = (ArrayDelegate *)grid->getDelegate();
 
 				switch(type){
 				case 0:

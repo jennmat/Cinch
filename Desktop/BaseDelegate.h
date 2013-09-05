@@ -5,13 +5,11 @@
 
 using namespace CouchDB;
 
-class ArrayOfObjectsDelegate: public GridDelegate {
+class BaseDelegate : public GridDelegate {
 
-private:
+protected:
 	HWND parent;
-	int rowCount;
 	wstring view;
-	Array data;
 	vector<string> fields;
 	vector<wstring> titles;
 	vector<FormField*> editors;
@@ -22,19 +20,16 @@ private:
 	CinchGrid* grid;
 	int fieldId;
 public:
-	ArrayOfObjectsDelegate(Detail *, int);
-	~ArrayOfObjectsDelegate();
+	BaseDelegate(Detail *, int);
+	~BaseDelegate();
 	void setData(Array array);
 	void addColumn(string field, wstring label, string editorType, Value config);
 
-	int totalRows();
 	int totalColumns();
 	int columnWidth(int column);
 	int rowHeight();
 
 	void headerContent(int, wstring &);
-
-	void cellContent(int, int, wstring &);
 
 	bool stickyHeaders();
 	
@@ -43,26 +38,15 @@ public:
 	bool drawHorizontalGridlines();
 	bool drawVerticalGridlines();
 
-	bool allowEditing(int);
-	bool allowHeaderTitleEditing(int);
-	void setupEditorForCell(HWND editor, int row, int col);
-	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
-	void editingFinished(HWND editor, int row, int col);
-	void willLoseFocus();
-
-	bool allowNewRows();
-	bool allowNewColumns();
-	void prepareNewRow(int row);
-
+	
 	HFONT getFont();
 	HFONT getEditFont();
 
-	Array storeValuesToArray(Array obj);
-
+	
 	void headerContextClick(HWND grid, int x, int y);
 
 	void deserializeUIElements(HWND hwnd, Object obj);
-	Object serializeUIElements();
+	void serializeUIElements(Object&);
 
 	void willReloadData();
 	void didReloadData();

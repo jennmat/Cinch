@@ -98,7 +98,6 @@ struct FileWatchController {
 
 using namespace CouchDB;
 
-#include "BaseDelegate.h"
 #include "CouchViewDelegate.h"
 
 
@@ -120,9 +119,9 @@ using namespace CouchDB;
 
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
-#define DATABASE "cinch-business-starter"
+//#define DATABASE "cinch-business-starter"
 //#define DATABASE "cinch-inventory-starter"
-//#define DATABASE "cinch-starter"
+#define DATABASE "cinch-starter"
 //#define DATABASE "cinch-real-estate-starter"
 //#define DATABASE "hvac"
 //#define DATABASE "zebra"
@@ -138,13 +137,13 @@ using namespace CouchDB;
 #include "Form.h"
 #include "ReadOnlyDelegate.h"
 #include "BlankDelegate.h"
-#include "ArrayOfObjectsDelegate.h"
+#include "BaseDelegate.h"
+#include "ArrayDelegate.h"
 #include "MaskEdit.h"
 #include "NotifyParent.h"
 #include "CinchDesigner.h"
 #include "DetailViewDelegate.h"
 #include "ViewAutocompleteSource.h"
-
 #include "Explorer.h"
 
 #include "AttachmentViewer.h"

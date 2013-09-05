@@ -7,11 +7,9 @@ using namespace std;
 using namespace JsonBox;
 using namespace CouchDB;
 
-DetailViewDelegate::DetailViewDelegate(){
-	obj = nullptr;
-}
 
-DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _startkey_from, string _endkey_from, string _docs_of_type){
+DetailViewDelegate::DetailViewDelegate(Detail * d, int i, string _design, string _view, string _startkey_from, string _endkey_from, string _docs_of_type)
+	: BaseDelegate(d, i) {
 	obj = nullptr;
 
 	design = _design;
@@ -22,6 +20,7 @@ DetailViewDelegate::DetailViewDelegate(string _design, string _view, string _sta
 
 	includeDocs = false;
 	allowEdit = false;
+	descending = false;
 }
 
 void DetailViewDelegate::setIncludeDocs(bool _includeDocs){
@@ -36,15 +35,14 @@ int DetailViewDelegate::totalRows()
 	return 0;
 }
 
-void DetailViewDelegate::LoadDocument(string database, Object o){
+void DetailViewDelegate::LoadDocument(const string& database, Object& o){
 	delete obj;
+	source_document_id = o["_id"].getString();
 
-	Value startkey = o[startkey_from];
-	Value endkey = o[endkey_from];
 	QueryOptions options;
 	options.includeDocs = true;
-	options.startKey = o[startkey_from];
-	options.endKey = o[endkey_from];
+	options.startKey = source_document_id;
+	options.endKey = source_document_id;
 	obj = new Object(db.viewResults(design, view, options));
 	
 }
@@ -58,33 +56,6 @@ void DetailViewDelegate::setConfig(Object _config){
 }
 
 
-int DetailViewDelegate::totalColumns(){
-	return config["columns"].getArray().size();
-}
-
-int DetailViewDelegate::columnWidth(int col){
-	Object c = config["columns"].getArray()[col].getObject();
-	return c["width"].getInt();
-}
-
-int DetailViewDelegate::rowHeight(){
-	return 25;
-}
-
-void DetailViewDelegate::headerContent(int col, wstring &content)
-{
-
-	Object c = config["columns"].getArray()[col].getObject();
-	string field = c["field"].getString();
-
-	Object definition = getTypeDefinition(field);
-	//Object definition = db.getDocument(field).getData().getObject();
-	string label = definition["label"].getString();
-
-	content = s2ws(label);
-
-}
-
 void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 {
 	content = L"";
@@ -93,12 +64,10 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 		Array rows = (*obj)["rows"].getArray();
 		if ( (unsigned)row < rows.size() ){
 			Object r = rows[row].getObject();
-			Object c = config["columns"].getArray()[col].getObject();
-				
+			string name = fields[col];	
 				
 			string value;
 			Object data = r["doc"].getObject();
-			string name = c["field"].getString();
 			value = serializeForDisplay(data[name], name);
 
 			content = s2ws(value);
@@ -109,50 +78,11 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 	
 }
 
-bool DetailViewDelegate::stickyHeaders(){
-	return false;
-}
 
-bool DetailViewDelegate::drawHorizontalGridlines(){
-	return true;
-}
 
-bool DetailViewDelegate::drawVerticalGridlines(){
-	return true;
-}
-
-bool DetailViewDelegate::rowSelection(){
-	return true;
-}
 
 
 void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col){
-	/*if ( row >= rowCount ){
-		SetWindowText(editor, L"");
-	} else {
-		if (editorTypes[col].compare(DATEPICKER) == 0 ){
-			const wchar_t* timeStr = this->cellContent(row, col);
-			if (timeStr == NULL ) return;
-
-			SYSTEMTIME time;
-			int month, day, year;
-			GetLocalTime(&time);
-
-			if ( wcslen(timeStr) > 0 ){
-				swscanf_s(timeStr, TEXT("%d-%d-%d"), &year, &month, &day);
-				time.wMonth = month;
-				time.wDay = day;
-				time.wYear = year;
-			}
-
-			DateTime_SetSystemtime(editor, GDT_VALID, &time);
-			return;
-
-		} else {
-			const wchar_t* c = cellContent(row, col);
-			SetWindowText(editor, c);
-		}
-	}*/
 }
 
 bool DetailViewDelegate::allowEditing(int col){
@@ -165,48 +95,14 @@ bool DetailViewDelegate::allowHeaderTitleEditing(int col){
 }
 
 HWND DetailViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
-	/*if ( editors[col] == NULL ){
-		if ( editorTypes[col].compare(DATEPICKER) == 0 ){
-			editors[col] =  CreateWindowEx(0, DATETIMEPICK_CLASS, TEXT("DateTime"), WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-				0, 0, 0, 0, parent, NULL, hInst, NULL);
-			DateTime_SetFormat(editors[col], L"yyyy-MM-dd");
-		} else {
-			editors[col] = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
-				0, 0, 0, 0, parent, NULL, hInst, NULL);
-		}
-	}
-	return editors[col];*/
 	return NULL;
-}
-
-void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
-	/*if ( row < 0 ) return;
-	string field = fields[col];
-
-	if ( editorTypes[col].compare(DATEPICKER) == 0 ){
-		SYSTEMTIME time;
-		DateTime_GetSystemtime(hwnd, &time);
-		wchar_t* text = new wchar_t[20];
-		memset(text, 0, 20);
-		GetDateFormatEx(LOCALE_NAME_INVARIANT, 0, &time, L"yyyy-MM-dd", text, 20, NULL);
-
-		data[row][col] = text;
-
-	} else {
-		int len = GetWindowTextLength(hwnd);
-		len += sizeof(wchar_t);
-
-		wchar_t* text = new wchar_t[len];
-		GetWindowText(hwnd, text, len);
-		data[row][col] = text;
-	}*/
 }
 
 void DetailViewDelegate::willLoseFocus(){
 }
 
 bool DetailViewDelegate::allowNewRows(){
-	return true;
+	return false;
 }
 
 bool DetailViewDelegate::allowNewColumns(){
@@ -214,86 +110,74 @@ bool DetailViewDelegate::allowNewColumns(){
 }
 
 void DetailViewDelegate::prepareNewRow(int row){
-	/*vector<wstring> rowData;
-	for(unsigned int i=0; i<fields.size(); i++){
-		rowData.push_back(L"");
-	}
-	data.push_back(rowData);
-	rowCount++;*/
 }
 
-HFONT DetailViewDelegate::getFont(){
-	HFONT hFont=DEFAULT_FONT;
-	return hFont;
+void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
 }
 
-HFONT DetailViewDelegate::getEditFont(){
-	HFONT hFont=DEFAULT_FONT;
-	return hFont;
-}
-
-
-void DetailViewDelegate::deserializeUIElements(Object obj){
-	config = Object(obj);
-}
-
-Object DetailViewDelegate::serializeUIElements(){
-	/*Object o;
-	Array columns;
-	for(unsigned int i=0; i<fields.size(); i++){
-		Object col;
-		col["name"] = Value(fields[i]);
-		col["cinch_type"] = editorTypes[i];
-		col["label"] =ws2s(titles[i]);
-		col["width"] = Value(250);
-		columns.push_back(col);
-	}
-	o["columns"] = columns;
-
+void DetailViewDelegate::serializeUIElements(Object& o){
 	o["design"] = design;
 	o["view"] = view;
-	o["startkey_with_value_of"] = startkey_from;
-	o["endkey_with_value_of"] = endkey_from;
-	o["shows_docs_of_type"] = shows_docs_of_type;
-	return o;
-	*/
-	return config;
-}
 
-void DetailViewDelegate::headerContextClick(HWND grid, int x, int y){
-	HMENU hPopupMenu = CreatePopupMenu();
-	InsertMenu(hPopupMenu, 0, MF_BYPOSITION | MF_STRING, IDD_EDIT_COLUMNS, L"Edit Columns...");
-	POINT point;
-	point.x = x;
-	point.y = y;
-    ClientToScreen(grid, &point);
-	//TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_LEFTALIGN, point.x, point.y, 0, detail->getDetailHwnd(), NULL);
+	BaseDelegate::serializeUIElements(o);
 }
 
 
-void DetailViewDelegate::willReloadData(){
-}
-
-void DetailViewDelegate::didReloadData(){
-}
-
-void DetailViewDelegate::didSelectRow(int row){
-}
-
-void DetailViewDelegate::setGrid(CinchGrid *){
-}
-
-void DetailViewDelegate::didChangeColumnWidth(int, int){
-}
 
 bool DetailViewDelegate::allowSorting(int col){
-	return false;
+	return true;
+}
+
+void DetailViewDelegate::sortByCol(int col){
+		/* Find a view that sorts by id and the desired column */
+	QueryOptions options;
+	Array key;
+	key.push_back("_id");
+	key.push_back(fields[col]);
+	options.startKey = key;
+	options.endKey = key;
+	Object results = db.viewResults("all-views", "by-key", options);
+
+	if ( results["rows"].isArray() && results["rows"].getArray().size() > 0 ){
+		Array rows = results["rows"].getArray();
+		Object row = rows[0].getObject();
+		Object value = row["value"].getObject();
+
+		string d = value["design"].getString();
+		string v = value["view"].getString();
+
+		delete obj;
+
+		QueryOptions options;
+		options.includeDocs = true;	
+		Array start;
+		start.push_back(source_document_id);
+		Array end;
+		end.push_back(source_document_id);
+		end.push_back(Object());
+		if ( descending ){
+			options.startKey = end;
+			options.endKey = start;
+		} else {
+			options.startKey = start;
+			options.endKey = end;
+		}
+		options.descending = descending;
+		obj = new Object(db.viewResults(d, v, options));
+	} else {
+		/* Need to create a new view */
+
+	}
 }
 
 void DetailViewDelegate::sortAscending(int col){
+	descending = false;
+	sortByCol(col);
 }
 
 void DetailViewDelegate::sortDescending(int col){
+	descending = true;
+	sortByCol(col);
 }
 
 void DetailViewDelegate::sortOff(int col){
