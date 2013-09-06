@@ -284,6 +284,8 @@ LRESULT CALLBACK CinchDesigner::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 		info->ptMinTrackSize.y = self->getForm()->minHeight();
 		return 0;
 		}
+	//case WM_ERASEBKGND:
+	//	return 1;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -1071,7 +1073,6 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 								}
 							}
 						}
-
 					}
 				}
 			}

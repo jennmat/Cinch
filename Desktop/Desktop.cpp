@@ -251,9 +251,9 @@ void SizeWindows(HWND hWnd)
 	UINT ribbonHeight;
 	GetRibbonHeight(&ribbonHeight);
 	
-	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight+TOP_MARGIN, treeWidth, client.bottom - ribbonHeight - TOP_MARGIN, 0);
-	SetWindowPos(grid, HWND_TOP, treeWidth + INNER_MARGIN, ribbonHeight+TOP_MARGIN, LIST_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
-	SetWindowPos(designer, HWND_TOP, treeWidth + LIST_WIDTH + INNER_MARGIN + INNER_MARGIN, ribbonHeight + TOP_MARGIN, client.right - treeWidth - LIST_WIDTH - INNER_MARGIN - INNER_MARGIN - INNER_MARGIN, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, 0);
+	SetWindowPos(tree, HWND_TOP, 0, ribbonHeight+TOP_MARGIN, treeWidth, client.bottom - ribbonHeight - TOP_MARGIN, SWP_NOZORDER);
+	SetWindowPos(grid, HWND_TOP, treeWidth + INNER_MARGIN, ribbonHeight+TOP_MARGIN, LIST_WIDTH, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, SWP_NOZORDER);
+	SetWindowPos(designer, HWND_TOP, treeWidth + LIST_WIDTH + INNER_MARGIN + INNER_MARGIN, ribbonHeight + TOP_MARGIN, client.right - treeWidth - LIST_WIDTH - INNER_MARGIN - INNER_MARGIN - INNER_MARGIN, client.bottom - ribbonHeight - TOP_MARGIN - TOP_MARGIN, SWP_NOZORDER);
 }
 
 void HandleMouseDown(WPARAM wParam, LPARAM lParam){
@@ -290,7 +290,7 @@ void HandleMouseUp(WPARAM wParam, LPARAM lParam){
             // Releases the captured mouse input
             ReleaseCapture();
             // Get the main window dc to draw a focus rectangle
-            hdc = GetDC(hWnd);
+            //hdc = GetDC(hWnd);
 			RECT  rect;
             GetClientRect(hWnd, &rect);
 
@@ -304,16 +304,16 @@ void HandleMouseUp(WPARAM wParam, LPARAM lParam){
 						rect.bottom - INNER_MARGIN);
 
                 // Call api to vanish the dragging rectangle 
-                DrawFocusRect(hdc, &focusrect);
+                //DrawFocusRect(hdc, &focusrect);
 				
 				sizing = FALSE;
 
             }
             // Release the dc once done 
-            ReleaseDC(hWnd, hdc);
+            //ReleaseDC(hWnd, hdc);
         }
         // Post a WM_SIZE message to redraw the windows
-        //PostMessage(hWnd, WM_SIZE, 0, 0);
+        PostMessage(hWnd, WM_SIZE, 0, 0);
 }
 
 void HandleMouseMove(WPARAM wParam, LPARAM lParam){
@@ -335,34 +335,40 @@ void HandleMouseMove(WPARAM wParam, LPARAM lParam){
 
         if(sizing)
         {
-            RECT focusrect;
-            HDC hdc;
+            //RECT focusrect;
+            //HDC hdc;
 
-            hdc = GetDC(hWnd);
-			RECT rect;
-            GetClientRect(hWnd, &rect);
+            //hdc = GetDC(hWnd);
+			//RECT rect;
+            //GetClientRect(hWnd, &rect);
 
-			UINT ribbonHeight;
-			GetRibbonHeight(&ribbonHeight);
+			//UINT ribbonHeight;
+			//GetRibbonHeight(&ribbonHeight);
 	
 
-            SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
-                rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
-                rect.bottom - INNER_MARGIN);
+            //SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
+               // rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
+               // rect.bottom - INNER_MARGIN);
 
+			//InvalidateRect(hWnd, &focusrect, false);
             // Draw a rectangle while the window is dragged uisng 
             // the splitter bar
-            DrawFocusRect(hdc, &focusrect);
+            //DrawFocusRect(hdc, &focusrect);
 
             // Get the size of the left window to increase
             treeWidth = xPos;
 
             // Draws a focus rectangle
-            SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
-				rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
-				rect.bottom - INNER_MARGIN);
-            DrawFocusRect(hdc, &focusrect);
-            ReleaseDC(hWnd, hdc);
+            //SetRect(&focusrect, treeWidth - (INNER_MARGIN * 2),
+				//rect.top + ribbonHeight, treeWidth + INNER_MARGIN,
+				//rect.bottom - INNER_MARGIN);
+
+			//FillRect(hdc, &focusrect, CreateSolidBrush(RGB(140,140,140)));
+            //DrawFocusRect(hdc, &focusrect);
+            //ReleaseDC(hWnd, hdc);
+
+			SizeWindows(hWnd);
+			//PostMessage(hWnd, WM_SIZE, 0, 0);
         }
     }
 
@@ -458,7 +464,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			GetRibbonHeight(&rheight);
 			rect.top = rheight;
 			HDC dc = (HDC)wParam;
-			FillRect(dc, &rect, CreateSolidBrush(DEFAULT_BACKGROUND_COLOR));
+			FillRect(dc, &rect, CreateSolidBrush(DEFAULT_CANVAS_COLOR));
 
 		}
 		return 1;

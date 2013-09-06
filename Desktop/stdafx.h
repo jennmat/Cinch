@@ -119,9 +119,9 @@ using namespace CouchDB;
 
 
 //#define DATABASE "cinch-customer-contact-plugin-starter"
-//#define DATABASE "cinch-business-starter"
+#define DATABASE "cinch-business-starter"
 //#define DATABASE "cinch-inventory-starter"
-#define DATABASE "cinch-starter"
+//#define DATABASE "cinch-starter"
 //#define DATABASE "cinch-real-estate-starter"
 //#define DATABASE "hvac"
 //#define DATABASE "zebra"
@@ -207,7 +207,7 @@ using namespace CouchDB;
 #define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))
 
 #define DEFAULT_BACKGROUND_COLOR RGB(240,240,240)
-
+#define DEFAULT_CANVAS_COLOR DEFAULT_BACKGROUND_COLOR
 
 #define BUFSIZE 1024
 #define MD5LEN  16
