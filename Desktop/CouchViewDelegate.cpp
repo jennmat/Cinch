@@ -12,38 +12,57 @@ using namespace CouchDB;
 CouchViewDelegate::CouchViewDelegate(Connection& _conn) : conn(_conn)
 {
 	rowCount = 0;
-	data = NULL;
-	rownums = NULL;
-	docids = NULL;
 	viewInitialized = false;
 	descending = false;
+	docids = nullptr;
 }
 
 CouchViewDelegate::~CouchViewDelegate(){
-	if ( viewInitialized == true ){
-		//for(int i=0; i<PAGESIZE; i++) 
-//			delete data[i];
-		delete rownums;
-		delete[] data;
-		delete[] docids;
-	}
 }
 
 void CouchViewDelegate::setView(const string& _design, const string& _view)
 {
 	view = _view;
 	design = _design;
-	viewInitialized = true;
-	loadViewResults();
+	Object results = db.viewResults(design, view);
+	rowCount = results["total_rows"].getInt();
+
+	//loadViewResults();
+}
+
+void CouchViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
+	QueryOptions options;
+	options.descending = descending;
+	options.limit = len;
+	options.skip = start_row;
+	docids = new string[len];
+	Object results = db.viewResults(design, view, options);
+	if ( results["rows"].isArray() ){
+		Array rows = results["rows"].getArray();
+		for(UINT i=0; i<min((unsigned int)len, rows.size()); i++){
+			Object row = rows[i].getObject();
+			wstring w = s2ws(row["key"].getString());
+			int len = w.length() + sizeof(wchar_t);
+			data[i][0] = new wchar_t[w.length()+sizeof(wchar_t)];
+			wcscpy_s(data[i][0], len, w.c_str());
+			docids[i] = row["id"].getString();
+		}
+	}
+}
+
+void CouchViewDelegate::CleanupSegment(int len, wchar_t*** data){
+	delete[] docids;
+	docids = nullptr;
+	for(int i=0; i<min(len,rowCount); i++){
+		delete data[i][0];
+	}
 }
 
 void CouchViewDelegate::loadViewResults(){
 
 	if ( viewInitialized == false ) return;
 
-	delete rownums;
-	delete[] data;
-	delete[] docids;
+	
 
 	QueryOptions options;
 	options.descending = descending;
@@ -52,10 +71,6 @@ void CouchViewDelegate::loadViewResults(){
 	viewResults = db.viewResults(design, view, options);
 	
 	rowCount = viewResults["total_rows"].getInt();
-	data = new wstring[PAGESIZE];
-	rownums = new int[PAGESIZE];
-	docids = new string[PAGESIZE];
-
 	
 	int i = 0;
 	if ( viewResults["total_rows"].getInt() > 0 ){
@@ -63,10 +78,7 @@ void CouchViewDelegate::loadViewResults(){
 	   for(unsigned int j=0; j<rows.size(); j++){
 			Object o = rows[j].getObject();
 			wstring w = s2ws(o["key"].getString());
-			data[i] = w;
-			rownums[i] = i;
-			docids[i] = o["id"].getString();
-
+			
 			i++;
 		}
 	}
@@ -97,62 +109,7 @@ void CouchViewDelegate::headerContent(int col, wstring &content)
 	content = L"Name";
 }
 
-void CouchViewDelegate::loadPage(int row){
-	/* Load some more documents  */
-	
 
-	int j = row - 1;
-	int skip = 1;
-	while ( j>=0 && rownums[j % PAGESIZE] != j ){
-		j--;
-		skip++;
-	}
-
-
-	Object obj;
-	int i;
-	if ( j < 0 ){
-		QueryOptions options;
-		options.descending = true;
-		options.limit = PAGESIZE;
-		options.skip = skip - 1;
-		obj = db.viewResults(design, view, options);
-		i = skip-1;
-	} else {
-		QueryOptions options;
-		options.startKey = Value(ws2s(data[j%PAGESIZE]));
-		options.startKeyDocId = docids[j%PAGESIZE];
-		options.limit = PAGESIZE;
-		options.skip = skip;
-		obj = db.viewResults(design, view);
-		i = rownums[j%PAGESIZE] + skip;
-	}
-
-
-	if ( obj["total_rows"].getInt() > 0 ){
-		Array rows = obj["rows"].getArray();
-		for(unsigned int j=0; j<rows.size(); j++){
-			Object o = rows[j].getObject();
-			wstring w = s2ws(o["key"].getString());
-			//delete data[i%PAGESIZE];
-			//data[i%PAGESIZE] = new wchar_t[80];
-			//wcscpy_s(data[i%PAGESIZE], 80, w.c_str());
-			data[i] = w;
-			rownums[i%PAGESIZE] = i;
-			docids[i%PAGESIZE] = o["id"].getString();
-			i++;
-		}
-	}
-}
-
-void CouchViewDelegate::cellContent(int row, int col, wstring &content)
-{
-	if ( rownums[row % PAGESIZE] != row ){
-		loadPage(row);
-	}
-
-	content = data[row % PAGESIZE];
-}
 
 bool CouchViewDelegate::stickyHeaders(){
 	return true;
@@ -217,15 +174,7 @@ HFONT CouchViewDelegate::getEditFont(){
 
 string CouchViewDelegate::getDocumentIdForRow(int row){
 	if( row < 0 ) return "";
-	if ( rownums[row % PAGESIZE] != row ){
-		loadPage(row);
-	}
-
-	if (viewResults["total_rows"].getInt() > 0 ){
-	   return docids[row % PAGESIZE];
-	}
-
-	return "";
+	return docids[row];
 }
 
 
@@ -238,7 +187,7 @@ void CouchViewDelegate::willReloadData(){
 }
 
 void CouchViewDelegate::didReloadData(){
-	if ( viewInitialized == false ) return;
+	/*if ( viewInitialized == false ) return;
 	if ( selectedDocId.length() == 0 ) return;
 	bool found = false;
 	for(int i=0; i<PAGESIZE && !found; i++){
@@ -253,13 +202,10 @@ void CouchViewDelegate::didReloadData(){
 			grid->SetActiveRow(1);
 			grid->ScrollRowIntoView(1);
 		}
-	}
+	}*/
 }
 
 void CouchViewDelegate::didSelectRow(int row){
-	if ( rownums[row % PAGESIZE] != row ){
-		loadPage(row);
-	}
 	selectedDocId = docids[row];
 }
 

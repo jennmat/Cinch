@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-
+/*
 void ArrayDelegate::cellContent(int row, int col, wstring &content)
 {
 	if ( data[row].isObject() ){
@@ -14,6 +14,39 @@ void ArrayDelegate::cellContent(int row, int col, wstring &content)
 		}
 	}
 }
+*/
+
+void ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
+	int segment_index = 0;
+	for(UINT row_index=start_row; row_index<len; row_index++){
+		if ( data[row_index].isObject() ){
+			for(int col=0; col < totalColumns(); col++ ){
+				Object o = data[row_index].getObject();
+				string field = fields[col];
+				string value = serializeForDisplay(o[field], field);
+				wstring w = s2ws(value);
+				int len = w.length() + sizeof(wchar_t);
+				segment[segment_index][col] = new wchar_t[w.length()+sizeof(wchar_t)];
+				wcscpy_s(segment[segment_index][col], len, w.c_str());
+			
+			}
+		}
+		
+		segment_index++;
+	}
+}
+
+void ArrayDelegate::CleanupSegment(int len, wchar_t*** segment){
+	for(int i=0; i<len; i++){
+		for(int col=0; col<totalColumns(); col++){
+			delete segment[i][col];
+		}
+	}
+}
+
+
+
+
 
 void ArrayDelegate::setData(Array array){
 	data = array;

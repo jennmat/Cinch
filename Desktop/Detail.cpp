@@ -66,9 +66,13 @@ void Detail::ShowPage(int i){
 void Detail::DestroyPage(int i){
 	if ( contentType[i] == TABLE_CONTENT || contentType[i] == VIEW_CONTENT || contentType[i] == VIEW_WITH_DOCUMENTS_CONTENT ){
 		CinchGrid* grid = (CinchGrid*)GetWindowLong(detailPages[i], GWL_USERDATA);
-		delete grid->getDelegate();
+		GridDelegate* d = grid->getDelegate();
+		DestroyWindow(detailPages[i]);
+		delete d;
+	} else {
+		DestroyWindow(detailPages[i]);
 	}
-	DestroyWindow(detailPages[i]);
+
 	delete fieldName[i];
 }
 

@@ -102,8 +102,8 @@ void FormLayout::show(HWND parent, HINSTANCE hInst, RECT displayArea)
 		}
 
 		
-		SetWindowPos(field->getLabel(), HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
-		SetWindowPos(field->getControl(), previousControl, LABEL_WIDTH+MARGIN+x, y, 0, 0, SWP_NOSIZE); 
+		SetWindowPos(field->getLabel(), HWND_TOP, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		SetWindowPos(field->getControl(), previousControl, LABEL_WIDTH+MARGIN+x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER); 
 
 		previousControl = field->getControl();
 		

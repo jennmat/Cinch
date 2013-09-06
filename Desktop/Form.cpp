@@ -232,8 +232,6 @@ void Form::SaveDocument(int changedFieldId){
 
 
 void Form::ReloadDocument(){
-	;
-	
 	Document d = db.getDocument(id);
 	LoadDocument(id, d.getData().getObject(),  false);
 }

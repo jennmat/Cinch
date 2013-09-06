@@ -55,7 +55,7 @@ void DetailViewDelegate::setConfig(Object _config){
 	config = _config;
 }
 
-
+/*
 void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 {
 	content = L"";
@@ -74,10 +74,38 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 			
 		}
 	}
-	
-	
+}*/
+
+void DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
+	if ( (*obj)["rows"].isArray() ){
+		Array rows = (*obj)["rows"].getArray();
+		int data_index = 0;
+		for(UINT row_index=start_row; row_index<min(len, totalRows()); row_index++){
+			Object row = rows[row_index].getObject();
+
+			Object doc = row["doc"].getObject();
+			for(int col = 0; col<totalColumns(); col++){
+				string name = fields[col];
+				string value = serializeForDisplay(doc[name], name);
+				wstring w = s2ws(value);
+				int len = w.length() + sizeof(wchar_t);
+				data[data_index][col] = new wchar_t[w.length()+sizeof(wchar_t)];
+				wcscpy_s(data[data_index][col], len, w.c_str());
+
+			}
+
+			data_index++;
+		}
+	}
 }
 
+void DetailViewDelegate::CleanupSegment(int len, wchar_t*** data){
+	for(int i=0; i<min(len, totalRows()); i++){
+		for(int col=0; col<totalColumns(); col++){
+			delete data[i][col];
+		}
+	}
+}
 
 
 

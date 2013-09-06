@@ -6,19 +6,13 @@ class CouchViewDelegate : public GridDelegate {
 private:
 	Connection& conn;
 	int rowCount;
-	wstring* data;
-	string* docids;
-	int* rownums;
 	string view;
 	string design;
 	bool viewInitialized;
 	bool descending;
 	Object viewResults;
-
-	Value highValue;
-	string highDocId;
-	int highIndex;
-
+	string* docids;
+	
 	string selectedDocId;
 	CinchGrid* grid;
 	
@@ -34,7 +28,9 @@ public:
 	int rowHeight();
 
 	void headerContent(int, wstring &);
-	void cellContent(int, int, wstring &);
+	//void cellContent(int, int, wstring &);
+	void LoadSegment(int, int, wchar_t***);
+	void CleanupSegment(int, wchar_t***);
 
 	bool stickyHeaders();
 	
