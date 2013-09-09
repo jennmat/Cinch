@@ -76,7 +76,7 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 	}
 }*/
 
-void DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
+int DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
 	if ( (*obj)["rows"].isArray() ){
 		Array rows = (*obj)["rows"].getArray();
 		int data_index = 0;
@@ -96,7 +96,9 @@ void DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
 
 			data_index++;
 		}
+		return data_index;
 	}
+	return 0;
 }
 
 void DetailViewDelegate::CleanupSegment(int len, wchar_t*** data){

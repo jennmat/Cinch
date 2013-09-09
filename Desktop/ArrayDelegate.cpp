@@ -16,7 +16,7 @@ void ArrayDelegate::cellContent(int row, int col, wstring &content)
 }
 */
 
-void ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
+int ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
 	int segment_index = 0;
 	for(UINT row_index=start_row; row_index<len; row_index++){
 		if ( data[row_index].isObject() ){
@@ -28,12 +28,14 @@ void ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
 				int len = w.length() + sizeof(wchar_t);
 				segment[segment_index][col] = new wchar_t[w.length()+sizeof(wchar_t)];
 				wcscpy_s(segment[segment_index][col], len, w.c_str());
-			
+				
+				segment_index++;
 			}
 		}
 		
-		segment_index++;
+		
 	}
+	return segment_index;
 }
 
 void ArrayDelegate::CleanupSegment(int len, wchar_t*** segment){
