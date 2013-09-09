@@ -51,7 +51,7 @@ void BaseDelegate::headerContent(int col, wstring &content)
 }
 
 bool BaseDelegate::stickyHeaders(){
-	return false;
+	return true;
 }
 
 bool BaseDelegate::drawHorizontalGridlines(){
