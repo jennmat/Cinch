@@ -1207,8 +1207,8 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 						Object views = des["views"].getObject();
 							
-						string map = obj["function_template"].getString();
-						map = map.replace(map.find("$FIELD"), 6, self->getType());
+						string map = obj["map_template"].getString();
+						map = map.replace(map.find("__KEY__"), 7, self->getType());
 
 						stringstream viewname;
 						viewname << "by-" << self->getType();

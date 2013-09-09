@@ -669,7 +669,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			HWND newViewNameEdit = GetDlgItem(hDlg, IDC_NEW_VIEW_NAME);
 
 			char map[2048];
-			char function_template[2048];
+			char map_template[2048];
 			memset(map, 0, 1024);
 			vector<string>* ids = (vector<string>*)GetWindowLong(typeCombo, GWL_USERDATA);
 			int idx = ComboBox_GetCurSel(typeCombo);
@@ -701,14 +701,14 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			string conditionsJs = manager->getJavascript();
 
 			
-			sprintf_s(function_template, 2048, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(doc.$FIELD, null); }", 
+			sprintf_s(map_template, 2048, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(__KEY__, null); }", 
 				type.c_str(), conditionsJs.c_str());	
 
 			
-			strcpy_s(map, 2048, function_template);
+			strcpy_s(map, 2048, map_template);
 
 			string map_s = string(map);
-			map_s = map_s.replace(map_s.find("$FIELD"), 6, sortby);
+			map_s = map_s.replace(map_s.find("__KEY__"), 7, sortby);
 			
 
 			Object design = Object();
@@ -743,7 +743,7 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			viewDef["design_name"] = viewnamesanitized;
 			viewDef["label"] = name;
 			viewDef["emits"] = type;
-			viewDef["function_template"] = function_template;
+			viewDef["map_template"] = map_template;
 			viewDef["default_view"] = viewname.str();
 			Array views;
 			Object sortDef;

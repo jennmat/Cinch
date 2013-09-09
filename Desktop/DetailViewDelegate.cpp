@@ -8,14 +8,13 @@ using namespace JsonBox;
 using namespace CouchDB;
 
 
-DetailViewDelegate::DetailViewDelegate(Detail * d, int i, string _design, string _view, string _startkey_from, string _endkey_from, string _docs_of_type)
+DetailViewDelegate::DetailViewDelegate(Detail * d, int i, const string& _design, const string& _view, const string& _viewDefId, const string& _docs_of_type)
 	: BaseDelegate(d, i) {
 	obj = nullptr;
 
 	design = _design;
 	view = _view;
-	startkey_from = _startkey_from;
-	endkey_from = _endkey_from;
+	viewDefId = _viewDefId;
 	shows_docs_of_type = _docs_of_type;
 
 	includeDocs = false;
@@ -38,7 +37,7 @@ int DetailViewDelegate::totalRows()
 void DetailViewDelegate::LoadDocument(const string& database, Object& o){
 	delete obj;
 	source_document_id = o["_id"].getString();
-
+	source_document_type = o["cinch_type"].getString();
 	QueryOptions options;
 	options.includeDocs = true;
 	options.startKey = source_document_id;
@@ -102,7 +101,7 @@ int DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
 }
 
 void DetailViewDelegate::CleanupSegment(int len, wchar_t*** data){
-	for(int i=0; i<min(len, totalRows()); i++){
+	for(int i=0; i<len; i++){
 		for(int col=0; col<totalColumns(); col++){
 			delete data[i][col];
 		}
@@ -148,7 +147,7 @@ void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
 void DetailViewDelegate::serializeUIElements(Object& o){
 	o["design"] = design;
 	o["view"] = view;
-
+	o["view_definition_id"] = viewDefId;
 	BaseDelegate::serializeUIElements(o);
 }
 
@@ -159,45 +158,85 @@ bool DetailViewDelegate::allowSorting(int col){
 }
 
 void DetailViewDelegate::sortByCol(int col){
-		/* Find a view that sorts by id and the desired column */
+	/* Find a view that sorts by id and the desired column */
 	QueryOptions options;
 	Array key;
-	key.push_back("_id");
+	key.push_back(source_document_type);
 	key.push_back(fields[col]);
 	options.startKey = key;
 	options.endKey = key;
 	Object results = db.viewResults("all-views", "by-key", options);
+
+	string d, v;
 
 	if ( results["rows"].isArray() && results["rows"].getArray().size() > 0 ){
 		Array rows = results["rows"].getArray();
 		Object row = rows[0].getObject();
 		Object value = row["value"].getObject();
 
-		string d = value["design"].getString();
-		string v = value["view"].getString();
-
-		delete obj;
-
-		QueryOptions options;
-		options.includeDocs = true;	
-		Array start;
-		start.push_back(source_document_id);
-		Array end;
-		end.push_back(source_document_id);
-		end.push_back(Object());
-		if ( descending ){
-			options.startKey = end;
-			options.endKey = start;
-		} else {
-			options.startKey = start;
-			options.endKey = end;
-		}
-		options.descending = descending;
-		obj = new Object(db.viewResults(d, v, options));
+		d = value["design"].getString();
+		v = value["view"].getString();
 	} else {
 		/* Need to create a new view */
+		Object def = db.getDocument(viewDefId).getData().getObject();
+		stringstream design;
+		design << "_design/" << def["design_name"].getString();
+		string key = design.str();
+		Object des = db.getDocument(design.str()).getData().getObject();
 
+		Object views = des["views"].getObject();
+							
+		string map = def["map_template"].getString();
+		stringstream key_str;
+		key_str << "[doc." << source_document_type << ", doc." << fields[col] << "]";
+		map = map.replace(map.find("__KEY__"), 7, key_str.str());
+
+		stringstream viewname;
+
+		viewname << "by-" << source_document_type << "-and-" << fields[col];
+
+		views[viewname.str()]["map"] = map;
+
+		des["views"] = views;
+
+		db.createDocument(des, design.str());
+		
+
+
+		Object newView;
+		Array viewKey;
+		viewKey.push_back(source_document_type);
+		viewKey.push_back(fields[col]);
+		newView["key"] = viewKey;
+		newView["view"] = viewname.str();
+		Array currentViews = def["views"].getArray();
+		currentViews.push_back(newView);
+		def["views"] = currentViews;
+					
+		db.createDocument(def, viewDefId);
+
+		d = def["design_name"].getString();
+		v = viewname.str();
 	}
+
+	delete obj;
+
+	QueryOptions viewQueryOptions;
+	viewQueryOptions.includeDocs = true;	
+	Array start;
+	start.push_back(source_document_id);
+	Array end;
+	end.push_back(source_document_id);
+	end.push_back(Object());
+	if ( descending ){
+		viewQueryOptions.startKey = end;
+		viewQueryOptions.endKey = start;
+	} else {
+		viewQueryOptions.startKey = start;
+		viewQueryOptions.endKey = end;
+	}
+	viewQueryOptions.descending = descending;
+	obj = new Object(db.viewResults(d, v, viewQueryOptions));
 }
 
 void DetailViewDelegate::sortAscending(int col){

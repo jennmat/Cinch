@@ -13,11 +13,11 @@ private:
 	string database;
 	string design;
 	string view;
+	string viewDefId;
 	bool descending;
-	string startkey_from;
-	string endkey_from;
 	string shows_docs_of_type;
 	string source_document_id;
+	string source_document_type;
 	Object* obj;
 	bool includeDocs;
 	bool allowEdit;
@@ -29,7 +29,7 @@ private:
 	void sortByCol(int col);
 	
 public:
-	DetailViewDelegate(Detail*, int, string design, string view, string startkey_from, string endkey_from, string docs_of_type);
+	DetailViewDelegate(Detail*, int, const string& design, const string& view, const string& viewDefId, const string& docs_of_type);
 	~DetailViewDelegate();
 	void LoadDocument(const string& database, Object& obj);
 	void setConfig(Object);
