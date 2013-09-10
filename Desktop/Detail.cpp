@@ -179,10 +179,6 @@ void Detail::deserializeUIElements(Object obj)
 		Object tab = tabs[i].getObject();
 		string field = tab["field"].getString();
 		string label = tab["label"].getString();
-		Document doc = db.getDocument(field);
-		Object obj = doc.getData().getObject();
-
-		string name = obj["_id"].getString();
 		
 		wstring wtitle = s2ws(label);
 		addDetailPage(LPWSTR(wtitle.c_str()));
@@ -243,14 +239,24 @@ void Detail::deserializeUIElements(Object obj)
 			//del->addColumn("title", L"Title", EDIT);
 			
 		} else if( content.compare(TABLE) == 0 ){
+			Document doc = db.getDocument(field);
+			Object obj = doc.getData().getObject();
+
+			string name = obj["_id"].getString();
+
 			ArrayDelegate* delegate = new ArrayDelegate(this, i+DETAIL_START_ID);
 			CreateTableForPage(s2ws(name).c_str(), delegate, i);
 			delegate->deserializeUIElements(detailPages[i], tab["config"].getObject());
 			
 		} else if ( content.compare(TEXT_DETAIL) == 0 ){
+			Document doc = db.getDocument(field);
+			Object obj = doc.getData().getObject();
+
+			string name = obj["_id"].getString();
+
 			CreateTextareaForPage(s2ws(name).c_str(), i);
 		} else if ( content.compare(ATTACHMENTS_DETAIL) == 0 ){
-			CreateAttachmentsForPage(s2ws(name).c_str(), i);
+			CreateAttachmentsForPage(L"attachments", i);
 		}
 	}
 
