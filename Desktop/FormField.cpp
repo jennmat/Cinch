@@ -674,7 +674,9 @@ Object DatePickerField::storeValue(Object obj){
 	string value =ws2s(date);
 	obj[key.c_str()] = value;
 	delete date;
+	delete str;
 	return obj;
+
 	
 }
 
