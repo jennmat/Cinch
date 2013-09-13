@@ -64,10 +64,6 @@ void CouchViewDelegate::CleanupSegment(int len, wchar_t*** data){
 
 void CouchViewDelegate::loadViewResults(){
 
-	if ( viewInitialized == false ) return;
-
-	
-
 	QueryOptions options;
 	options.descending = descending;
 	options.limit = PAGESIZE;
@@ -90,6 +86,7 @@ void CouchViewDelegate::loadViewResults(){
 
 int CouchViewDelegate::totalRows()
 {
+	
 	return rowCount;
 }
 
@@ -132,7 +129,7 @@ bool CouchViewDelegate::rowSelection(){
 }
 
 
-void CouchViewDelegate::setupEditorForCell(HWND editor, int row, int col){
+void CouchViewDelegate::setupEditorForCell(HWND editor, int row, int col, wchar_t*** data){
 }
 
 bool CouchViewDelegate::allowEditing(int col){
@@ -148,7 +145,7 @@ HWND CouchViewDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
 	return NULL;
 }
 
-void CouchViewDelegate::editingFinished(HWND hwnd, int row, int col){
+void CouchViewDelegate::editingFinished(HWND hwnd, int row, int col, wchar_t*** data){
 }
 
 void CouchViewDelegate::willLoseFocus(){

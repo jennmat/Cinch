@@ -15,8 +15,8 @@ public:
 	int totalRows();
 	int LoadSegment(int start_row, int len, wchar_t*** data);
 	void CleanupSegment(int len, wchar_t*** data);
-	void setupEditorForCell(HWND editor, int row, int col);
-	void editingFinished(HWND hwnd, int row, int col);
+	void setupEditorForCell(HWND editor, int row, int col, wchar_t*** data);
+	void editingFinished(HWND hwnd, int row, int col, wchar_t*** data);
 	void prepareNewRow(int row);
 	
 	bool allowEditing(int col);

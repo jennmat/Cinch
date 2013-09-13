@@ -41,9 +41,9 @@ public:
 
 	bool allowEditing(int);
 	bool allowHeaderTitleEditing(int);
-	void setupEditorForCell(HWND editor, int row, int col);
+	void setupEditorForCell(HWND editor, int row, int col, wchar_t*** data);
 	HWND editorForColumn(int, HWND parent, HINSTANCE hInst) ;
-	void editingFinished(HWND editor, int row, int col);
+	void editingFinished(HWND editor, int row, int col, wchar_t*** data);
 	void willLoseFocus();
 
 	bool allowSorting(int col);

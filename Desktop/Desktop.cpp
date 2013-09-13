@@ -225,7 +225,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	SizeWindows(hWnd);
 
 	DWORD threadId;
-	//listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
+	listenerThread = CreateThread(NULL, 0, ChangesListener, NULL, 0, &threadId); 
 
 #ifdef REPLICATION
 	db.startReplication(DESTINATION_HOST, DESTINATION_DATABASE, DESTINATION_USERNAME, DESTINATION_PASSWORD);
@@ -593,6 +593,12 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		return (INT_PTR)TRUE;
 
 		}
+	case WM_DESTROY:
+		{
+		vector<string>* p = (vector<string>*)GetWindowLong(hDlg, GWL_USERDATA);
+		delete p;
+		}
+		break;
 	case WM_COMMAND:
 		wmId = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -708,7 +714,9 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			strcpy_s(map, 2048, map_template);
 
 			string map_s = string(map);
-			map_s = map_s.replace(map_s.find("__KEY__"), 7, sortby);
+			stringstream sortbystream;
+			sortbystream << "doc." << sortby;
+			map_s = map_s.replace(map_s.find("__KEY__"), 7, sortbystream.str());
 			
 
 			Object design = Object();

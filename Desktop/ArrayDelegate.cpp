@@ -53,7 +53,7 @@ void ArrayDelegate::setData(Array array){
 	rowCount = array.size();
 }
 
-void ArrayDelegate::setupEditorForCell(HWND editor, int row, int col){
+void ArrayDelegate::setupEditorForCell(HWND editor, int row, int col, wchar_t*** displayData){
 	if ( row >= rowCount ){
 		SetWindowText(editor, L"");
 	} else {
@@ -61,9 +61,16 @@ void ArrayDelegate::setupEditorForCell(HWND editor, int row, int col){
 	}
 }
 
-void ArrayDelegate::editingFinished(HWND hwnd, int row, int col){
+void ArrayDelegate::editingFinished(HWND hwnd, int row, int col, wchar_t*** displayData){
 	if ( row < 0 ) return;
+	delete displayData[row][col];
 	data[row] = editors[col]->storeValue(data[row].getObject());
+	string field = fields[col];
+	string disp = serializeForDisplay(data[row][field], fields[col]);
+	wstring w = s2ws(disp);
+	int len = w.length() + sizeof(wchar_t);
+	displayData[row][col] = new wchar_t[len];
+	wcscpy_s(displayData[row][col], len, w.c_str());
 }
 
 

@@ -111,7 +111,7 @@ void DetailViewDelegate::CleanupSegment(int len, wchar_t*** data){
 
 
 
-void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col){
+void DetailViewDelegate::setupEditorForCell(HWND editor, int row, int col, wchar_t*** data){
 }
 
 bool DetailViewDelegate::allowEditing(int col){
@@ -141,7 +141,7 @@ bool DetailViewDelegate::allowNewColumns(){
 void DetailViewDelegate::prepareNewRow(int row){
 }
 
-void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col){
+void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col, wchar_t*** data){
 }
 
 void DetailViewDelegate::serializeUIElements(Object& o){
