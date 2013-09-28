@@ -22,7 +22,6 @@ Desktop/Replication.h
 *.[Cc]ache
 *.ilk
 *.log
-*.lib
 *.sbr
 *.sdf
 *.opensdf
