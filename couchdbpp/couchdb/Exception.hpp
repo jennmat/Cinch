@@ -42,6 +42,16 @@ class AttachmentNotFoundException : public std::exception{
 };
 
 
+class DocumentNotFoundException : public std::exception {
+   public:
+      DocumentNotFoundException(const std::string&);
+      virtual ~DocumentNotFoundException() throw();
+      virtual const char* what() const throw();
+
+   private:
+      std::string message;
+};
+
 }
 
 

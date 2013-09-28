@@ -206,6 +206,11 @@ STDMETHODIMP CCommandHandler::Execute(
 		case IDR_CMD_NEW_PERSPECTIVE:
 			DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_CREATE_PERSPECTIVE), hWnd, NewPerspective);
 			break;
+		case IDR_CMD_SEARCH:
+			{
+				SetupSearching();
+			}
+			break;
 		}
 	}
     return S_OK;

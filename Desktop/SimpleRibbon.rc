@@ -80,4 +80,15 @@ BEGIN
 END
 
 IDC_CMD_EXIT_LargeImages_RESID    BITMAP    "res\\ExitL.bmp" /* LargeImages IDC_CMD_EXIT_LargeImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    IDR_CMD_SEARCH_LabelTitle_RESID L"Find:" /* LabelTitle IDR_CMD_SEARCH_LabelTitle_RESID: (null) */
+END
+
+IDR_CMD_SEARCH_SmallImages_RESID    BITMAP    "res\\AddTableS.bmp" /* SmallImages IDR_CMD_SEARCH_SmallImages_RESID: (null) */
+STRINGTABLE 
+BEGIN
+    cmdSearchGroup_LabelTitle_RESID L"Search" /* LabelTitle cmdSearchGroup_LabelTitle_RESID: (null) */
+END
+
 APPLICATION_RIBBON    UIFILE    "Debug\\SimpleRibbon.bml"

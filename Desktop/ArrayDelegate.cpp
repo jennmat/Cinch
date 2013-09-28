@@ -107,7 +107,6 @@ HWND ArrayDelegate::editorForColumn(int col, HWND parent, HINSTANCE hInst){
 	return editors[col]->getControl();
 }
 
-
 void ArrayDelegate::willLoseFocus(){
 	detail->getForm()->SaveDocument(fieldId);
 }

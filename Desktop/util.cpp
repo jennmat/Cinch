@@ -107,7 +107,7 @@ map<string,string> superTypes;
 map<string, Object> typeDefinitions;
 map<string,Object> defaultViewDefinitions;
 
-string getSuperType(string type){
+string getSuperType(const string& type){
 	if ( superTypes.find(type) != superTypes.end() ){
 		return superTypes[type];
 	}
@@ -117,15 +117,15 @@ string getSuperType(string type){
 	return superType;
 }
 
-string getBaseType(string type){
+string getBaseType(const string& type){
 
 	if ( baseTypes.find(type) != baseTypes.end() ){
 		return baseTypes[type];
 	}
 	string o = type;
 	string baseType = getSuperType(type);
-	while ( baseType.compare(type) != 0 ){
-		type = baseType;
+	while ( baseType.compare(o) != 0 ){
+		o = baseType;
 		baseType = getSuperType(baseType);
 	}
 	/*Object o = db.getDocument(type).getData().getObject();
@@ -134,7 +134,7 @@ string getBaseType(string type){
 		o = db.getDocument(type).getData().getObject();
 	}*/
 
-	baseTypes[o] = baseType;
+	baseTypes[type] = baseType;
 
 	return baseType;
 }
@@ -159,9 +159,11 @@ string convertToString(int val){
 	return s;
 }
 
-string serializeForDisplay(Value v, string type){
+string serializeForDisplay(const Value& v, const string& type){
 	string base = getBaseType(type);
 	if( base.compare("string") == 0 ){
+		return v.getString();
+	} else if ( base.compare("multiline") == 0 ){
 		return v.getString();
 	} else if ( base.compare("date") == 0 ){
 		string date = v.getString();
@@ -170,6 +172,17 @@ string serializeForDisplay(Value v, string type){
 		if( v.isInteger() ) return convertToString(v.getInt());
 	} else if ( base.compare("decimal") == 0 ){
 		if ( v.isDouble() ) return convertToString(v.getDouble());
+	} else if ( base.compare("coded_value") == 0 ){
+		Object def = typeDefinitions[type];
+		if ( def["allowed_codes"].isArray() ){
+			Array codes = def["allowed_codes"].getArray();
+			for(int i=0; i<codes.size(); i++){
+				Object code = codes[i].getObject();
+				if ( code["value"].getString().compare(v.getString()) == 0 ){
+					return code["label"].getString();
+				}
+			}
+		}
 	} else if ( base.compare("document") == 0 ){
 		/* This is a document reference */
 		Object referencedDoc = db.getDocument(v.getString()).getData().getObject();
@@ -186,7 +199,7 @@ string serializeForDisplay(Value v, string type){
 	return "";
 }
 
-Object getTypeDefinition(string type){
+Object getTypeDefinition(const string& type){
 	if ( typeDefinitions.find(type) != typeDefinitions.end() ){
 		return typeDefinitions[type];
 	}
@@ -224,7 +237,7 @@ void preloadTypeDefinitions(){
 	*/
 }
 
-Object getDefaultViewDefinition(string t){
+Object getDefaultViewDefinition(const string& t){
 	if ( defaultViewDefinitions.find(t) != defaultViewDefinitions.end() ){
 		return defaultViewDefinitions[t];
 	}
@@ -240,16 +253,19 @@ Object getDefaultViewDefinition(string t){
 
 		rows = results["rows"].getArray();
 		type = getSuperType(type);
-	} while ( rows.size() == 0 );
+	} while ( rows.size() == 0 && type.compare("document") != 0 );
 
-	if ( rows[0].isObject() ){
+	if ( rows.size() > 0 && rows[0].isObject() ){
 		Object result = rows[0].getObject();
 		if ( result["value"].isObject() ) {
 			defaultViewDefinitions[t] = result["value"].getObject();
 		}
 	}
 
-	return defaultViewDefinitions[t];
+	if ( defaultViewDefinitions.find(t) != defaultViewDefinitions.end() ){
+		return defaultViewDefinitions[t];
+	}
+	return Object();
 }
 
 FormField* createFieldForType(HWND parent, string enclosingType, string id, bool bare){
@@ -315,10 +331,17 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 		formField = FormField::createDecimalField(parent, GetModuleHandle(0), name, wclabel, bare);
 	} else if ( baseType.compare(BOOLEAN) == 0 ){
 		formField = FormField::createYesNoField(parent, GetModuleHandle(0), name, wclabel, bare);
-	} else if ( baseType.compare(DOCUMENT) == 0 ){
+	} else if ( baseType.compare(CINCH_REFERENCE) == 0 || baseType.compare(DOCUMENT) == 0 ){
 	
+		string type;
+		if ( field["referenced_type"].isString() ){
+			type = field["referenced_type"].getString();
+		} else {
+			type = id;
+		}
 		Object conf;
-		Object doc = getDefaultViewDefinition(name);
+		
+		Object doc = getDefaultViewDefinition(type);
 		string design = doc["design"].getString();
 		string view = doc["view"].getString();
 
@@ -327,7 +350,6 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 		pick["view"] = view;
 		conf["pick_from"] = pick;
 	
-
 		formField = FormField::createReferenceField(parent, GetModuleHandle(0), name, wclabel, JsonBox::Value(conf), bare);
 		
 	} else {
@@ -339,26 +361,24 @@ FormField* createFieldForType(HWND parent, string enclosingType, string id, bool
 	return formField;
 }
 
+Array getAllConcreteDocumentTypes(){
 
+	Array docTypes;
 
-string pluralize(string s){
-	int length = s.length();
-	string z = s.substr(0, length-1);
-	if (s[length-1]=='x'||'h'||'s')
-		s += "es";
-	else if(s[length-1]=='f') {
-		z += "ves";
-		return z;
+	Object r = db.viewResults("all-data-definitions", "by-label");
+	Array rows = r["rows"].getArray();
+	unsigned int i = 0;
+	for(; i<rows.size(); i++){
+		Object row = rows[i].getObject();
+				
+		const string& id = row["id"].getString();
+		if ( getBaseType(id) == "document")  {
+			Document doc = db.getDocument(row["id"].getString());
+			Object def = doc.getData().getObject();
+			if ( !def["abstract"].isBoolean() || def["abstract"].getBoolean() == false ){
+				docTypes.push_back(doc.getData().getObject());
+			}
+		}
 	}
-	else if(s[length-1]=='y')
-		if(s[length-2]=='a'||'e'||'i'||'o'||'u')
-			s += "s";
-	else {
-		z += "ies";
-		return z;
-	}
-	else
-		s += "s";
-	
-	return s;
+	return docTypes;
 }

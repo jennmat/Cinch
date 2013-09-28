@@ -189,9 +189,10 @@ void Detail::deserializeUIElements(Object obj)
 			string design = config["design"].getString();
 			string view = config["view"].getString();
 			string viewDefId = config["view_definition_id"].getString();
+			string refField = config["referencing_field"].getString();
 			string docs_of_type = "";
 
-			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, viewDefId, docs_of_type);
+			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, viewDefId, docs_of_type, refField);
 			CreateDetailViewForPage(s2ws(label).c_str(), del, i);
 			del->setIncludeDocs(true);
 			del->deserializeUIElements(detailPages[i], tab["config"].getObject());
@@ -202,11 +203,10 @@ void Detail::deserializeUIElements(Object obj)
 			string design = config["design"].getString();
 			string view = config["view"].getString();
 			string viewDefId = config["view_definition_id"].getString();
-			string startkey_from = "_id";
-			string endkey_from = "_id";
+			string refField = config["referencing_field"].getString();
 			string docs_of_type = "";
 
-			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, viewDefId, docs_of_type);
+			DetailViewDelegate * del = new DetailViewDelegate(this, i+DETAIL_START_ID, design, view, viewDefId, docs_of_type, refField);
 			if ( !config["columns"].isArray() ){
 
 				QueryOptions options;

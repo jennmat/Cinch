@@ -41,3 +41,8 @@
 #define IDC_CMD_EXIT 18 
 #define IDC_CMD_EXIT_LabelTitle_RESID 290
 #define IDC_CMD_EXIT_LargeImages_RESID 294
+#define IDR_CMD_SEARCH 19 
+#define IDR_CMD_SEARCH_LabelTitle_RESID 389
+#define IDR_CMD_SEARCH_SmallImages_RESID 297
+#define cmdSearchGroup 20 
+#define cmdSearchGroup_LabelTitle_RESID 296

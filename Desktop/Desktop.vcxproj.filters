@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Windows">
       <UniqueIdentifier>{f324a573-6102-477f-82dd-b71c5903d1ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Search">
+      <UniqueIdentifier>{a1866fac-583c-4421-b1b4-c11766bd381a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="small.ico">
@@ -75,9 +78,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Toolbar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Replication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConditionManager.h">
@@ -160,6 +160,15 @@
     </ClInclude>
     <ClInclude Include="ArrayDelegate.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Replication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Search.h">
+      <Filter>Source Files\Search</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchComboHandler.h">
+      <Filter>Header Files\Handlers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -258,6 +267,12 @@
     </ClCompile>
     <ClCompile Include="ArrayDelegate.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Search.cpp">
+      <Filter>Source Files\Search</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchComboHandler.cpp">
+      <Filter>Source Files\Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

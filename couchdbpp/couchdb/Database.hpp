@@ -43,6 +43,7 @@ struct QueryOptions {
 		skip(0), group_level(0), startKey(NULL), endKey(NULL), startKeyDocId(""), endKeyDocId(""){}
 };
 
+
 class Database{
    friend class Connection;
    protected:
@@ -68,15 +69,16 @@ class Database{
                               const string &id="");
 	  void deleteDocument(const string& id, const string& rev = "");
 	  vector<Document> documentsVectorFromValue(const Value& value);
-
-	  void listenForChanges(void (*)());
+	 
+	  void registerListener(const string& filter, void (*func)());
+	  void startListening();
 	  void stopListening();
 	  void startReplication(const string& destinationHost, const string& destinationDatabase, const string& username, const string& password);
       
 	  Communication& getCommunication();
 
    private:
-      Communication &comm;
+	  Communication &comm;
       std::string   name;
 };
 

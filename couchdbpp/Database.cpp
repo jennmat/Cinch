@@ -172,7 +172,7 @@ Document Database::getDocument(const string &id, const string &rev){
    Object  obj = var.getObject();
 
    if(obj.find("error") != obj.end())
-	   throw Exception("Document " + id + " (v" + rev + ") not found: " + obj["error"].getString());
+	   throw DocumentNotFoundException("Document " + id + " (v" + rev + ") not found: " + obj["error"].getString());
 
    curl_free(escaped);
    Document doc(comm,  obj, name,
@@ -289,9 +289,18 @@ void Database::deleteDocument(const string& id, const string& rev){
 	curl_free(escapedId);
 }
 
-void Database::listenForChanges(void (*changesArrivedFunc)()){
-	comm.readChangesFeed(name, changesArrivedFunc);
+void Database::registerListener(const string& filter, void (*func)()){
+	FilteredListener l;
+	l.filter = filter;
+	l.notifyFunc = func;
+	l.database = name;
+	comm.registerListener(l);	
 }
+
+void Database::startListening(){
+	comm.startListening();
+}
+
 
 void Database::stopListening(){
 	comm.listenFlag = false;
@@ -318,7 +327,7 @@ void Database::startReplication(const string& destinationHost, const string& des
 	pull["source"] = source.str();
 
 	data = createJSON(Value(pull));
-    response = comm.getData("/_replicate", "POST", data);
+    response = comm.getData("/_replicate", "POST", data, true);
 
 	stringstream r;
 	r << response;

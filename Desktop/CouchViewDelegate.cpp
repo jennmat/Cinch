@@ -188,10 +188,9 @@ void CouchViewDelegate::willReloadData(){
 }
 
 void CouchViewDelegate::didReloadData(){
-	/*if ( viewInitialized == false ) return;
 	if ( selectedDocId.length() == 0 ) return;
 	bool found = false;
-	for(int i=0; i<PAGESIZE && !found; i++){
+	for(int i=0; i<rowCount && !found; i++){
 		if ( docids[i].compare(selectedDocId) == 0 ){
 			grid->SetActiveRow(i+1, true);
 			grid->ScrollRowIntoView(i+1);
@@ -203,7 +202,7 @@ void CouchViewDelegate::didReloadData(){
 			grid->SetActiveRow(1);
 			grid->ScrollRowIntoView(1);
 		}
-	}*/
+	}
 }
 
 void CouchViewDelegate::didSelectRow(int row){

@@ -8,7 +8,7 @@ using namespace JsonBox;
 using namespace CouchDB;
 
 
-DetailViewDelegate::DetailViewDelegate(Detail * d, int i, const string& _design, const string& _view, const string& _viewDefId, const string& _docs_of_type)
+DetailViewDelegate::DetailViewDelegate(Detail * d, int i, const string& _design, const string& _view, const string& _viewDefId, const string& _docs_of_type, const string& _referencingField)
 	: BaseDelegate(d, i) {
 	obj = nullptr;
 
@@ -16,7 +16,7 @@ DetailViewDelegate::DetailViewDelegate(Detail * d, int i, const string& _design,
 	view = _view;
 	viewDefId = _viewDefId;
 	shows_docs_of_type = _docs_of_type;
-
+	referencingField = _referencingField;
 	includeDocs = false;
 	allowEdit = false;
 	descending = false;
@@ -147,6 +147,7 @@ void DetailViewDelegate::editingFinished(HWND hwnd, int row, int col, wchar_t***
 void DetailViewDelegate::serializeUIElements(Object& o){
 	o["design"] = design;
 	o["view"] = view;
+	o["referencing_field"] = referencingField;
 	o["view_definition_id"] = viewDefId;
 	BaseDelegate::serializeUIElements(o);
 }
@@ -161,7 +162,7 @@ void DetailViewDelegate::sortByCol(int col){
 	/* Find a view that sorts by id and the desired column */
 	QueryOptions options;
 	Array key;
-	key.push_back(source_document_type);
+	key.push_back(referencingField);
 	key.push_back(fields[col]);
 	options.startKey = key;
 	options.endKey = key;
@@ -186,14 +187,21 @@ void DetailViewDelegate::sortByCol(int col){
 
 		Object views = des["views"].getObject();
 							
+		Object typeDef = getTypeDefinition(referencingField);
+
 		string map = def["map_template"].getString();
 		stringstream key_str;
-		key_str << "[doc." << source_document_type << ", doc." << fields[col] << "]";
+		if ( typeDef["calculated"].isBoolean() && typeDef["calculated"].getBoolean() == true ){
+			key_str << "[doc." << referencingField << ", calculate(doc)]";
+		} else {
+			key_str << "[doc." << referencingField << ", doc." << fields[col] << "]";
+		}
 		map = map.replace(map.find("__KEY__"), 7, key_str.str());
+		map = map.replace(map.find("__CALCULATE__"), 13, typeDef["functions"].getString());
 
 		stringstream viewname;
 
-		viewname << "by-" << source_document_type << "-and-" << fields[col];
+		viewname << "by-" << referencingField << "-and-" << fields[col];
 
 		views[viewname.str()]["map"] = map;
 
@@ -205,7 +213,7 @@ void DetailViewDelegate::sortByCol(int col){
 
 		Object newView;
 		Array viewKey;
-		viewKey.push_back(source_document_type);
+		viewKey.push_back(referencingField);
 		viewKey.push_back(fields[col]);
 		newView["key"] = viewKey;
 		newView["view"] = viewname.str();

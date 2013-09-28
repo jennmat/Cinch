@@ -233,12 +233,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-
 void DestroyInstance() {
 	stu::Console::Destroy();
 	delete delegate;
 }
-
 
 void SizeWindows(HWND hWnd)
 {
@@ -463,7 +461,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			rect.top = rheight;
 			HDC dc = (HDC)wParam;
 			FillRect(dc, &rect, CreateSolidBrush(DEFAULT_CANVAS_COLOR));
-
 		}
 		return 1;
 	case WM_NEW_DATA_ARRIVED:
@@ -471,7 +468,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(grid, GWL_USERDATA);
 		delegate->loadViewResults();			
 		gridcontrol->reloadData();
+
 		}
+		break;
+	case WM_DATA_DEFINITION_CHANGES_ARRIVED:
+		g_pFramework->InvalidateUICommand(IDR_CMD_SIZEANDCOLOR, UI_INVALIDATIONS_PROPERTY, &UI_PKEY_ItemsSource);
 		break;
 	case CINCHGRID_ROW_SELECTED:
 		{
@@ -525,7 +526,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		listenerDb.stopListening();
 		DestroyInstance();
 		DestroyFramework();
-		WaitForSingleObject(listenerThread, 1000);
+		WaitForSingleObject(listenerThread, 10000);
 		PostQuitMessage(0);
 		break;
 	default:
@@ -568,20 +569,15 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 		HWND typeCombo = GetDlgItem(hDlg, IDC_ADD_VIEW_DOC_TYPE);
 		
-		Object r = db.viewResults("all-document-types", "by-label");
-	
 		vector<string>* ids = new vector<string>();
+		Array docTypes = getAllConcreteDocumentTypes();
 
-		Array rows = r["rows"].getArray();
-		unsigned int i = 0;
-		for(; i<rows.size(); i++){
-			Object row = rows[i].getObject();
-			string key = row["key"].getString();
+		for(int i=0; i<docTypes.size(); i++){
+			Object row = docTypes[i].getObject();
+			string key = row["label"].getString();
 			wstring wkey = s2ws(key);
-			Document doc = db.getDocument(row["id"].getString());
-			Object obj = doc.getData().getObject();
 			SendMessage(typeCombo, CB_ADDSTRING, 0, (LPARAM)wkey.c_str());
-			ids->push_back(obj["_id"].getString());
+			ids->push_back(row["_id"].getString());
         }
 
 		SetWindowLong(typeCombo, GWL_USERDATA, (ULONG_PTR)ids);
@@ -627,22 +623,18 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					/* Setup the sort combo */
 					vector<Object>* fieldsVector = new vector<Object>();
 
-					QueryOptions options;
-					options.startKey = Value(type);
-					options.endKey = Value(type);
-					options.includeDocs = true;
-					Object results = db.viewResults("all-attributes", "by-type", options);
-					Array rows = results["rows"].getArray();
-					for(unsigned i=0; i<rows.size(); i++){
-						Object row = rows[i].getObject();
-						Object doc = row["doc"].getObject();
 
-						string name = doc["_id"].getString();
-						string label = doc["label"].getString();
+					vector<string> attrs = collectAttributes(type);
+
+					for(unsigned i=0; i<attrs.size(); i++){
+						Object def = getTypeDefinition(attrs[i]);
+
+						string name = def["_id"].getString();
+						string label = def["label"].getString();
 
 						wstring wlabel = s2ws(label);
 
-						fieldsVector->push_back(doc);
+						fieldsVector->push_back(def);
 
 						SendMessage(sortCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
 				
@@ -683,10 +675,10 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 			int sortIdx = ComboBox_GetCurSel(sortCombo);
 			vector<Object>* sortFieldsVector = (vector<Object>*)GetWindowLong(sortCombo, GWL_USERDATA);
-			Object sortFields = (*sortFieldsVector)[sortIdx];
+			Object sortField = (*sortFieldsVector)[sortIdx];
 
-			string sortby = sortFields["_id"].getString();
-			string sortbylabel = sortFields["label"].getString();
+			string sortby = sortField["_id"].getString();
+			string sortbylabel = sortField["label"].getString();
 
 			int namelen = GetWindowTextLength(newViewNameEdit) + 1;
 			wchar_t* wname = new wchar_t[namelen];
@@ -707,17 +699,21 @@ INT_PTR CALLBACK NewView(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			string conditionsJs = manager->getJavascript();
 
 			
-			sprintf_s(map_template, 2048, "function(doc){ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(__KEY__, null); }", 
+			sprintf_s(map_template, 2048, "function(doc){ __CALCULATE__ if ( doc.cinch_type && doc.cinch_type == '%s' %s ) emit(__KEY__, null); }", 
 				type.c_str(), conditionsJs.c_str());	
 
-			
 			strcpy_s(map, 2048, map_template);
-
 			string map_s = string(map);
-			stringstream sortbystream;
-			sortbystream << "doc." << sortby;
-			map_s = map_s.replace(map_s.find("__KEY__"), 7, sortbystream.str());
 			
+			if ( sortField["calculated"].isBoolean() && sortField["calculated"].getBoolean() == true ){
+				map_s = map_s.replace(map_s.find("__KEY__"), 7, "calculate(doc)");
+			} else {
+				stringstream sortbystream;
+				sortbystream << "doc." << sortby;
+				map_s = map_s.replace(map_s.find("__KEY__"), 7, sortbystream.str());
+			}
+			
+			map_s = map_s.replace(map_s.find("__CALCULATE__"), 13, sortField["functions"].getString());
 
 			Object design = Object();
 			design["language"] = "javascript";
@@ -934,9 +930,16 @@ void changesArrived(){
 	PostMessage(hWnd, WM_NEW_DATA_ARRIVED, 0, 0);
 }
 
+void dataDefinitionChangesArrived(){
+	/* TODO: This fires twice for each change.  Fix */
+	PostMessage(hWnd, WM_DATA_DEFINITION_CHANGES_ARRIVED, 0, 0);
+}
+
 DWORD WINAPI ChangesListener(LPVOID lParam){
 	listenerConn.setTimeout(1000);
-	listenerDb.listenForChanges(changesArrived);
+	listenerDb.registerListener("", &changesArrived);
+	listenerDb.registerListener("all-data-definitions/any-change", &dataDefinitionChangesArrived);
+	listenerDb.startListening();
 	return 0;
 }
 

@@ -18,16 +18,17 @@ vector<string> collectAttributes(string field);
 
 FormField* createFieldForType(HWND parent, string enclosingType, string type, bool bare);
 
-string getBaseType(string);
-string getSuperType(string type);
-Object getTypeDefinition(string type);
-Object getDefaultViewDefinition(string type);
+string getBaseType(const string&);
+string getSuperType(const string& type);
+Object getTypeDefinition(const string& type);
+Object getDefaultViewDefinition(const string& type);
 
 void preloadTypeDefinitions();
 
-string pluralize(string);
 
-string serializeForDisplay(Value v, string type);
+string serializeForDisplay(const Value& v, const string& type);
 
 string convertToString(double val);
 string convertToString(int val);
+
+Array getAllConcreteDocumentTypes();

@@ -123,29 +123,27 @@ void ConditionManager::addEmptyCondition(string _type, HWND parent){
 	ShowWindow(compareCombo, SW_HIDE);
 	SetWindowFont(fieldCombo, DEFAULT_FONT, false);
 	SetWindowFont(compareCombo, DEFAULT_FONT, false);
-	QueryOptions options;
-	options.startKey = Value(_type);
-	options.endKey = Value(_type);
-	options.includeDocs = true;
-	Object results = db.viewResults("all-attributes", "by-type", options);
-	Array rows = results["rows"].getArray();
-	for(unsigned i=0; i<rows.size(); i++){
-		Object row = rows[i].getObject();
-		Object doc = row["doc"].getObject();
+	
+	
+	
+	vector<string> attrs = collectAttributes(_type);
 
-		string name = doc["_id"].getString();
-		string label = doc["label"].getString();
+	for(unsigned i=0; i<attrs.size(); i++){
+		Object def = getTypeDefinition(attrs[i]);
+
+		string name = def["_id"].getString();
+		string label = def["label"].getString();
 
 		wstring wlabel = s2ws(label);
 
-		fieldsVector->push_back(doc);
+		fieldsVector->push_back(def);
 
 		SendMessage(fieldCombo, CB_ADDSTRING, 0, (LPARAM)wlabel.c_str());
-				
-		SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
 
 	}
+	SetWindowLong(fieldCombo, GWL_USERDATA, (ULONG_PTR)fieldsVector);
 
+	
 	vector<string>* compareOperators = new vector<string>();
 	SendMessage(compareCombo, CB_ADDSTRING, 0, (LPARAM)L"is empty");
 	compareOperators->push_back("empty");

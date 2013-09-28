@@ -99,7 +99,7 @@ struct FileWatchController {
 using namespace CouchDB;
 
 #include "CouchViewDelegate.h"
-
+#include "Search.h"
 
 
 // Comment out if you don't want replication 
@@ -123,6 +123,7 @@ using namespace CouchDB;
 //#define DATABASE "cinch-inventory-starter"
 //#define DATABASE "cinch-starter"
 #define DATABASE "cinch-issue-tracker"
+//#define DATABASE "cinch-common-definitions"
 
 //#define DATABASE "cinch-real-estate-starter"
 //#define DATABASE "hvac"
@@ -152,6 +153,7 @@ using namespace CouchDB;
 #include "SimpleRibbon.h"
 #include "NewDocumentHandler.h"
 #include "SwitchPerspectiveHandler.h"
+#include "SearchComboHandler.h"
 
 #include "console.h"
 
@@ -185,6 +187,7 @@ using namespace CouchDB;
 
 #define MULTILINE "multiline"
 #define CINCH_STRING "string"
+#define CINCH_REFERENCE "reference"
 #define DOCUMENT "document"
 #define DATETYPE "date"
 #define CODEDVALUE "coded_value"
@@ -202,9 +205,9 @@ using namespace CouchDB;
 #define ATTACHMENTS_DETAIL "Attachments"
 
 
-#define WM_NEW_DATA_ARRIVED WM_USER+140
-#define WM_ATTACHMENTS_UPLOADED WM_USER+141
-
+#define WM_NEW_DATA_ARRIVED					WM_USER+140
+#define WM_ATTACHMENTS_UPLOADED				WM_USER+141
+#define WM_DATA_DEFINITION_CHANGES_ARRIVED	WM_USER+142
 
 #define DEFAULT_FONT CreateFont(-12,0,0,0,400,0,0,0,1,0,0,0,0,TEXT("Segoe UI"))
 

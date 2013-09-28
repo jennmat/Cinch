@@ -120,9 +120,9 @@ Communication::~Communication(){
 }
 
 Value Communication::getData(const string &url, const string &method,
-                               const string &data){
+                               const string &data, bool ignoreTimeout){
    HeaderMap headers;
-   return getData(url, method, data, headers);
+   return getData(url, method, data, headers, ignoreTimeout);
 }
 
 Value Communication::getData(const string &url, const HeaderMap &headers,
@@ -136,33 +136,48 @@ string Communication::getRawData(const string &url, bool ignoreTimeout){
    return buffer;
 }
 
-void Communication::readChangesFeed(const std::string& database, void (*newDataArrived)()){
+void Communication::registerListener(FilteredListener listener){
+	listeners.push_back(listener);
+}
+
+void Communication::startListening(){
 	int last_seq = 0;
+	int last_filtered_seq = 0;
 	listenFlag = true;
 	while(listenFlag){
-		std::stringstream s;
-		s << "/" << database << "/_changes?feed=longpoll&since=" << last_seq;
-		string url = s.str();
-		string data = getRawData(s.str(), true);
-		Value value = parseData(data);
-		if ( value.isObject() ){
-			
-			Object obj = value.getObject();
-			if ( obj["last_seq"].isInteger() ){
-				last_seq = obj["last_seq"].getInt();
-				newDataArrived();
+		for(int i=0; i<listeners.size(); i++){
+			FilteredListener l = listeners[i];
+			if ( l.url.length() == 0 ){
+				l.last_seq = 0;
+				std::stringstream s;
+				s << "/" << l.database << "/_changes?feed=longpoll";
+				if ( l.filter.length() > 0 ){
+					s << "&filter=" << l.filter;
+				}
+				l.url = s.str();
+				listeners[i] = l;
 			}
-		}
-	
-		if ( last_seq == 0 ){
-			return;
+
+			std::stringstream s;
+			s << l.url << "&since=" << l.last_seq;
+			std::string url = s.str();
+			string data = getRawData(url, true);
+			Value value = parseData(data);
+			if ( value.isObject() ){
+				Object obj = value.getObject();
+				if ( obj["last_seq"].isInteger() ){
+					l.last_seq = obj["last_seq"].getInt();
+					l.notifyFunc();
+					listeners[i] = l;
+				}
+			}
 		}
 	}
 }
 
 Value Communication::getData(const string &url, const string &method,
-                               string data, const HeaderMap &headers){
-   getRawData(url, method, data, headers);
+                               string data, const HeaderMap &headers, bool ignoreTimeout){
+   getRawData(url, method, data, headers, ignoreTimeout);
    return parseData(buffer);
 }
 

@@ -17,7 +17,7 @@
 #define __COUCH_DB_COMM_HPP__
 
 #define COUCH_DB_ANNOUNCE_URLS
-#define COUCH_DB_DEBUG
+//#define COUCH_DB_DEBUG
 
 #include <iostream>
 #include <string>
@@ -42,6 +42,17 @@ Value createValue(T value){
    return Value(value);
 }
 
+
+struct FilteredListener {
+	std::string database;
+	std::string filter;
+	std::string url;
+	void (*notifyFunc)();
+	int last_seq;
+};
+
+
+
 class Communication{
 	friend class Database;
 	friend class Document;
@@ -56,7 +67,7 @@ class Communication{
       ~Communication();
 	 
       Value getData(const std::string&, const std::string &method = "GET",
-                      const std::string &data = "");
+                      const std::string &data = "", bool ignoreTimeout=false);
       Value getData(const std::string&, const HeaderMap&,
                       const std::string &method = "GET",
                       const std::string &data = "");
@@ -64,17 +75,22 @@ class Communication{
 	  Value uploadData(const std::string&, const HeaderMap&,
                       const std::string &filename);
 
-	  void readChangesFeed(const std::string& database, void (*newDataArrived)());
-
+	 
       std::string getRawData(const std::string&, bool ignoreTimeout = false);
 
 	  void saveRawData(std::string url, std::string filename);
 
 	  void setTimeout(long millis);
+
+	  void registerListener(FilteredListener listener);
+	  void startListening();
+
    private:
+	  std::vector<FilteredListener> listeners;
+      
       void init(const std::string&);
       Value getData(const std::string&, const std::string&,
-                      std::string, const HeaderMap&);
+                      std::string, const HeaderMap&, bool ignoreTimeout=false);
       void getRawData(const std::string&, const std::string&,
                       std::string, const HeaderMap&, bool ignoreTimeout=false);
 

@@ -105,6 +105,19 @@
         <Image Id ="294">res/ExitL.bmp</Image>
       </Command.LargeImages>
     </Command>
+    <Command Name="cmdSearch" Symbol="IDR_CMD_SEARCH">
+      <Command.LabelTitle>
+        <String Id="389">Find:</String>
+      </Command.LabelTitle>
+      <Command.SmallImages>
+        <Image Id="297">res/AddTableS.bmp</Image>
+      </Command.SmallImages>
+    </Command>
+    <Command Name="cmdSearchGroup">
+      <Command.LabelTitle>
+        <String Id="296">Search</String>
+      </Command.LabelTitle>
+    </Command>
   </Application.Commands>
   <Application.Views>
     <Ribbon>
@@ -120,6 +133,7 @@
       </Ribbon.ApplicationMenu>
       <Ribbon.Tabs>
         <Tab CommandName="cmdTabHome">
+         
           <Group CommandName="cmdShapesGroup" SizeDefinition="TwoButtons">
             <DropDownGallery CommandName="cmdSizeAndColor" Type="Items">
               <DropDownGallery.MenuLayout>
@@ -136,6 +150,10 @@
             </InRibbonGallery>
             <Button CommandName="cmdNewPerspective"/>
           </Group>
+          <Group CommandName="cmdSearchGroup">
+            <ComboBox CommandName="cmdSearch"></ComboBox>
+          </Group>
+          
         </Tab>
         <Tab CommandName="cmdTabUsers">
           

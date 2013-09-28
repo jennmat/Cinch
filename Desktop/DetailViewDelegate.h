@@ -14,6 +14,7 @@ private:
 	string design;
 	string view;
 	string viewDefId;
+	string referencingField;
 	bool descending;
 	string shows_docs_of_type;
 	string source_document_id;
@@ -29,7 +30,7 @@ private:
 	void sortByCol(int col);
 	
 public:
-	DetailViewDelegate(Detail*, int, const string& design, const string& view, const string& viewDefId, const string& docs_of_type);
+	DetailViewDelegate(Detail*, int, const string& design, const string& view, const string& viewDefId, const string& docs_of_type, const string& referencingField);
 	~DetailViewDelegate();
 	void LoadDocument(const string& database, Object& obj);
 	void setConfig(Object);

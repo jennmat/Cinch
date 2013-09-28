@@ -1036,40 +1036,69 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			
 				/* Now add views for documents which may reference this document */
-				QueryOptions attributesQueryOptions;
-				attributesQueryOptions.startKey = self->getType();
-				attributesQueryOptions.endKey = self->getType();
-				results = db.viewResults("all-attributes", "by-id", attributesQueryOptions);
+				QueryOptions refQueryOptions;
+				refQueryOptions.startKey = self->getType();
+				refQueryOptions.endKey = self->getType();
+				refQueryOptions.includeDocs = true;
+				results = db.viewResults("all-reference-types", "by-referenced-type", refQueryOptions);
 				if ( results["rows"].isArray() ){
 					Array rows = results["rows"].getArray();
 					for(unsigned int i=0; i<rows.size(); i++){
 						Object row = rows[i].getObject();
 						Object value = row["value"].getObject();
-						string id = value["_id"].getString();
+						Object doc = row["doc"].getObject();
+						string typeLabel = doc["label"].getString();
+								
+						string referencingTypeId = doc["_id"].getString();
 
-						QueryOptions viewQueryOptions;
-						viewQueryOptions.startKey = id;
-						viewQueryOptions.endKey = id;
-						viewQueryOptions.includeDocs = true;
-						Object views = db.viewResults("all-view-definitions", "by-emitted-type", viewQueryOptions);
-						if ( views["rows"].isArray() ){
-							Array viewRows = views["rows"].getArray();
+						QueryOptions attrOpt;
+						attrOpt.startKey = referencingTypeId;
+						attrOpt.endKey = referencingTypeId;
+						attrOpt.includeDocs = true;
 
-							for(unsigned int i=0; i<viewRows.size(); i++){
-								Object view = viewRows[i].getObject();
-								Object doc = view["doc"].getObject();
-								string label = doc["label"].getString();
-								string id = doc["_id"].getString();
-								bool found = false;
-								for(unsigned i=0; i<tabs.size(); i++){
-									Object config = tabs[i].getObject();
-									if ( id.compare(config["_id"].getString()) == 0 ){
-										found = true;
+						Object attrs = db.viewResults("all-attributes", "by-id", attrOpt);
+						if ( attrs["rows"].isArray() ){
+							Array attrRows = attrs["rows"].getArray();
+							for(UINT i=0; i<attrRows.size(); i++){
+								Object attr = attrRows[i].getObject();
+								Object value = attr["value"].getObject();
+								string type = value["_id"].getString();
+								QueryOptions viewQueryOptions;
+								viewQueryOptions.startKey = type;
+								viewQueryOptions.endKey = type;
+								viewQueryOptions.includeDocs = true;
+								
+								Object views = db.viewResults("all-view-definitions", "by-emitted-type", viewQueryOptions);
+								if ( views["rows"].isArray() ){
+									Array viewRows = views["rows"].getArray();
+
+									for(unsigned int i=0; i<viewRows.size(); i++){
+										Object view = viewRows[i].getObject();
+										Object doc = view["doc"].getObject();
+										string label = doc["label"].getString();
+										string viewDefId = doc["_id"].getString();
+
+										Object config;
+										config["type"] = "referencing_documents";
+										config["referencing_field"] = referencingTypeId;
+										config["view"] = doc;
+
+										
+										string full_label = label + " (" + typeLabel + ")";
+
+										bool found = false;
+										for(unsigned i=0; i<tabs.size(); i++){
+											Object def = tabs[i].getObject();
+											Object config = def["config"].getObject();
+											if ( viewDefId.compare(config["view_definition_id"].getString()) == 0 && referencingTypeId.compare(config["referencing_field"].getString()) == 0 ){
+												found = true;
+											}
+										}
+										if ( !found ){
+											int index = ListBox_AddString(hiddenTabs, s2ws(full_label).c_str());
+											self->hiddenTabDefinitions.push_back(config);	
+										}
 									}
-								}
-								if ( !found ){
-									int index = ListBox_AddString(hiddenTabs, s2ws(label).c_str());
-									self->hiddenTabDefinitions.push_back(doc);	
 								}
 							}
 						}
@@ -1113,7 +1142,7 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					string array_content_type = obj["array_contents"].getString();
 					string baseType = getBaseType(array_content_type);
 
-					if ( baseType.compare(DOCUMENT) == 0 ){
+					if ( baseType.compare(CINCH_REFERENCE) == 0 ){
 						Object tab;
 						Object config;
 						Array columns;
@@ -1162,13 +1191,14 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					tab["label"] = "Attachments";
 					tab["field"] = "attachments";
 					tabs.push_back(tab);
-				} else if ( obj["cinch_type"].getString().compare("view_definition") == 0 ){
+				} else if ( obj["type"].getString().compare("referencing_documents") == 0 ){
 					Object tab;
 					Object config;
 					Array columns;
+					Object doc = obj["view"].getObject();
 					QueryOptions options;
-					options.startKey = obj["emits"];
-					options.endKey = obj["emits"];
+					options.startKey = doc["emits"];
+					options.endKey = doc["emits"];
 					options.includeDocs = true;
 					Object results = db.viewResults("all-attributes", "by-type", options);
 					if ( results["rows"].isArray() ){
@@ -1184,34 +1214,42 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 					}
 
+					const string& referencingField = obj["referencing_field"].getString();
+
+
 					/* Check if one of the already available views uses _id as a key */
 					bool found = false;
-					Array availableViews = obj["views"].getArray();
+					Array availableViews = doc["views"].getArray();
 					for(unsigned int i=0; i<availableViews.size(); i++){
 						Object view = availableViews[i].getObject();
-						if ( view["key"].getString().compare("_id") == 0 ){
+						if ( view["key"].getString().compare(referencingField) == 0 ){
 							/* This one will work */
 							found = true;
-							config["design"] = obj["design_name"];
+							config["design"] = doc["design_name"];
 							config["view"] = view["view"];
-							config["view_definition_id"] = obj["_id"];
+							config["view_definition_id"] = doc["_id"];
+							config["referencing_field"] = referencingField;
 						}
 					}
 
 					if ( !found ){
 						/* We will need to create one */
 						stringstream design;
-						design << "_design/" << obj["design_name"].getString();
+						design << "_design/" << doc["design_name"].getString();
 						string key = design.str();
 						Object des = db.getDocument(design.str()).getData().getObject();
-
+						
 						Object views = des["views"].getObject();
 							
-						string map = obj["map_template"].getString();
-						map = map.replace(map.find("__KEY__"), 7, self->getType());
+						string map = doc["map_template"].getString();
+						stringstream keystr;
+						keystr << "doc." << referencingField;
+
+						map = map.replace(map.find("__KEY__"), 7, keystr.str());
+						map = map.replace(map.find("__CALCULATE__"), 13, "");
 
 						stringstream viewname;
-						viewname << "by-" << self->getType();
+						viewname << "by-" << obj["referencing_field"].getString();
 
 						views[viewname.str()]["map"] = map;
 
@@ -1220,26 +1258,28 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						
 
 						Object newView;
-						newView["key"] = "_id";
+						newView["key"] = referencingField;
 						newView["view"] = viewname.str();
 						availableViews.push_back(newView);
-						obj["views"] = availableViews;
+						doc["views"] = availableViews;
 						
-						Document viewDef = db.createDocument(obj);
+						Document viewDef = db.createDocument(doc);
 						db.createDocument(des, design.str());
-
-						config["design"] = obj["design_name"];
+						
+						config["design"] = doc["design_name"];
 						config["view"] = viewname.str();
 						config["view_definition_id"] = viewDef.getID();
+						config["referencing_field"] = obj["referencing_field"];
 					}
 
 					
 					config["columns"] = columns;
 					tab["content"] = VIEW_WITH_DOCUMENTS_DETAIL;
-					tab["label"] = obj["label"];
+					Object def = getTypeDefinition(referencingField);
+
+					tab["label"] = doc["label"].getString() + " (" + def["label"].getString() + ")";
 					tab["view_id"] = obj["_id"];
 					tab["config"] = config;
-
 					tabs.push_back(tab);
 
 				}

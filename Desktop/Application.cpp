@@ -118,6 +118,18 @@ STDMETHODIMP CApplication::OnCreateUICommand(
         }
 		break;
 	}
+	case IDR_CMD_SEARCH:
+	{
+		CSearchComboHandler *pSearchHandler = NULL;
+        hr = CSearchComboHandler::CreateInstance(&pSearchHandler);
+        if (SUCCEEDED(hr))
+        {
+            hr = pSearchHandler->QueryInterface(IID_PPV_ARGS(ppCommandHandler));
+            pSearchHandler->Release();
+        }
+		break;
+	}
+	
 	default:
     {
 		IUICommandHandler *pButtonHandler = NULL;

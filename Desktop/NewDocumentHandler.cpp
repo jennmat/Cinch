@@ -31,9 +31,7 @@ STDMETHODIMP CNewDocumentHandler::Execute(UINT nCmdID,
 		Object objectDefinition = objectTypes[ppropvarValue->intVal];
 		CinchDesigner* designercontrol = (CinchDesigner *)GetWindowLong(designer, GWL_USERDATA);
 		designercontrol->NewDocument(DATABASE, objectDefinition["_id"].getString());
-
 	}
-
    	
 	return S_OK;
 }
@@ -107,38 +105,34 @@ STDMETHODIMP CNewDocumentHandler::UpdateProperty(UINT nCmdID,
         hr = ppropvarCurrentValue->punkVal->QueryInterface( 
                                                       IID_PPV_ARGS(&pCollection));
         
-		Object r = db.viewResults("all-document-types", "by-label");
-		Array rows = r["rows"].getArray();
-		unsigned int i = 0;
-		for(; i<rows.size(); i++){
-			Object row = rows[i].getObject();
-			string key = row["key"].getString();
-			wstring wkey = s2ws(key);
-				
-			Document doc = db.getDocument(row["id"].getString());
+		pCollection->Clear();
 
-			objectTypes.push_back(doc.getData().getObject());
-
+		Array docTypes = getAllConcreteDocumentTypes();
+		for(int i=0; i<docTypes.size(); i++){
+			Object doc = docTypes[i].getObject();
+			objectTypes.push_back(doc);
 			// Create a new property set for each item.
-            CPropertySet* pItem;
-            hr = CPropertySet::CreateInstance(&pItem);
-              
-            // Load the label from the resource file.
-            WCHAR wszLabel[MAX_RESOURCE_LENGTH];
+			CPropertySet* pItem;
+			hr = CPropertySet::CreateInstance(&pItem);
+        
+			string key = doc["label"].getString();
+			wstring wkey = s2ws(key);
+		
+			// Load the label from the resource file.
+			WCHAR wszLabel[MAX_RESOURCE_LENGTH];
 			wcscpy_s(wszLabel, MAX_RESOURCE_LENGTH, wkey.c_str());
             
 			IUIImage* pImg;
 			MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP);
 
-            HRESULT a = CreateUIImageFromBitmapResource(MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP), &pImg);
+			HRESULT a = CreateUIImageFromBitmapResource(MAKEINTRESOURCE(IDR_SMALL_ADD_BITMAP), &pImg);
 
 
 			// Initialize the property set with no image, the label that was just
-            // loaded, and no category.
-            pItem->InitializeItemProperties(pImg, wszLabel, UI_COLLECTION_INVALIDINDEX);
+			// loaded, and no category.
+			pItem->InitializeItemProperties(pImg, wszLabel, UI_COLLECTION_INVALIDINDEX);
 
-            pCollection->Add(pItem);
-
+			pCollection->Add(pItem);
         }
         
      

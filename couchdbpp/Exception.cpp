@@ -40,3 +40,14 @@ AttachmentNotFoundException::~AttachmentNotFoundException() throw(){
 const char* AttachmentNotFoundException::what() const throw(){
    return message.c_str();
 }
+
+DocumentNotFoundException::DocumentNotFoundException(const string &_message){
+   message = _message;
+}
+
+DocumentNotFoundException::~DocumentNotFoundException() throw(){
+}
+
+const char* DocumentNotFoundException::what() const throw(){
+   return message.c_str();
+}
