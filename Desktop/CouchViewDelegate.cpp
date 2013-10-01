@@ -30,7 +30,7 @@ void CouchViewDelegate::setView(const string& _design, const string& _view)
 	//loadViewResults();
 }
 
-int CouchViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
+void CouchViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data, int* rows_loaded, int* cols_loaded){
 	QueryOptions options;
 	options.descending = descending;
 	options.limit = len;
@@ -48,16 +48,19 @@ int CouchViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
 			wcscpy_s(data[i][0], len, w.c_str());
 			docids[i] = row["id"].getString();
 		}
-		return i;
+		*rows_loaded = i;
+		*cols_loaded = 1;
 	}
 
-	return 0;
+	*rows_loaded = 0;
+	*cols_loaded = 0;
+	
 }
 
-void CouchViewDelegate::CleanupSegment(int len, wchar_t*** data){
+void CouchViewDelegate::CleanupSegment(int rows, int cols, wchar_t*** data){
 	delete[] docids;
 	docids = nullptr;
-	for(int i=0; i<len; i++){
+	for(int i=0; i<rows; i++){
 		delete data[i][0];
 	}
 }

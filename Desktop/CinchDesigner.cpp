@@ -131,11 +131,8 @@ void loadVisibleTabLabels(CinchDesigner* des, Array tabs, HWND tabList){
 			des->visibleTabDefinitions.push_back(doc);
 		} else if ( tab["config"].isObject() ){
 			Object config = tab["config"].getObject();
-			string viewDefId = config["view_definition_id"].getString();
-			Object doc = db.getDocument(viewDefId).getData().getObject();
-			des->visibleTabDefinitions.push_back(doc);
+			des->visibleTabDefinitions.push_back(config);
 
-		 
 		}
 
 		int pos = SendMessage(tabList, LB_ADDSTRING, 0, (LPARAM) l.c_str()); 
@@ -721,9 +718,7 @@ INT_PTR CALLBACK AddField(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 							rel["name"] = name;
 							rel["label"] = label;
 							rel["source_document_property"] = name;
-
-							;
-							
+						
 							db.createDocument(Value(rel));
 						}
 						
@@ -1195,24 +1190,14 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 					Object tab;
 					Object config;
 					Array columns;
-					Object doc = obj["view"].getObject();
-					QueryOptions options;
-					options.startKey = doc["emits"];
-					options.endKey = doc["emits"];
-					options.includeDocs = true;
-					Object results = db.viewResults("all-attributes", "by-type", options);
-					if ( results["rows"].isArray() ){
-						Array rows = results["rows"].getArray();
-						for(unsigned int i=0; i<rows.size(); i++){
-							Object row = rows[i].getObject();
-							Object doc = row["doc"].getObject();
-							int a = 1;
-							Object column;
-							column["field"] = doc["_id"];
-							column["width"] = Value(50);
-							columns.push_back(column);
-						}
+					Object doc;
+					if ( obj["view"].isObject() ){
+						doc = obj["view"].getObject();
+					} else {
+						string viewDefId = obj["view_definition_id"].getString();
+						doc = db.getDocument(viewDefId).getData().getObject();
 					}
+					
 
 					const string& referencingField = obj["referencing_field"].getString();
 
@@ -1272,8 +1257,29 @@ INT_PTR CALLBACK EditTabs(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 						config["referencing_field"] = obj["referencing_field"];
 					}
 
-					
-					config["columns"] = columns;
+					if ( !obj["columns"].isArray() ){
+						/* Setup default columns */
+						QueryOptions options;
+						options.startKey = doc["emits"];
+						options.endKey = doc["emits"];
+						options.includeDocs = true;
+						Object results = db.viewResults("all-attributes", "by-type", options);
+						if ( results["rows"].isArray() ){
+							Array rows = results["rows"].getArray();
+							for(unsigned int i=0; i<rows.size(); i++){
+								Object row = rows[i].getObject();
+								Object doc = row["doc"].getObject();
+								int a = 1;
+								Object column;
+								column["field"] = doc["_id"];
+								column["width"] = Value(50);
+								columns.push_back(column);
+							}
+						}
+						config["columns"] = columns;
+					} else {
+						config["columns"] = obj["columns"];
+					}
 					tab["content"] = VIEW_WITH_DOCUMENTS_DETAIL;
 					Object def = getTypeDefinition(referencingField);
 

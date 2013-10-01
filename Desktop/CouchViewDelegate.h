@@ -29,8 +29,8 @@ public:
 
 	void headerContent(int, wstring &);
 	//void cellContent(int, int, wstring &);
-	int LoadSegment(int, int, wchar_t***);
-	void CleanupSegment(int, wchar_t***);
+	void LoadSegment(int, int, wchar_t***, int*, int*);
+	void CleanupSegment(int, int, wchar_t***);
 
 	bool stickyHeaders();
 	

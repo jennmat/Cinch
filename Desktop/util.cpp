@@ -195,6 +195,22 @@ string serializeForDisplay(const Value& v, const string& type){
 
 
 		return EvaluateScript(script.str());
+	} else if ( base.compare("reference") == 0 ){
+		if ( v.getString().length() > 0){
+			Object referencedDoc = db.getDocument(v.getString()).getData().getObject();
+		
+			Object def = typeDefinitions[type];
+			string references = def["referenced_type"].getString();
+			Object referencedDef = typeDefinitions[references];
+
+			stringstream script;
+			script << "var obj = " << referencedDoc << ";";
+			script << referencedDef["functions"].getString();
+			script << "toString(obj);";
+
+
+			return EvaluateScript(script.str());
+		}
 	}
 	return "";
 }

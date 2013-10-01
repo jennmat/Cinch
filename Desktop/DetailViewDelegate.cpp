@@ -75,7 +75,7 @@ void DetailViewDelegate::cellContent(int row, int col, wstring &content)
 	}
 }*/
 
-int DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
+void DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data, int* rows_loaded, int* cols_loaded){
 	if ( (*obj)["rows"].isArray() ){
 		Array rows = (*obj)["rows"].getArray();
 		int data_index = 0;
@@ -95,14 +95,16 @@ int DetailViewDelegate::LoadSegment(int start_row, int len, wchar_t*** data){
 
 			data_index++;
 		}
-		return data_index;
+		*rows_loaded = data_index;
+		*cols_loaded = totalColumns();
 	}
-	return 0;
+	*rows_loaded = 0;
+	*cols_loaded = 0;
 }
 
-void DetailViewDelegate::CleanupSegment(int len, wchar_t*** data){
-	for(int i=0; i<len; i++){
-		for(int col=0; col<totalColumns(); col++){
+void DetailViewDelegate::CleanupSegment(int rows, int cols, wchar_t*** data){
+	for(int i=0; i<rows; i++){
+		for(int col=0; col<cols; col++){
 			delete data[i][col];
 		}
 	}
@@ -148,6 +150,7 @@ void DetailViewDelegate::serializeUIElements(Object& o){
 	o["design"] = design;
 	o["view"] = view;
 	o["referencing_field"] = referencingField;
+	o["type"] = "referencing_documents";
 	o["view_definition_id"] = viewDefId;
 	BaseDelegate::serializeUIElements(o);
 }
@@ -161,9 +164,12 @@ bool DetailViewDelegate::allowSorting(int col){
 void DetailViewDelegate::sortByCol(int col){
 	/* Find a view that sorts by id and the desired column */
 	QueryOptions options;
-	Array key;
-	key.push_back(referencingField);
-	key.push_back(fields[col]);
+	Object key;
+	key["design"] = design;
+	Array viewKey;
+	viewKey.push_back(referencingField);
+	viewKey.push_back(fields[col]);
+	key["key"] = viewKey;
 	options.startKey = key;
 	options.endKey = key;
 	Object results = db.viewResults("all-views", "by-key", options);

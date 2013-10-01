@@ -16,7 +16,7 @@ void ArrayDelegate::cellContent(int row, int col, wstring &content)
 }
 */
 
-int ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
+void ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment, int* rows_loaded, int* cols_loaded){
 	int segment_index = 0;
 	for(UINT row_index=start_row; row_index<len; row_index++){
 		if ( data[row_index].isObject() ){
@@ -33,12 +33,13 @@ int ArrayDelegate::LoadSegment(int start_row, int len, wchar_t*** segment){
 		}
 		segment_index++;
 	}
-	return segment_index;
+	*rows_loaded = segment_index;
+	*cols_loaded = totalColumns();
 }
 
-void ArrayDelegate::CleanupSegment(int len, wchar_t*** segment){
-	for(int i=0; i<len; i++){
-		for(int col=0; col<totalColumns(); col++){
+void ArrayDelegate::CleanupSegment(int rows, int cols, wchar_t*** segment){
+	for(int i=0; i<rows; i++){
+		for(int col=0; col<cols; col++){
 			delete segment[i][col];
 		}
 	}

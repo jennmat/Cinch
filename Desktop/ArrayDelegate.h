@@ -13,8 +13,8 @@ public:
 	void setData(Array array);
 
 	int totalRows();
-	int LoadSegment(int start_row, int len, wchar_t*** data);
-	void CleanupSegment(int len, wchar_t*** data);
+	void LoadSegment(int start_row, int len, wchar_t*** data, int*, int*);
+	void CleanupSegment(int rows, int cols, wchar_t*** data);
 	void setupEditorForCell(HWND editor, int row, int col, wchar_t*** data);
 	void editingFinished(HWND hwnd, int row, int col, wchar_t*** data);
 	void prepareNewRow(int row);
