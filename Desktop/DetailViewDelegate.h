@@ -32,7 +32,7 @@ private:
 public:
 	DetailViewDelegate(Detail*, int, const string& design, const string& view, const string& viewDefId, const string& docs_of_type, const string& referencingField);
 	~DetailViewDelegate();
-	void LoadDocument(const string& database, Object& obj);
+	void LoadDocument(Object& obj);
 	void setConfig(Object);
 	void setIncludeDocs(bool);
 	void serializeUIElements(Object& obj);

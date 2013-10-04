@@ -108,8 +108,6 @@ void BaseDelegate::deserializeUIElements(HWND _parent, Object obj){
 			}
 		}
 	}
-	grid->reloadLayout();
-	grid->reloadData();
 
 }
 

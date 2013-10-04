@@ -19,7 +19,10 @@ using namespace JsonBox;
 class Detail {
 private:
 	HWND detailPages[MAX_DETAIL_PAGES];
-	int initialized[MAX_DETAIL_PAGES];
+	int initialized[MAX_DETAIL_PAGES];	
+	int visible[MAX_DETAIL_PAGES];
+	int loaded[MAX_DETAIL_PAGES];
+	ULONG_PTR pageData[MAX_DETAIL_PAGES];
 	int pageCount;
 	vector<string> labels;
 	wchar_t* fieldName[MAX_DETAIL_PAGES];

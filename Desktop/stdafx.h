@@ -103,7 +103,7 @@ using namespace CouchDB;
 
 
 // Comment out if you don't want replication 
-//#include "Replication.h"
+#include "Replication.h"
 #include "CouchDB.hpp"
 #include "util.h"
 #include "ConditionManager.h"

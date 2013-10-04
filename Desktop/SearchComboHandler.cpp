@@ -28,6 +28,7 @@ STDMETHODIMP CSearchComboHandler::Execute(UINT nCmdID,
     UNREFERENCED_PARAMETER(pCommandExecutionProperties);
 
 	if ( verb == UI_EXECUTIONVERB_EXECUTE ){
+		SetupSearching();
 	}
 
 

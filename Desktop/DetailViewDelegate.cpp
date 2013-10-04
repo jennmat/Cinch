@@ -34,7 +34,7 @@ int DetailViewDelegate::totalRows()
 	return 0;
 }
 
-void DetailViewDelegate::LoadDocument(const string& database, Object& o){
+void DetailViewDelegate::LoadDocument(Object& o){
 	delete obj;
 	source_document_id = o["_id"].getString();
 	source_document_type = o["cinch_type"].getString();

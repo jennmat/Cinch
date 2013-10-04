@@ -50,6 +50,25 @@ Detail::~Detail(){
 }
 
 void Detail::ShowPage(int i){
+	if ( initialized[i] == 0 ){
+		InitializePage(i);
+	}
+
+	if ( contentType[i] == VIEW_CONTENT ){
+		if ( loaded[i] == 0 ){
+			Object obj = db.getDocument(_id, _rev).getData().getObject();
+			GridDelegate* delegate = (GridDelegate *)pageData[i];
+			DetailViewDelegate* d = (DetailViewDelegate*)delegate;
+			d->LoadDocument(obj);
+			loaded[i] = 1;
+			CinchGrid* grid = (CinchGrid*)GetWindowLong(detailPages[i], GWL_USERDATA);
+			grid->reloadData();
+		}
+		
+	}
+
+	
+
 	RECT tabs;
 	RECT tabControlClient;
 	TabCtrl_GetItemRect(tabControl, 0, &tabs);
@@ -57,22 +76,22 @@ void Detail::ShowPage(int i){
 	SetWindowPos(detailPages[i], HWND_TOP, tabControlClient.left, tabs.bottom, tabControlClient.right, tabControlClient.bottom-tabs.bottom, 0);
 	ShowWindow(detailPages[i], SW_SHOW);
 
-	if ( initialized[i] == 0 ){
-		InitializePage(i);
-	}
-
+	memset(visible,0,MAX_DETAIL_PAGES);
+	visible[i] = 1;
+			
 }
 
 void Detail::DestroyPage(int i){
-	if ( contentType[i] == TABLE_CONTENT || contentType[i] == VIEW_CONTENT || contentType[i] == VIEW_WITH_DOCUMENTS_CONTENT ){
-		CinchGrid* grid = (CinchGrid*)GetWindowLong(detailPages[i], GWL_USERDATA);
-		GridDelegate* d = grid->getDelegate();
-		DestroyWindow(detailPages[i]);
-		delete d;
-	} else {
-		DestroyWindow(detailPages[i]);
+	if ( initialized[i] == 1 ){
+		if ( contentType[i] == TABLE_CONTENT || contentType[i] == VIEW_CONTENT || contentType[i] == VIEW_WITH_DOCUMENTS_CONTENT ){
+			CinchGrid* grid = (CinchGrid*)GetWindowLong(detailPages[i], GWL_USERDATA);
+			GridDelegate* d = grid->getDelegate();
+			DestroyWindow(detailPages[i]);
+			delete d;
+		} else {
+			DestroyWindow(detailPages[i]);
+		}
 	}
-
 	delete fieldName[i];
 }
 
@@ -89,16 +108,15 @@ void Detail::CreateTableForPage(const wchar_t* field, GridDelegate* delegate, in
 }
 
 void Detail::CreateDetailViewForPage(const wchar_t* label, GridDelegate* delegate, int i){
-    HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
-	detailPages[i] = wnd;
+	pageData[i] = (ULONG_PTR)delegate;
 	contentType[i] = VIEW_CONTENT;
 	pageCount++;
 	int len = wcslen(label) + sizeof(wchar_t);
 	fieldName[i] = new wchar_t[len];
 	memset(fieldName[i], 0, len);
 	wcscpy_s(fieldName[i], len, label);
-	initialized[i] = 1;
-	ShowPage(i);
+	initialized[i] = 0;
+	//ShowPage(i);
 }
 
 void Detail::CreateViewWithDocumentsForPage(const wchar_t* label, GridDelegate* delegate, int i){
@@ -149,6 +167,17 @@ void Detail::InitializePage(int i){
 	if ( contentType[i] == ATTACHMENTS ){
 		AttachmentViewer* viewer = (AttachmentViewer *)GetWindowLong(detailPages[i], GWL_USERDATA);
 		viewer->initialize();
+	} else if ( contentType[i] == VIEW_CONTENT ){
+		GridDelegate* delegate = (GridDelegate *)pageData[i];
+		HWND wnd = CinchGrid::CreateCinchGrid(detail, delegate);
+		if ( hasLoadedDocument ) {
+			Object obj = db.getDocument(_id, _rev).getData().getObject();
+			DetailViewDelegate* d = (DetailViewDelegate*)delegate;
+			d->LoadDocument(obj);
+		}
+		
+		detailPages[i] = wnd;
+		initialized[i] = 1;
 	}
 }
 
@@ -300,8 +329,7 @@ Array Detail::serializeUIElements()
 			tab["content"] = Value(TEXT_DETAIL);
 		} else if ( contentType[i] == VIEW_CONTENT ){
 			tab["content"] = "View";
-			CinchGrid* grid = (CinchGrid *)GetWindowLong(detailPages[i], GWL_USERDATA);
-			DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
+			DetailViewDelegate* delegate = (DetailViewDelegate *)pageData[i];
 			Object config;
 			delegate->serializeUIElements(config);
 			tab["config"] = config;
@@ -398,12 +426,16 @@ LRESULT CALLBACK Detail::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             // get the newly selected tab item
             INT nTabItem = TabCtrl_GetCurSel(self->tabControl);
 
-			for(int i=0; i<MAX_DETAIL_PAGES; i++){
+			for(int i=0; i<self->pageCount; i++){
 				if ( self->detailPages[i] != NULL ){
 					ShowWindow(self->detailPages[i], SW_HIDE);
 				}
 			}
-
+			
+			if ( self->initialized[nTabItem] == 0 ){
+				self->InitializePage(nTabItem);
+			}
+				
 			if ( self->detailPages[nTabItem] != NULL ){
 				self->ShowPage(nTabItem);
 				ShowWindow(self->detailPages[nTabItem], SW_SHOW);
@@ -566,6 +598,9 @@ INT_PTR CALLBACK EditColumns(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 				CinchGrid* grid = (CinchGrid *)GetWindowLong(detail->GetDetailPage(currentTab), GWL_USERDATA);
 				DetailViewDelegate* delegate = (DetailViewDelegate *)grid->getDelegate();
 				delegate->deserializeUIElements(detailHWnd, tabConfig);
+				grid->reloadLayout();
+				grid->reloadData();
+	
 			}
 	
 			detail->getForm()->getDelegate()->formModified();
@@ -783,21 +818,22 @@ Form * Detail::getForm(){
 
 void Detail::LoadDocument(Object obj){
 	hasLoadedDocument = true;
+	memset(loaded, 0, MAX_DETAIL_PAGES);
 	_id = obj["_id"].getString();
 	_rev = obj["_rev"].getString();
 
 	for(int i=0; i<getDetailPageCount(); i++){
 		HWND detail = GetDetailPage(i);
-		if ( contentType[i] == VIEW_CONTENT) {
+		if ( contentType[i] == VIEW_CONTENT && initialized[i] == 1) {
 			
-
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			DetailViewDelegate * d = (DetailViewDelegate *)gridcontrol->getDelegate();
 			
-			d->LoadDocument(DATABASE, obj);
-			gridcontrol->reloadData();
-
-
+			if ( visible[i] == 1 && loaded[i] == 0 ){
+				d->LoadDocument(obj);
+				gridcontrol->reloadData();
+				loaded[i] = 1;
+			}
 		} else if ( contentType[i] == TABLE_CONTENT ){ 
 			CinchGrid* gridcontrol = (CinchGrid *)GetWindowLong(detail, GWL_USERDATA);
 			wchar_t* field = fieldName[i];
